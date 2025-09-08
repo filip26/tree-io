@@ -24,7 +24,9 @@ public interface TreeAdapter {
         String,
         Number,
         Binary,
-        Boolean
+        True,
+        False,
+        Null,
     }
 
     /**
@@ -149,24 +151,4 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not of type Binary
      */
     byte[] asByteArray(Object node);
-
-    // --- Boolean operations ---
-
-    /**
-     * Returns true if the node is a boolean true.
-     *
-     * @param node the boolean node
-     * @return true if node is true
-     * @throws IllegalArgumentException if the node is not of type Boolean
-     */
-    boolean isTrue(Object node);
-
-    /**
-     * Returns true if the node is a boolean false.
-     *
-     * @param node the boolean node
-     * @return true if node is false
-     * @throws IllegalArgumentException if the node is not of type Boolean
-     */
-    boolean isFalse(Object node);
 }
