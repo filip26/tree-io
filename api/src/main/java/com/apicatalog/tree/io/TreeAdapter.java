@@ -37,7 +37,7 @@ public interface TreeAdapter {
      * @return the {@link NodeType} of the node
      * @throws IllegalArgumentException if the node is null or not recognized
      */
-    NodeType getNodeType(Object node);
+    NodeType typeOf(Object node);
 
     // --- Map operations ---
 
@@ -102,7 +102,7 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not a number
      *                                  or cannot be converted to Integer
      */
-    Integer asInteger(Object node);
+    int asInteger(Object node);
 
     /**
      * Returns the long value of the number node.
@@ -112,7 +112,7 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not a number
      *                                  or cannot be converted to Long
      */
-    Long asLong(Object node);
+    long asLong(Object node);
 
     /**
      * Returns the BigInteger value of the number node.
@@ -131,7 +131,7 @@ public interface TreeAdapter {
      * @return double value
      * @throws IllegalArgumentException if the node is not a number
      */
-    Double asDouble(Object node);
+    double asDouble(Object node);
 
     /**
      * Returns the BigDecimal value of the number node.

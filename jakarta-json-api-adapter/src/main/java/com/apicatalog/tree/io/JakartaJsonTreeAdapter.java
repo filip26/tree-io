@@ -14,7 +14,7 @@ import jakarta.json.JsonValue;
 public class JakartaJsonTreeAdapter implements TreeAdapter {
 
     @Override
-    public NodeType getNodeType(Object node) {
+    public NodeType typeOf(Object node) {
         switch (((JsonValue) node).getValueType()) {
         case NULL:
             return NodeType.Null;
@@ -61,12 +61,12 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public Integer asInteger(Object node) {
+    public int asInteger(Object node) {
         return ((JsonNumber) node).intValueExact();
     }
 
     @Override
-    public Long asLong(Object node) {
+    public long asLong(Object node) {
         return ((JsonNumber) node).longValueExact();
     }
 
@@ -76,7 +76,7 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public Double asDouble(Object node) {
+    public double asDouble(Object node) {
         return ((JsonNumber) node).doubleValue();
     }
 
