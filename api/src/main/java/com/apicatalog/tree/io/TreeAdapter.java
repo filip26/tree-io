@@ -3,7 +3,6 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Interface providing a uniform abstraction for reading tree-like data
@@ -47,7 +46,7 @@ public interface TreeAdapter {
      * @param node the map node
      * @return collection of child nodes
      */
-    Set<? extends Object> properties(Object node);
+    Collection<? extends Object> properties(Object node);
 
     /**
      * Returns the value of a property from a map node.
@@ -76,16 +75,16 @@ public interface TreeAdapter {
      * @param node the string node
      * @return string representation
      */
-    String textValue(Object node);
+    String stringValue(Object node);
 
     // --- Number operations ---
 
     /**
-     * Returns true if the number node is a decimal type (floating point or
+     * Returns false if the number node is a decimal type (floating point or
      * BigDecimal).
      *
      * @param node the number node
-     * @return true if node is decimal
+     * @return true if node is integral value
      */
     boolean isIntegral(Object node);
 
@@ -148,5 +147,5 @@ public interface TreeAdapter {
      * @param node
      * @return
      */
-    Collection<? extends Object> asCollection(Object node);
+    Collection<? extends Object> asCollection(Object node);    
 }

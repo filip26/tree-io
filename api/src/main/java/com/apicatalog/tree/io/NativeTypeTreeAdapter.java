@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 class NativeTypeTreeAdapter implements TreeAdapter {
 
@@ -49,7 +48,7 @@ class NativeTypeTreeAdapter implements TreeAdapter {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Set<? extends Object> properties(Object node) {
+    public Collection<? extends Object> properties(Object node) {
         if (node instanceof Map) {
             return ((Map) node).keySet();
         }
@@ -75,12 +74,12 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public String textValue(Object node) {
+    public String stringValue(Object node) {
         if (node instanceof String) {
             return (String) node;
         }
 
-        return adapter.textValue(node);
+        return adapter.stringValue(node);
     }
 
     @Override

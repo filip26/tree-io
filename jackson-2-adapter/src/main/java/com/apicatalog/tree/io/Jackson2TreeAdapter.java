@@ -95,7 +95,7 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public String textValue(Object node) {
+    public String stringValue(Object node) {
         return ((JsonNode) node).textValue();
     }
 

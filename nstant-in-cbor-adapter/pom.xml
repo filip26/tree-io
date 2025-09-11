@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apicatalog</groupId>
-    <artifactId>tree-io-jackson-2-adapter</artifactId>
+    <artifactId>tree-io-nstant-in-cbor</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/filip26/tree-io</url>
@@ -22,13 +22,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <argLine>-Dfile.encoding=UTF-8</argLine>
         
-        <jackson.version>2.20.0</jackson.version>
+        <cbor.version>0.9</cbor.version>
     
         <!--  test resources -->
         <junit.version>5.13.4</junit.version>
     </properties>
 
-    <name>Tree I/O - Jackson 2 Tree Model Adapter</name>
+    <name>Tree I/O - CBOR Adapter</name>
 
     <description>
     </description>
@@ -64,12 +64,12 @@
             <artifactId>tree-io-api</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-
- 	<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>${jackson.version}</version>
-  </dependency>    
+    
+        <dependency>
+            <groupId>co.nstant.in</groupId>
+            <artifactId>cbor</artifactId>
+            <version>${cbor.version}</version>
+        </dependency>
 
         <!--  Tests -->
         <dependency>

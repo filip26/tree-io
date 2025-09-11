@@ -52,7 +52,7 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public String textValue(Object node) {
+    public String stringValue(Object node) {
         return ((JsonString) node).getString();
     }
 
