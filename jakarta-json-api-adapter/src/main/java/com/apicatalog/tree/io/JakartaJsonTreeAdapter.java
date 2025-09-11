@@ -11,6 +11,7 @@ import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 public class JakartaJsonTreeAdapter implements TreeAdapter {
 
@@ -18,19 +19,19 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     public NodeType typeOf(Object node) {
         switch (((JsonValue) node).getValueType()) {
         case NULL:
-            return NodeType.Null;
+            return NodeType.NULL;
         case TRUE:
-            return NodeType.True;
+            return NodeType.TRUE;
         case FALSE:
-            return NodeType.False;
+            return NodeType.FALSE;
         case STRING:
-            return NodeType.String;
+            return NodeType.STRING;
         case NUMBER:
-            return NodeType.Number;
+            return NodeType.NUMBER;
         case ARRAY:
-            return NodeType.Collection;
+            return NodeType.COLLECTION;
         case OBJECT:
-            return NodeType.Map;
+            return NodeType.MAP;
         }
 
         throw new IllegalStateException();
@@ -54,11 +55,6 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     @Override
     public String stringValue(Object node) {
         return ((JsonString) node).getString();
-    }
-
-    @Override
-    public boolean isIntegral(Object node) {
-        return ((JsonNumber) node).isIntegral();
     }
 
     @Override
@@ -97,11 +93,60 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
             return Collections.emptyList();
         }
 
-        if (JsonValue.ValueType.ARRAY.equals(((JsonValue)node).getValueType())) {
-            return ((JsonArray)node);
+        if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
+            return ((JsonArray) node);
         }
 
         return Collections.singletonList(node);
 
+    }
+
+    @Override
+    public boolean isNull(Object node) {
+        return node == null
+                || ValueType.NULL.equals(((JsonValue) node).getValueType());
+    }
+
+    @Override
+    public boolean isBoolean(Object node) {
+        return node != null && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
+                || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
+    }
+
+    @Override
+    public boolean isMap(Object node) {
+        return node != null && ValueType.OBJECT.equals(((JsonValue) node).getValueType());
+    }
+
+    @Override
+    public boolean isEmptyMap(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isCollection(Object node) {
+        return node != null && ValueType.ARRAY.equals(((JsonValue) node).getValueType());
+    }
+
+    @Override
+    public boolean isEmptyCollection(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isString(Object node) {
+        return node != null && ValueType.STRING.equals(((JsonValue) node).getValueType());
+    }
+
+    @Override
+    public boolean isNumber(Object node) {
+        return node != null && ValueType.NUMBER.equals(((JsonValue) node).getValueType());
+    }
+
+    @Override
+    public boolean isIntegral(Object node) {
+        return isNumber(node) && ((JsonNumber) node).isIntegral();
     }
 }

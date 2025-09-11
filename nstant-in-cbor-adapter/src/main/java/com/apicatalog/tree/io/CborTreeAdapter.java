@@ -24,35 +24,35 @@ public class CborTreeAdapter implements TreeAdapter {
         switch (((DataItem) node).getMajorType()) {
 
         case MAP:
-            return NodeType.Map;
+            return NodeType.MAP;
 
         case ARRAY:
-            return NodeType.Collection;
+            return NodeType.COLLECTION;
 
         case BYTE_STRING:
-            return NodeType.Binary;
+            return NodeType.BINARY;
 
         case UNICODE_STRING:
-            return NodeType.String;
+            return NodeType.STRING;
 
         case UNSIGNED_INTEGER:
         case NEGATIVE_INTEGER:
-            return NodeType.Number;
+            return NodeType.NUMBER;
 
         case SPECIAL:
             if (SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())) {
                 if (SimpleValue.TRUE.equals(node)) {
-                    return NodeType.True;
+                    return NodeType.TRUE;
                 }
                 if (SimpleValue.FALSE.equals(node)) {
-                    return NodeType.False;
+                    return NodeType.FALSE;
                 }
                 if (SimpleValue.NULL.equals(node)) {
-                    return NodeType.Null;
+                    return NodeType.NULL;
                 }
 
             } else if (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())) {
-                return NodeType.Number;
+                return NodeType.NUMBER;
             }
 
         default:
@@ -80,12 +80,6 @@ public class CborTreeAdapter implements TreeAdapter {
     @Override
     public String stringValue(Object node) {
         return ((UnicodeString) node).getString();
-    }
-
-    @Override
-    public boolean isIntegral(Object node) {
-        return ((DataItem) node).getMajorType().equals(MajorType.UNSIGNED_INTEGER)
-                || ((DataItem) node).getMajorType().equals(MajorType.NEGATIVE_INTEGER);
     }
 
     @Override
@@ -129,5 +123,60 @@ public class CborTreeAdapter implements TreeAdapter {
         }
 
         return Collections.singletonList(node);
+    }
+
+    @Override
+    public boolean isNull(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isBoolean(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isMap(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isEmptyMap(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isCollection(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isEmptyCollection(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isString(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isNumber(Object node) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isIntegral(Object node) {
+        return node != null
+                && (((DataItem) node).getMajorType().equals(MajorType.UNSIGNED_INTEGER)
+                        || ((DataItem) node).getMajorType().equals(MajorType.NEGATIVE_INTEGER));
     }
 }

@@ -17,13 +17,13 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     @Override
     public NodeType typeOf(Object node) {
         if (node == null) {
-            return NodeType.Null;
+            return NodeType.NULL;
         }
         if (node instanceof String) {
-            return NodeType.String;
+            return NodeType.STRING;
         }
         if (node instanceof Boolean) {
-            return ((boolean) node) ? NodeType.True : NodeType.False;
+            return ((boolean) node) ? NodeType.TRUE : NodeType.FALSE;
         }
         if (node instanceof Integer
                 || node instanceof Long
@@ -31,16 +31,16 @@ class NativeTypeTreeAdapter implements TreeAdapter {
                 || node instanceof Double
                 || node instanceof BigDecimal
                 || node instanceof Float) {
-            return NodeType.Number;
+            return NodeType.NUMBER;
         }
         if (node instanceof Map) {
-            return NodeType.Map;
+            return NodeType.MAP;
         }
         if (node instanceof Collection) {
-            return NodeType.Collection;
+            return NodeType.COLLECTION;
         }
         if (node instanceof byte[]) {
-            return NodeType.Binary;
+            return NodeType.BINARY;
         }
 
         return adapter.typeOf(node);
@@ -80,14 +80,6 @@ class NativeTypeTreeAdapter implements TreeAdapter {
         }
 
         return adapter.stringValue(node);
-    }
-
-    @Override
-    public boolean isIntegral(Object node) {
-        return node instanceof Integer
-                || node instanceof Long
-                || node instanceof BigInteger
-                || adapter.isIntegral(node);
     }
 
     @Override
@@ -165,4 +157,73 @@ class NativeTypeTreeAdapter implements TreeAdapter {
         return adapter.asCollection(node);
     }
 
+    @Override
+    public boolean isNull(Object node) {
+        return node == null || adapter.isNull(node);
+    }
+
+    @Override
+    public boolean isBoolean(Object node) {
+        return node != null && (node instanceof Boolean || adapter.isBoolean(node));
+    }
+
+    @Override
+    public boolean isMap(Object node) {
+        return node != null && (node instanceof Map || adapter.isMap(node));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isEmptyMap(Object node) {
+        if (node == null) {
+            return false;
+        }
+        if (node instanceof Map) {
+            return ((Map)node).isEmpty();
+        }
+        return adapter.isEmptyMap(node);
+    }
+
+    @Override
+    public boolean isCollection(Object node) {
+        return node != null && (node instanceof Collection || adapter.isCollection(node));
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isEmptyCollection(Object node) {
+        if (node == null) {
+            return false;
+        }
+        if (node instanceof Collection) {
+            return ((Collection)node).isEmpty();
+        }
+        return adapter.isEmptyCollection(node);
+    }
+
+    @Override
+    public boolean isString(Object node) {
+        return node != null && (node instanceof String || adapter.isString(node));
+    }
+
+    @Override
+    public boolean isNumber(Object node) {
+        return node != null
+                && (node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || node instanceof Double
+                || node instanceof BigDecimal
+                || node instanceof Float
+                || adapter.isNumber(node));
+    }
+
+    @Override
+    public boolean isIntegral(Object node) {
+        return node != null 
+                && (node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || adapter.isIntegral(node));
+    }
 }

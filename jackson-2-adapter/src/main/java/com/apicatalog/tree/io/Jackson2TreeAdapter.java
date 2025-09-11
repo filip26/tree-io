@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Jackson2TreeAdapter implements TreeAdapter {
@@ -19,28 +20,28 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     @Override
     public NodeType typeOf(Object node) {
         if (node instanceof Map) {
-            return NodeType.Map;
+            return NodeType.MAP;
         }
         if (node instanceof Collection) {
-            return NodeType.Collection;
+            return NodeType.COLLECTION;
         }
-        
+
         switch (((JsonNode) node).getNodeType()) {
         case NULL:
         case MISSING:
-            return NodeType.Null;
+            return NodeType.NULL;
         case BOOLEAN:
-            return ((JsonNode) node).asBoolean() ? NodeType.True : NodeType.False;
+            return ((JsonNode) node).asBoolean() ? NodeType.TRUE : NodeType.FALSE;
         case STRING:
-            return NodeType.String;
+            return NodeType.STRING;
         case NUMBER:
-            return NodeType.Number;
+            return NodeType.NUMBER;
         case ARRAY:
-            return NodeType.Collection;
+            return NodeType.COLLECTION;
         case OBJECT:
-            return NodeType.Map;
+            return NodeType.MAP;
         case BINARY:
-            return NodeType.Binary;
+            return NodeType.BINARY;
         default:
         }
 
@@ -89,7 +90,7 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     @Override
     public Collection<Object> items(Object node) {
         if (node instanceof Collection) {
-            return (Collection)node;
+            return (Collection) node;
         }
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
@@ -97,11 +98,6 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     @Override
     public String stringValue(Object node) {
         return ((JsonNode) node).textValue();
-    }
-
-    @Override
-    public boolean isIntegral(Object node) {
-        return ((JsonNode) node).isIntegralNumber();
     }
 
     @Override
@@ -145,11 +141,62 @@ public class Jackson2TreeAdapter implements TreeAdapter {
             return Collections.emptySet();
         }
         if (node instanceof Collection) {
-            return (Collection)node;
+            return (Collection) node;
         }
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream().collect(Collectors.toList());
         }
         return Collections.singleton(node);
+    }
+
+    @Override
+    public boolean isNull(Object node) {
+        return node == null
+                || JsonNodeType.NULL.equals(((JsonNode) node).getNodeType())
+                || JsonNodeType.MISSING.equals(((JsonNode) node).getNodeType());
+    }
+
+    @Override
+    public boolean isBoolean(Object node) {
+        return node != null && JsonNodeType.BOOLEAN.equals(((JsonNode) node).getNodeType());
+    }
+
+    @Override
+    public boolean isMap(Object node) {
+        return node != null
+                && (node instanceof Map
+                        || JsonNodeType.OBJECT.equals(((JsonNode) node).getNodeType()));
+    }
+
+    @Override
+    public boolean isEmptyMap(Object node) {
+        return isMap(node) && ((ObjectNode) node).isEmpty();
+    }
+
+    @Override
+    public boolean isCollection(Object node) {
+        return node != null
+                && (node instanceof Collection
+                        || JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType()));
+    }
+
+    @Override
+    public boolean isEmptyCollection(Object node) {
+        return isCollection(node) && ((ArrayNode) node).isEmpty();
+    }
+
+    @Override
+    public boolean isString(Object node) {
+        return node != null && JsonNodeType.STRING.equals(((JsonNode) node).getNodeType());
+    }
+
+    @Override
+    public boolean isNumber(Object node) {
+        return node != null && JsonNodeType.NUMBER.equals(((JsonNode) node).getNodeType());
+    }
+
+    @Override
+    public boolean isIntegral(Object node) {
+        return isNumber(node) && ((JsonNode) node).isIntegralNumber();
     }
 }
