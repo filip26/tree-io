@@ -80,7 +80,7 @@ public interface TreeAdapter {
      * @return string representation
      * @throws IllegalArgumentException if the node is not of type String
      */
-    String asString(Object node);
+    String textValue(Object node);
 
     // --- Number operations ---
 
@@ -102,7 +102,7 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not a number
      *                                  or cannot be converted to Integer
      */
-    int asInteger(Object node);
+    int intValue(Object node);
 
     /**
      * Returns the long value of the number node.
@@ -112,7 +112,7 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not a number
      *                                  or cannot be converted to Long
      */
-    long asLong(Object node);
+    long longValue(Object node);
 
     /**
      * Returns the BigInteger value of the number node.
@@ -122,7 +122,7 @@ public interface TreeAdapter {
      * @throws IllegalArgumentException if the node is not a number
      *                                  or cannot be converted to BigInteger
      */
-    BigInteger asBigInteger(Object node);
+    BigInteger bigIntegerValue(Object node);
 
     /**
      * Returns the double value of the number node.
@@ -131,7 +131,7 @@ public interface TreeAdapter {
      * @return double value
      * @throws IllegalArgumentException if the node is not a number
      */
-    double asDouble(Object node);
+    double doubleValue(Object node);
 
     /**
      * Returns the BigDecimal value of the number node.
@@ -140,7 +140,7 @@ public interface TreeAdapter {
      * @return BigDecimal value
      * @throws IllegalArgumentException if the node is not a number
      */
-    BigDecimal asBigDecimal(Object node);
+    BigDecimal decimalValue(Object node);
 
     // --- Binary operations ---
 

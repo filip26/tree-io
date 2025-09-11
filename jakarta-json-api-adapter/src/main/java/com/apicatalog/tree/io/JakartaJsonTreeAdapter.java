@@ -51,7 +51,7 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public String asString(Object node) {
+    public String textValue(Object node) {
         return ((JsonString) node).getString();
     }
 
@@ -61,27 +61,27 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public int asInteger(Object node) {
+    public int intValue(Object node) {
         return ((JsonNumber) node).intValueExact();
     }
 
     @Override
-    public long asLong(Object node) {
+    public long longValue(Object node) {
         return ((JsonNumber) node).longValueExact();
     }
 
     @Override
-    public BigInteger asBigInteger(Object node) {
+    public BigInteger bigIntegerValue(Object node) {
         return ((JsonNumber) node).bigIntegerValueExact();
     }
 
     @Override
-    public double asDouble(Object node) {
+    public double doubleValue(Object node) {
         return ((JsonNumber) node).doubleValue();
     }
 
     @Override
-    public BigDecimal asBigDecimal(Object node) {
+    public BigDecimal decimalValue(Object node) {
         return ((JsonNumber) node).bigDecimalValue();
     }
 

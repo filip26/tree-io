@@ -22,6 +22,7 @@
     <modules>
         <module>api</module>
         <module>jakarta-json-api-adapter</module>
+        <module>jackson-2-adapter</module>
     </modules>
 
 </project>

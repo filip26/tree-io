@@ -74,12 +74,12 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public String asString(Object node) {
+    public String textValue(Object node) {
         if (node instanceof String) {
             return (String) node;
         }
 
-        return adapter.asString(node);
+        return adapter.textValue(node);
     }
 
     @Override
@@ -91,26 +91,26 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public int asInteger(Object node) {
+    public int intValue(Object node) {
         if (node instanceof Integer) {
             return (Integer) node;
         }
-        return adapter.asInteger(node);
+        return adapter.intValue(node);
     }
 
     @Override
-    public long asLong(Object node) {
+    public long longValue(Object node) {
         if (node instanceof Long) {
             return (Long) node;
         }
         if (node instanceof Integer) {
             return (Integer) node;
         }
-        return adapter.asLong(node);
+        return adapter.longValue(node);
     }
 
     @Override
-    public BigInteger asBigInteger(Object node) {
+    public BigInteger bigIntegerValue(Object node) {
         if (node instanceof Long) {
             return BigInteger.valueOf((Long) node);
         }
@@ -120,29 +120,29 @@ class NativeTypeTreeAdapter implements TreeAdapter {
         if (node instanceof BigInteger) {
             return (BigInteger) node;
         }
-        return adapter.asBigInteger(node);
+        return adapter.bigIntegerValue(node);
     }
 
     @Override
-    public double asDouble(Object node) {
+    public double doubleValue(Object node) {
         if (node instanceof Double) {
             return (Double) node;
         }
         if (node instanceof Float) {
             return (Float) node;
         }
-        return adapter.asDouble(node);
+        return adapter.doubleValue(node);
     }
 
     @Override
-    public BigDecimal asBigDecimal(Object node) {
+    public BigDecimal decimalValue(Object node) {
         if (node instanceof Double) {
             return BigDecimal.valueOf((Double) node);
         }
         if (node instanceof Float) {
             return BigDecimal.valueOf((Float) node);
         }
-        return adapter.asBigDecimal(node);
+        return adapter.decimalValue(node);
     }
 
     @Override
