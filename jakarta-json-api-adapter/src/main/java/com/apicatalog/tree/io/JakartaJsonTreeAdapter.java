@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import jakarta.json.JsonArray;
@@ -56,8 +57,8 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public boolean isDecimal(Object node) {
-        return !((JsonNumber) node).isIntegral();
+    public boolean isIntegral(Object node) {
+        return ((JsonNumber) node).isIntegral();
     }
 
     @Override
@@ -86,7 +87,21 @@ public class JakartaJsonTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public byte[] asByteArray(Object node) {
+    public byte[] binaryValue(Object node) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<? extends Object> asCollection(Object node) {
+        if (node == null) {
+            return Collections.emptyList();
+        }
+
+        if (JsonValue.ValueType.ARRAY.equals(((JsonValue)node).getValueType())) {
+            return ((JsonArray)node);
+        }
+
+        return Collections.singletonList(node);
+
     }
 }

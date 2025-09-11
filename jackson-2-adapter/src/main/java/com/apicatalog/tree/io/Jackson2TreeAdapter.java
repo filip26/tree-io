@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -99,8 +100,8 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public boolean isDecimal(Object node) {
-        return !((JsonNode) node).isIntegralNumber();
+    public boolean isIntegral(Object node) {
+        return ((JsonNode) node).isIntegralNumber();
     }
 
     @Override
@@ -129,11 +130,26 @@ public class Jackson2TreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public byte[] asByteArray(Object node) {
+    public byte[] binaryValue(Object node) {
         try {
             return ((JsonNode) node).binaryValue();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Collection<Object> asCollection(Object node) {
+        if (node == null) {
+            return Collections.emptySet();
+        }
+        if (node instanceof Collection) {
+            return (Collection)node;
+        }
+        if (node instanceof ArrayNode) {
+            return ((ArrayNode) node).valueStream().collect(Collectors.toList());
+        }
+        return Collections.singleton(node);
     }
 }

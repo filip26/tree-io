@@ -11,8 +11,9 @@ import java.util.Set;
  * <p>
  * Implementations can work with any tree representation (JSON, YAML, CBOR,
  * etc.) and any underlying library (Jackson, Gson, Jakarta, etc.). Methods
- * throw {@link IllegalArgumentException} if the node is not of the expected
- * type.
+ * throw {@link IllegalArgumentException}, {@link ClassCastException},
+ * {@link NullPointerException}, {@link IllegalStateException} if the node is
+ * not of the expected type or processing error.
  */
 public interface TreeAdapter {
 
@@ -35,7 +36,6 @@ public interface TreeAdapter {
      *
      * @param node the node to inspect
      * @return the {@link NodeType} of the node
-     * @throws IllegalArgumentException if the node is null or not recognized
      */
     NodeType typeOf(Object node);
 
@@ -46,7 +46,6 @@ public interface TreeAdapter {
      *
      * @param node the map node
      * @return collection of child nodes
-     * @throws IllegalArgumentException if the node is not of type Map
      */
     Set<? extends Object> properties(Object node);
 
@@ -56,7 +55,6 @@ public interface TreeAdapter {
      * @param property the property key
      * @param node     the map node containing the property
      * @return the child node associated with the property key
-     * @throws IllegalArgumentException if the node is not of type Map
      */
     Object node(Object property, Object node);
 
@@ -67,7 +65,6 @@ public interface TreeAdapter {
      *
      * @param node the collection node
      * @return collection of child nodes
-     * @throws IllegalArgumentException if the node is not of type Collection
      */
     Collection<? extends Object> items(Object node);
 
@@ -78,7 +75,6 @@ public interface TreeAdapter {
      *
      * @param node the string node
      * @return string representation
-     * @throws IllegalArgumentException if the node is not of type String
      */
     String textValue(Object node);
 
@@ -90,17 +86,14 @@ public interface TreeAdapter {
      *
      * @param node the number node
      * @return true if node is decimal
-     * @throws IllegalArgumentException if the node is not of type Number
      */
-    boolean isDecimal(Object node);
+    boolean isIntegral(Object node);
 
     /**
      * Returns the integer value of the number node.
      *
      * @param node the number node
      * @return integer value
-     * @throws IllegalArgumentException if the node is not a number
-     *                                  or cannot be converted to Integer
      */
     int intValue(Object node);
 
@@ -109,8 +102,6 @@ public interface TreeAdapter {
      *
      * @param node the number node
      * @return long value
-     * @throws IllegalArgumentException if the node is not a number
-     *                                  or cannot be converted to Long
      */
     long longValue(Object node);
 
@@ -119,8 +110,6 @@ public interface TreeAdapter {
      *
      * @param node the number node
      * @return BigInteger value
-     * @throws IllegalArgumentException if the node is not a number
-     *                                  or cannot be converted to BigInteger
      */
     BigInteger bigIntegerValue(Object node);
 
@@ -129,7 +118,6 @@ public interface TreeAdapter {
      *
      * @param node the number node
      * @return double value
-     * @throws IllegalArgumentException if the node is not a number
      */
     double doubleValue(Object node);
 
@@ -138,7 +126,6 @@ public interface TreeAdapter {
      *
      * @param node the number node
      * @return BigDecimal value
-     * @throws IllegalArgumentException if the node is not a number
      */
     BigDecimal decimalValue(Object node);
 
@@ -149,7 +136,17 @@ public interface TreeAdapter {
      *
      * @param node the binary node
      * @return byte array content
-     * @throws IllegalArgumentException if the node is not of type Binary
      */
-    byte[] asByteArray(Object node);
+    byte[] binaryValue(Object node);
+
+    /**
+     * If the node is a collection then returns the node, converts the node into an
+     * empty collection in a case of null or single item collection.
+     * 
+     * Allows to iterate over elements without checking a node type.
+     * 
+     * @param node
+     * @return
+     */
+    Collection<? extends Object> asCollection(Object node);
 }

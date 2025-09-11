@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,11 +84,11 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public boolean isDecimal(Object node) {
-        return node instanceof Double
-                || node instanceof Float
-                || node instanceof BigDecimal
-                || adapter.isDecimal(node);
+    public boolean isIntegral(Object node) {
+        return node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || adapter.isIntegral(node);
     }
 
     @Override
@@ -146,11 +147,23 @@ class NativeTypeTreeAdapter implements TreeAdapter {
     }
 
     @Override
-    public byte[] asByteArray(Object node) {
+    public byte[] binaryValue(Object node) {
         if (node instanceof byte[]) {
-            return (byte[])node;
+            return (byte[]) node;
         }
-        return adapter.asByteArray(node);
+        return adapter.binaryValue(node);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Collection<? extends Object> asCollection(Object node) {
+        if (node == null) {
+            return Collections.emptyList();
+        }
+        if (node instanceof Collection) {
+            return (Collection) node;
+        }
+        return adapter.asCollection(node);
     }
 
 }
