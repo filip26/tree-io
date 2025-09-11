@@ -25,7 +25,7 @@
         <junit.version>5.13.4</junit.version>
     </properties>
 
-    <name>Tree I/O</name>
+    <name>Tree I/O - API</name>
 
     <description>
     </description>
