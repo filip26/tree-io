@@ -1,175 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.apicatalog</groupId>
-    <artifactId>oxygen-tree-io</artifactId>
+    <artifactId>tree-io</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <url>https://github.com/filip26/oxygen-tree-io</url>
-    <scm>
-        <connection>scm:git:git://github.com/filip26/oxygen-tree-io.git</connection>
-        <developerConnection>
-            scm:git:git://github.com/filip26/oxygen-tree-io.git</developerConnection>
-        <url>https://github.com/filip26/oxygen-tree-io/tree/main</url>
-    </scm>
-    <properties>
-        <maven.compiler.target>8</maven.compiler.target>
-        <maven.compiler.source>8</maven.compiler.source>
+    <packaging>pom</packaging> 
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <argLine>-Dfile.encoding=UTF-8</argLine>
-        <!--  test resources -->
-        <junit.version>5.13.4</junit.version>
-    </properties>
+    <modules>
+        <module>api</module>
+        <module>jakarta-adapter</module>
+    </modules>
 
-    <name>Oxygen Tree I/O</name>
-
-    <description>
-    </description>
-
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/filip26/oxygen-tree-io/issues</url>
-    </issueManagement>
-
-    <developers>
-        <developer>
-            <id>filip26</id>
-            <name>Filip Kolarik</name>
-            <email>filip26@gmail.com</email>
-            <roles>
-                <role>author</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <inceptionYear>2025</inceptionYear>
-
-    <dependencies>
-        <!--  Tests -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.3</version>
-                <configuration>
-                    <doclint>all,-missing</doclint>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.13</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.3</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.5.3</version>
-            </plugin>
-        </plugins>
-    </build>
-    <profiles>
-        <profile>
-            <id>maven-central</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
-                        <executions>
-                            <execution>
-                              <id>sign-artifacts</id>
-                              <phase>verify</phase>
-                              <goals>
-                                  <goal>sign</goal>
-                              </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-               <plugin>
-                  <groupId>org.sonatype.central</groupId>
-                  <artifactId>central-publishing-maven-plugin</artifactId>
-                  <version>0.8.0</version>
-                <extensions>true</extensions>
-                  <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                  </configuration>
-                </plugin>                    
-            </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
