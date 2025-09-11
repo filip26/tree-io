@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Interface providing a uniform abstraction for reading tree-like data
@@ -47,7 +48,7 @@ public interface TreeAdapter {
      * @return collection of child nodes
      * @throws IllegalArgumentException if the node is not of type Map
      */
-    Collection<Object> properties(Object node);
+    Set<? extends Object> properties(Object node);
 
     /**
      * Returns the value of a property from a map node.
@@ -68,7 +69,7 @@ public interface TreeAdapter {
      * @return collection of child nodes
      * @throws IllegalArgumentException if the node is not of type Collection
      */
-    Collection<Object> items(Object node);
+    Collection<? extends Object> items(Object node);
 
     // --- String operations ---
 

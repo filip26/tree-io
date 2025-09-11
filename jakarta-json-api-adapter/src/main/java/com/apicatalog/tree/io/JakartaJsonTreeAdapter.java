@@ -3,79 +3,90 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Set;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 
 public class JakartaJsonTreeAdapter implements TreeAdapter {
 
     @Override
     public NodeType getNodeType(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        switch (((JsonValue) node).getValueType()) {
+        case NULL:
+            return NodeType.Null;
+        case TRUE:
+            return NodeType.True;
+        case FALSE:
+            return NodeType.False;
+        case STRING:
+            return NodeType.String;
+        case NUMBER:
+            return NodeType.Number;
+        case ARRAY:
+            return NodeType.Collection;
+        case OBJECT:
+            return NodeType.Map;
+        }
+
+        throw new IllegalStateException();
     }
 
     @Override
-    public Collection<Object> properties(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+    public Set<String> properties(Object node) {
+        return ((JsonObject) node).keySet();
     }
 
     @Override
     public Object node(Object property, Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonObject) node).get(property);
     }
 
     @Override
-    public Collection<Object> items(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+    public Collection<? extends Object> items(Object node) {
+        return (JsonArray) node;
     }
 
     @Override
     public String asString(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonString) node).getString();
     }
 
     @Override
     public boolean isDecimal(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return !((JsonNumber) node).isIntegral();
     }
 
     @Override
     public Integer asInteger(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNumber) node).intValueExact();
     }
 
     @Override
     public Long asLong(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNumber) node).longValueExact();
     }
 
     @Override
     public BigInteger asBigInteger(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNumber) node).bigIntegerValueExact();
     }
 
     @Override
     public Double asDouble(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNumber) node).doubleValue();
     }
 
     @Override
     public BigDecimal asBigDecimal(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNumber) node).bigDecimalValue();
     }
 
     @Override
     public byte[] asByteArray(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
-
 }
