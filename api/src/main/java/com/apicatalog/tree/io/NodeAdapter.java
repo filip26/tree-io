@@ -38,10 +38,10 @@ public interface NodeAdapter {
     boolean isMap(Object node);
 
     /**
-     * Returns the collection of property values for a map node.
+     * Returns the collection of property names for a map node.
      *
      * @param node the map node
-     * @return collection of child nodes
+     * @return collection of property names
      */
     Collection<? extends Object> properties(Object node);
 
@@ -52,7 +52,7 @@ public interface NodeAdapter {
      * @param node     the map node containing the property
      * @return the child node associated with the property key
      */
-    Object node(Object property, Object node);
+    Object propertyValue(Object property, Object node);
 
     // --- Collection operations ---
     boolean isCollection(Object node);

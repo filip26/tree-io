@@ -5,11 +5,15 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
@@ -50,7 +54,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Object node(Object property, Object node) {
+    public Object propertyValue(Object property, Object node) {
         return ((JsonObject) node).get(property);
     }
 
@@ -175,5 +179,67 @@ public class JakartaAdapter implements NodeAdapter {
             return ((JsonArray) node).size();
         }
         throw new ClassCastException();
+    }
+
+    public static final JsonValue asJson(Object value, NodeAdapter adapter) {
+        if (value == null) {
+            return JsonValue.NULL;
+        }
+
+        final NodeType dataType = adapter.typeOf(value);
+
+        switch (dataType) {
+
+        case STRING:
+            return Json.createValue(adapter.stringValue(value));
+
+        case NUMBER:
+            return adapter.isIntegral(value)
+                    ? Json.createValue(adapter.bigIntegerValue(value))
+                    : Json.createValue(adapter.decimalValue(value));
+
+        case TRUE:
+            return JsonValue.TRUE;
+
+        case FALSE:
+            return JsonValue.FALSE;
+
+        case COLLECTION:
+            if (adapter.isEmpty(value)) {
+                return JsonValue.EMPTY_JSON_ARRAY;
+            }
+
+            final JsonArrayBuilder array = Json.createArrayBuilder();
+
+            adapter.items(value)
+                    .stream()
+                    .map(item -> asJson(item, adapter))
+                    .forEach(array::add);
+
+            return array.build();
+
+        case MAP:
+            if (adapter.isEmpty(value)) {
+                return JsonValue.EMPTY_JSON_OBJECT;
+            }
+
+            final JsonObjectBuilder map = Json.createObjectBuilder();
+
+            for (final String key : adapter.properties(value)
+                    .stream()
+                    .map(String.class::cast)
+                    .collect(Collectors.toSet())) {
+
+                Object entry = adapter.propertyValue(key, value);
+                map.add(key, asJson(entry, adapter));
+            }
+
+            return map.build();
+
+        default:
+            break;
+        }
+
+        throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
     }
 }

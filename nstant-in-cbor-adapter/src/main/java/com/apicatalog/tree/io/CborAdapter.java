@@ -75,7 +75,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public DataItem node(Object property, Object node) {
+    public DataItem propertyValue(Object property, Object node) {
         return ((Map) node).get((DataItem) property);
     }
 

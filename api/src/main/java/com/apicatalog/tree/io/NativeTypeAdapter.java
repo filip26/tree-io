@@ -59,11 +59,11 @@ class NativeTypeAdapter implements NodeAdapter {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Object node(Object property, Object node) {
+    public Object propertyValue(Object property, Object node) {
         if (node instanceof Map) {
             return ((Map) node).get(property);
         }
-        return adapter.node(property, node);
+        return adapter.propertyValue(property, node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

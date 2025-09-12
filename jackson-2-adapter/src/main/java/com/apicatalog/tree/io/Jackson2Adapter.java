@@ -69,7 +69,7 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes" })
     @Override
-    public Object node(Object property, Object node) {
+    public Object propertyValue(Object property, Object node) {
 
         if (property instanceof String) {
             throw new IllegalArgumentException();
