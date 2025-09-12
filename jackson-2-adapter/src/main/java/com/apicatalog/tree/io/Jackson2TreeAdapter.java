@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -149,6 +150,22 @@ public class Jackson2TreeAdapter implements NodeAdapter {
         return Collections.singleton(node);
     }
 
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
+        if (node instanceof Collection) {
+            return ((Collection) node).stream();
+        }
+        if (node instanceof ArrayNode) {
+            return ((ArrayNode) node).valueStream();
+        }
+        return Stream.of(node);
+    }
+    
     @Override
     public boolean isNull(Object node) {
         return node == null

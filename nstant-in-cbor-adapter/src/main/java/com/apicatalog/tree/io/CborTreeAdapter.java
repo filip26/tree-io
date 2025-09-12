@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.DataItem;
@@ -117,14 +118,23 @@ public class CborTreeAdapter implements NodeAdapter {
         if (node == null) {
             return Collections.emptyList();
         }
-
         if (MajorType.ARRAY.equals(((DataItem) node).getMajorType())) {
             return ((Array) node).getDataItems();
         }
-
         return Collections.singletonList(node);
     }
 
+    @Override
+    public Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
+        if (MajorType.ARRAY.equals(((DataItem) node).getMajorType())) {
+            return ((Array) node).getDataItems().stream();
+        }
+        return Stream.of(node);
+    }
+    
     @Override
     public boolean isNull(Object node) {
         // TODO Auto-generated method stub

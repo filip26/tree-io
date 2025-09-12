@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * Interface providing a uniform abstraction for reading tree-like data
@@ -146,4 +147,6 @@ public interface NodeAdapter {
      * @return
      */
     Collection<? extends Object> asCollection(Object node);
+
+    Stream<? extends Object> asStream(Object node);
 }

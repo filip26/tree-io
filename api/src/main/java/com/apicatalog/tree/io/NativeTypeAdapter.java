@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class NativeTypeAdapter implements NodeAdapter {
 
@@ -154,7 +156,25 @@ class NativeTypeAdapter implements NodeAdapter {
         if (node instanceof Collection) {
             return (Collection) node;
         }
+        if (node instanceof Stream) {
+            return ((Stream<Object>) node).collect(Collectors.toList());
+        }        
         return adapter.asCollection(node);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    public Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
+        if (node instanceof Stream) {
+            return (Stream) node;
+        }
+        if (node instanceof Collection) {
+            return ((Collection) node).stream();
+        }
+        return adapter.asStream(node);
     }
 
     @Override
@@ -179,7 +199,7 @@ class NativeTypeAdapter implements NodeAdapter {
             return false;
         }
         if (node instanceof Map) {
-            return ((Map)node).isEmpty();
+            return ((Map) node).isEmpty();
         }
         return adapter.isEmptyMap(node);
     }
@@ -196,7 +216,7 @@ class NativeTypeAdapter implements NodeAdapter {
             return false;
         }
         if (node instanceof Collection) {
-            return ((Collection)node).isEmpty();
+            return ((Collection) node).isEmpty();
         }
         return adapter.isEmptyCollection(node);
     }
@@ -210,20 +230,20 @@ class NativeTypeAdapter implements NodeAdapter {
     public boolean isNumber(Object node) {
         return node != null
                 && (node instanceof Integer
-                || node instanceof Long
-                || node instanceof BigInteger
-                || node instanceof Double
-                || node instanceof BigDecimal
-                || node instanceof Float
-                || adapter.isNumber(node));
+                        || node instanceof Long
+                        || node instanceof BigInteger
+                        || node instanceof Double
+                        || node instanceof BigDecimal
+                        || node instanceof Float
+                        || adapter.isNumber(node));
     }
 
     @Override
     public boolean isIntegral(Object node) {
-        return node != null 
+        return node != null
                 && (node instanceof Integer
-                || node instanceof Long
-                || node instanceof BigInteger
-                || adapter.isIntegral(node));
+                        || node instanceof Long
+                        || node instanceof BigInteger
+                        || adapter.isIntegral(node));
     }
 }

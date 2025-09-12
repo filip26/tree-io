@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
@@ -96,9 +97,19 @@ public class JakartaJsonTreeAdapter implements NodeAdapter {
         if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
             return ((JsonArray) node);
         }
-
         return Collections.singletonList(node);
+    }
+    
+    @Override
+    public Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
 
+        if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
+            return ((JsonArray) node).stream();
+        }
+        return Stream.of(node);
     }
 
     @Override
