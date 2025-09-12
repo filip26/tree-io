@@ -15,7 +15,7 @@ class NativeTypeAdapter implements NodeAdapter {
     NativeTypeAdapter(final NodeAdapter adapter) {
         this.adapter = adapter;
     }
-    
+
     @Override
     public NodeType typeOf(Object node) {
         if (node == null) {
@@ -59,20 +59,29 @@ class NativeTypeAdapter implements NodeAdapter {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Object propertyValue(Object property, Object node) {
+    public Object property(Object property, Object node) {
         if (node instanceof Map) {
             return ((Map) node).get(property);
         }
-        return adapter.propertyValue(property, node);
+        return adapter.property(property, node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Collection<? extends Object> items(Object node) {
-        if (node instanceof Collection) {
-            return ((Collection) node);
+    public Iterable<? extends Object> iterable(Object node) {
+        if (node instanceof Iterable) {
+            return ((Iterable) node);
         }
-        return adapter.items(node);
+        return adapter.iterable(node);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<? extends Object> stream(Object node) {
+        if (node instanceof Stream) {
+            return ((Stream) node);
+        }
+        return adapter.stream(node);
     }
 
     @Override
@@ -149,7 +158,7 @@ class NativeTypeAdapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Collection<? extends Object> asCollection(Object node) {
+    public Iterable<? extends Object> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
@@ -158,8 +167,8 @@ class NativeTypeAdapter implements NodeAdapter {
         }
         if (node instanceof Stream) {
             return ((Stream<Object>) node).collect(Collectors.toList());
-        }        
-        return adapter.asCollection(node);
+        }
+        return adapter.asIterable(node);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -222,7 +231,7 @@ class NativeTypeAdapter implements NodeAdapter {
                         || node instanceof BigInteger
                         || adapter.isIntegral(node));
     }
-    
+
     @SuppressWarnings("rawtypes")
     @Override
     public boolean isEmpty(Object node) {
@@ -237,7 +246,7 @@ class NativeTypeAdapter implements NodeAdapter {
         }
         return adapter.isEmpty(node);
     }
-    
+
     @SuppressWarnings("rawtypes")
     @Override
     public int size(Object node) {

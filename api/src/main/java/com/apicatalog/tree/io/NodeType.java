@@ -22,4 +22,8 @@ public enum NodeType {
     public boolean isScalar() {
         return scalar;
     }
+
+    public boolean isStructure() {
+        return !scalar;
+    }
 }

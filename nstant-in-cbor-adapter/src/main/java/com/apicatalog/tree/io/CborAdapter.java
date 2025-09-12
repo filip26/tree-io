@@ -75,7 +75,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public DataItem propertyValue(Object property, Object node) {
+    public DataItem property(Object property, Object node) {
         if (property instanceof DataItem) {
             return ((Map) node).get((DataItem) property);
         }
@@ -86,8 +86,13 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public List<DataItem> items(Object node) {
+    public List<DataItem> iterable(Object node) {
         return ((Array) node).getDataItems();
+    }
+
+    @Override
+    public Stream<DataItem> stream(Object node) {
+        return ((Array) node).getDataItems().stream();
     }
 
     @Override
@@ -126,7 +131,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<? extends Object> asCollection(Object node) {
+    public Collection<? extends Object> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }

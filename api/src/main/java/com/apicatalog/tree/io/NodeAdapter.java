@@ -56,7 +56,7 @@ public interface NodeAdapter {
      * @param node     the map node containing the property
      * @return the child node associated with the property key
      */
-    Object propertyValue(Object property, Object node);
+    Object property(Object property, Object node);
 
     // --- Collection operations ---
     boolean isCollection(Object node);
@@ -67,7 +67,9 @@ public interface NodeAdapter {
      * @param node the collection node
      * @return collection of child nodes
      */
-    Collection<? extends Object> items(Object node);
+    Iterable<? extends Object> iterable(Object node);
+    
+    Stream<? extends Object> stream(Object node);
 
     // --- String operations ---
     boolean isString(Object node);
@@ -151,7 +153,7 @@ public interface NodeAdapter {
      * @param node
      * @return
      */
-    Collection<? extends Object> asCollection(Object node);
+    Iterable<? extends Object> asIterable(Object node);
 
     Stream<? extends Object> asStream(Object node);
 }

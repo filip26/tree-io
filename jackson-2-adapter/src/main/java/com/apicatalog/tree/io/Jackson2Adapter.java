@@ -69,7 +69,7 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes" })
     @Override
-    public Object propertyValue(Object property, Object node) {
+    public Object property(Object property, Object node) {
 
         if (property instanceof String) {
             throw new IllegalArgumentException();
@@ -95,11 +95,26 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Collection<Object> items(Object node) {
+    public Collection<Object> iterable(Object node) {
         if (node instanceof Collection) {
             return (Collection) node;
         }
+        if (node instanceof Stream) {
+            return ((Stream<Object>) node).collect(Collectors.toList());
+        }
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<? extends Object> stream(Object node) {
+        if (node instanceof Stream) {
+            return (Stream<Object>) node;
+        }
+        if (node instanceof Collection) {
+            return ((Collection) node).stream();
+        }
+        return ((ArrayNode) node).valueStream();
     }
 
     @Override
@@ -143,7 +158,7 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Collection<Object> asCollection(Object node) {
+    public Collection<Object> asIterable(Object node) {
         if (node == null) {
             return Collections.emptySet();
         }

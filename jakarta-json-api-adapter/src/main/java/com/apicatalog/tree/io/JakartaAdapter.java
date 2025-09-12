@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.json.Json;
@@ -23,7 +22,7 @@ public class JakartaAdapter implements NodeAdapter {
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
     public static final JakartaAdapter instance() {
-        return  INSTANCE;
+        return INSTANCE;
     }
 
     @Override
@@ -54,13 +53,18 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Object propertyValue(Object property, Object node) {
+    public Object property(Object property, Object node) {
         return ((JsonObject) node).get(property);
     }
 
     @Override
-    public Collection<? extends Object> items(Object node) {
+    public Collection<? extends Object> iterable(Object node) {
         return (JsonArray) node;
+    }
+
+    @Override
+    public Stream<? extends Object> stream(Object node) {
+        return ((JsonArray) node).stream();
     }
 
     @Override
@@ -99,7 +103,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<? extends Object> asCollection(Object node) {
+    public Collection<? extends Object> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
@@ -182,10 +186,9 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     public static final JsonValue adapt(Object value, NodeAdapter adapter) {
-        
+
         if (value == null) {
             return null;
-//            return JsonValue.NULL;
         }
 
         final NodeType dataType = adapter.typeOf(value);
@@ -213,8 +216,7 @@ public class JakartaAdapter implements NodeAdapter {
 
             final JsonArrayBuilder array = Json.createArrayBuilder();
 
-            adapter.items(value)
-                    .stream()
+            adapter.stream(value)
                     .map(item -> adapt(item, adapter))
                     .forEach(array::add);
 
@@ -227,20 +229,20 @@ public class JakartaAdapter implements NodeAdapter {
 
             final JsonObjectBuilder map = Json.createObjectBuilder();
 
-            for (final String key : adapter.properties(value)
+            adapter.properties(value)
                     .stream()
-                    .map(String.class::cast)
-                    .collect(Collectors.toSet())) {
+                    .map(adapter::stringValue)
+                    .forEach(key -> {
+                        Object entry = adapter.property(key, value);
+                        map.add(key, adapt(entry, adapter));
 
-                Object entry = adapter.propertyValue(key, value);
-                map.add(key, adapt(entry, adapter));
-            }
+                    });
 
             return map.build();
 
         case NULL:
             return JsonValue.NULL;
-            
+
         default:
             break;
         }
