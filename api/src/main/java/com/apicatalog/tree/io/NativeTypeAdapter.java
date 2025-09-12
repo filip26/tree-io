@@ -15,7 +15,7 @@ class NativeTypeAdapter implements NodeAdapter {
     NativeTypeAdapter(final NodeAdapter adapter) {
         this.adapter = adapter;
     }
-
+    
     @Override
     public NodeType typeOf(Object node) {
         if (node == null) {

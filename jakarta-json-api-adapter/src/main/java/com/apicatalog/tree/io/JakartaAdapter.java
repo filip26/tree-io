@@ -23,7 +23,7 @@ public class JakartaAdapter implements NodeAdapter {
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
     public static final JakartaAdapter instance() {
-        return INSTANCE;
+        return  INSTANCE;
     }
 
     @Override
@@ -181,9 +181,11 @@ public class JakartaAdapter implements NodeAdapter {
         throw new ClassCastException();
     }
 
-    public static final JsonValue asJson(Object value, NodeAdapter adapter) {
+    public static final JsonValue adapt(Object value, NodeAdapter adapter) {
+        
         if (value == null) {
-            return JsonValue.NULL;
+            return null;
+//            return JsonValue.NULL;
         }
 
         final NodeType dataType = adapter.typeOf(value);
@@ -213,7 +215,7 @@ public class JakartaAdapter implements NodeAdapter {
 
             adapter.items(value)
                     .stream()
-                    .map(item -> asJson(item, adapter))
+                    .map(item -> adapt(item, adapter))
                     .forEach(array::add);
 
             return array.build();
@@ -231,11 +233,14 @@ public class JakartaAdapter implements NodeAdapter {
                     .collect(Collectors.toSet())) {
 
                 Object entry = adapter.propertyValue(key, value);
-                map.add(key, asJson(entry, adapter));
+                map.add(key, adapt(entry, adapter));
             }
 
             return map.build();
 
+        case NULL:
+            return JsonValue.NULL;
+            
         default:
             break;
         }

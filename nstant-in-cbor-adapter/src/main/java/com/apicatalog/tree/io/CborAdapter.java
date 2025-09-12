@@ -76,7 +76,13 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public DataItem propertyValue(Object property, Object node) {
-        return ((Map) node).get((DataItem) property);
+        if (property instanceof DataItem) {
+            return ((Map) node).get((DataItem) property);
+        }
+        if (property instanceof String) {
+            return ((Map) node).get(new UnicodeString((String) property));
+        }
+        throw new ClassCastException();
     }
 
     @Override
@@ -143,38 +149,41 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public boolean isNull(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node == null
+                || (SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
+                        && SimpleValue.NULL.equals(node));
     }
 
     @Override
     public boolean isBoolean(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node != null
+                && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
+                && (SimpleValue.TRUE.equals(node)
+                        || SimpleValue.FALSE.equals(node));
     }
 
     @Override
     public boolean isMap(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node != null && MajorType.MAP == ((DataItem) node).getMajorType();
     }
 
     @Override
     public boolean isCollection(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node != null && MajorType.ARRAY == ((DataItem) node).getMajorType();
     }
 
     @Override
     public boolean isString(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node != null && MajorType.UNICODE_STRING == ((DataItem) node).getMajorType();
     }
 
     @Override
     public boolean isNumber(Object node) {
-        // TODO Auto-generated method stub
-        return false;
+        return node != null
+                && (MajorType.UNSIGNED_INTEGER == ((DataItem) node).getMajorType()
+                        || MajorType.NEGATIVE_INTEGER == ((DataItem) node).getMajorType()
+                        || (SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
+                                && SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())));
     }
 
     @Override

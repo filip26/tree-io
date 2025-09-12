@@ -17,6 +17,10 @@ import java.util.stream.Stream;
  */
 public interface NodeAdapter {
 
+    static NodeAdapter withNativeTypes(NodeAdapter adapter) {
+        return new NativeTypeAdapter(adapter);
+    }
+
     /**
      * Returns the type of the given node.
      *
