@@ -69,9 +69,6 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public String stringValue(Object node) {
-        if (node instanceof String) {
-            return (String) node;
-        }
         return ((JsonString) node).getString();
     }
 
@@ -251,5 +248,16 @@ public class JakartaAdapter implements NodeAdapter {
         }
 
         throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
+    }
+
+    @Override
+    public String asString(Object node) {
+        if (node instanceof String) {
+            return (String) node;
+        }
+        if (node instanceof JsonString) {
+            return ((JsonString) node).getString();
+        }
+        return node.toString();
     }
 }

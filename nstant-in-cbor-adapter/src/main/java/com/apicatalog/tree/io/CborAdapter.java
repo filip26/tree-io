@@ -220,4 +220,14 @@ public class CborAdapter implements NodeAdapter {
         throw new ClassCastException();
     }
 
+    @Override
+    public String asString(Object node) {
+        if (node instanceof String) {
+            return (String) node;
+        }
+        if (node instanceof UnicodeString) {
+            return ((UnicodeString) node).getString();
+        }
+        return node.toString();
+    }
 }

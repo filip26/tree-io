@@ -259,4 +259,11 @@ class NativeTypeAdapter implements NodeAdapter {
         return adapter.size(node);
     }
 
+    @Override
+    public String asString(Object node) {
+        if (node instanceof String) {
+            return (String) node;
+        }
+        return adapter.asString(node);
+    }
 }

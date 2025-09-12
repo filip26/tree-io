@@ -156,4 +156,6 @@ public interface NodeAdapter {
     Iterable<? extends Object> asIterable(Object node);
 
     Stream<? extends Object> asStream(Object node);
+    
+    String asString(Object node);
 }

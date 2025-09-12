@@ -27,7 +27,7 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public NodeType type(Object node) {
         Objects.requireNonNull(node);
-        
+
         switch (((JsonNode) node).getNodeType()) {
         case NULL:
         case MISSING:
@@ -47,7 +47,7 @@ public class Jackson2Adapter implements NodeAdapter {
         default:
         }
 
-        throw new IllegalStateException();
+        throw new IllegalArgumentException();
     }
 
     @Override
@@ -56,17 +56,17 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
-    public Object property(Object property, Object node) {
+    public JsonNode property(Object property, Object node) {
         return ((ObjectNode) node).get((String) property);
     }
 
     @Override
-    public Collection<Object> iterable(Object node) {
+    public Collection<JsonNode> iterable(Object node) {
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
 
     @Override
-    public Stream<? extends Object> stream(Object node) {
+    public Stream<JsonNode> stream(Object node) {
         return ((ArrayNode) node).valueStream();
     }
 
@@ -169,7 +169,9 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public boolean isString(Object node) {
-        return node != null && JsonNodeType.STRING.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && (node instanceof String
+                        || JsonNodeType.STRING.equals(((JsonNode) node).getNodeType()));
     }
 
     @Override
@@ -206,5 +208,16 @@ public class Jackson2Adapter implements NodeAdapter {
             return ((ArrayNode) node).size();
         }
         throw new ClassCastException();
+    }
+
+    @Override
+    public String asString(Object node) {
+        if (node instanceof String) {
+            return (String) node;
+        }
+        if (node instanceof JsonNode) {
+            return ((JsonNode) node).asText();
+        }
+        return node.toString();
     }
 }
