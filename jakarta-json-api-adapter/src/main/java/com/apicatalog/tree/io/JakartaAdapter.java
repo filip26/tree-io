@@ -14,7 +14,13 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 
-public class JakartaJsonTreeAdapter implements NodeAdapter {
+public class JakartaAdapter implements NodeAdapter {
+
+    static final JakartaAdapter INSTANCE = new JakartaAdapter();
+
+    public static final JakartaAdapter instance() {
+        return INSTANCE;
+    }
 
     @Override
     public NodeType typeOf(Object node) {
@@ -170,5 +176,4 @@ public class JakartaJsonTreeAdapter implements NodeAdapter {
         }
         throw new ClassCastException();
     }
-
 }
