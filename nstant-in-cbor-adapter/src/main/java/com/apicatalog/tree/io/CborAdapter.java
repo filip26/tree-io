@@ -26,7 +26,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType typeOf(Object node) {
+    public NodeType type(Object node) {
 
         switch (((DataItem) node).getMajorType()) {
 

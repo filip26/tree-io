@@ -26,7 +26,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType typeOf(Object node) {
+    public NodeType type(Object node) {
         switch (((JsonValue) node).getValueType()) {
         case NULL:
             return NodeType.NULL;
@@ -44,7 +44,7 @@ public class JakartaAdapter implements NodeAdapter {
             return NodeType.MAP;
         }
 
-        throw new IllegalStateException();
+        throw new IllegalArgumentException();
     }
 
     @Override
@@ -69,6 +69,9 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public String stringValue(Object node) {
+        if (node instanceof String) {
+            return (String) node;
+        }
         return ((JsonString) node).getString();
     }
 
@@ -165,10 +168,10 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public boolean isEmpty(Object node) {
-        if (isMap(node)) {
+        if (node instanceof JsonObject) {
             return ((JsonObject) node).isEmpty();
         }
-        if (isCollection(node)) {
+        if (node instanceof JsonArray) {
             return ((JsonArray) node).isEmpty();
         }
         throw new ClassCastException();
@@ -176,10 +179,10 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public int size(Object node) {
-        if (isMap(node)) {
+        if (node instanceof JsonObject) {
             return ((JsonObject) node).size();
         }
-        if (isCollection(node)) {
+        if (node instanceof JsonArray) {
             return ((JsonArray) node).size();
         }
         throw new ClassCastException();
@@ -191,7 +194,7 @@ public class JakartaAdapter implements NodeAdapter {
             return null;
         }
 
-        final NodeType dataType = adapter.typeOf(value);
+        final NodeType dataType = adapter.type(value);
 
         switch (dataType) {
 

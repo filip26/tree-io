@@ -17,7 +17,7 @@ class NativeTypeAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType typeOf(Object node) {
+    public NodeType type(Object node) {
         if (node == null) {
             return NodeType.NULL;
         }
@@ -45,7 +45,7 @@ class NativeTypeAdapter implements NodeAdapter {
             return NodeType.BINARY;
         }
 
-        return adapter.typeOf(node);
+        return adapter.type(node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
