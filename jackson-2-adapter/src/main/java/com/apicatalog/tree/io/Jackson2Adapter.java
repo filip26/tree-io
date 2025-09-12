@@ -5,8 +5,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,13 +26,6 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public NodeType typeOf(Object node) {
-        if (node instanceof Map) {
-            return NodeType.MAP;
-        }
-        if (node instanceof Collection) {
-            return NodeType.COLLECTION;
-        }
-
         switch (((JsonNode) node).getNodeType()) {
         case NULL:
         case MISSING:
@@ -55,65 +48,23 @@ public class Jackson2Adapter implements NodeAdapter {
         throw new IllegalStateException();
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Set<String> properties(Object node) {
-        if (node instanceof Map) {
-            return ((Map) node).keySet();
-        }
-
-        Set<String> set = new HashSet<>();
-        ((ObjectNode) node).fieldNames().forEachRemaining(set::add);
-        return set;
+        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
-    @SuppressWarnings({ "rawtypes" })
     @Override
     public Object property(Object property, Object node) {
-
-        if (property instanceof String) {
-            throw new IllegalArgumentException();
-        }
-
-        Object value = null;
-
-        if (node instanceof Map) {
-            value = ((Map) node).get(property);
-        } else {
-            value = ((ObjectNode) node).get((String) property);
-        }
-
-        if (value instanceof ObjectNode) {
-            return ((ObjectNode) value).propertyStream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        }
-        if (value instanceof ArrayNode) {
-            return ((ArrayNode) node).valueStream().collect(Collectors.toList());
-        }
-
-        return value;
+        return ((ObjectNode) node).get((String) property);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Collection<Object> iterable(Object node) {
-        if (node instanceof Collection) {
-            return (Collection) node;
-        }
-        if (node instanceof Stream) {
-            return ((Stream<Object>) node).collect(Collectors.toList());
-        }
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Stream<? extends Object> stream(Object node) {
-        if (node instanceof Stream) {
-            return (Stream<Object>) node;
-        }
-        if (node instanceof Collection) {
-            return ((Collection) node).stream();
-        }
         return ((ArrayNode) node).valueStream();
     }
 
@@ -168,6 +119,9 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream().collect(Collectors.toList());
         }
+        if (node instanceof Stream) {
+            return ((Stream<Object>) node).collect(Collectors.toList());
+        }
         return Collections.singleton(node);
     }
 
@@ -179,6 +133,9 @@ public class Jackson2Adapter implements NodeAdapter {
         }
         if (node instanceof Collection) {
             return ((Collection) node).stream();
+        }
+        if (node instanceof Stream) {
+            return (Stream) node;
         }
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream();
@@ -200,16 +157,12 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public boolean isMap(Object node) {
-        return node != null
-                && (node instanceof Map
-                        || JsonNodeType.OBJECT.equals(((JsonNode) node).getNodeType()));
+        return node != null && JsonNodeType.OBJECT.equals(((JsonNode) node).getNodeType());
     }
 
     @Override
     public boolean isCollection(Object node) {
-        return node != null
-                && (node instanceof Collection
-                        || JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType()));
+        return node != null && JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType());
     }
 
     @Override
@@ -229,10 +182,12 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public boolean isEmpty(Object node) {
-        if (isMap(node)) {
+        Objects.requireNonNull(node);
+
+        if (node instanceof ObjectNode) {
             return ((ObjectNode) node).isEmpty();
         }
-        if (isCollection(node)) {
+        if (node instanceof ArrayNode) {
             return ((ArrayNode) node).isEmpty();
         }
         throw new ClassCastException();
@@ -240,10 +195,12 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public int size(Object node) {
-        if (isMap(node)) {
+        Objects.requireNonNull(node);
+
+        if (node instanceof ObjectNode) {
             return ((ObjectNode) node).size();
         }
-        if (isCollection(node)) {
+        if (node instanceof ArrayNode) {
             return ((ArrayNode) node).size();
         }
         throw new ClassCastException();
