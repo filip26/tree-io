@@ -16,7 +16,7 @@ import co.nstant.in.cbor.model.Special;
 import co.nstant.in.cbor.model.SpecialType;
 import co.nstant.in.cbor.model.UnicodeString;
 
-public class CborTreeAdapter implements TreeAdapter {
+public class CborTreeAdapter implements NodeAdapter {
 
     @Override
     public NodeType typeOf(Object node) {

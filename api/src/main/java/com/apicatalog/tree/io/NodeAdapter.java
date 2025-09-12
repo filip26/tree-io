@@ -14,21 +14,7 @@ import java.util.Collection;
  * {@link NullPointerException}, {@link IllegalStateException} if the node is
  * not of the expected type or processing error.
  */
-public interface TreeAdapter {
-
-    /**
-     * Supported node types in a tree structure.
-     */
-    enum NodeType {
-        MAP,
-        COLLECTION,
-        STRING,
-        NUMBER,
-        BINARY,
-        TRUE,
-        FALSE,
-        NULL,
-    }
+public interface NodeAdapter {
 
     /**
      * Returns the type of the given node.
@@ -39,14 +25,14 @@ public interface TreeAdapter {
     NodeType typeOf(Object node);
 
     boolean isNull(Object node);
-    
+
     boolean isBoolean(Object node);
-    
+
     // --- Map operations ---
     boolean isMap(Object node);
 
     boolean isEmptyMap(Object node);
-    
+
     /**
      * Returns the collection of property values for a map node.
      *
@@ -68,7 +54,7 @@ public interface TreeAdapter {
     boolean isCollection(Object node);
 
     boolean isEmptyCollection(Object node);
-    
+
     /**
      * Returns the collection of items for a collection node.
      *
@@ -79,7 +65,7 @@ public interface TreeAdapter {
 
     // --- String operations ---
     boolean isString(Object node);
-    
+
     /**
      * Returns the string value of the node.
      *
@@ -159,5 +145,5 @@ public interface TreeAdapter {
      * @param node
      * @return
      */
-    Collection<? extends Object> asCollection(Object node);    
+    Collection<? extends Object> asCollection(Object node);
 }

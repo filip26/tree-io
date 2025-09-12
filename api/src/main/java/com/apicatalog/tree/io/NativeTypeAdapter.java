@@ -6,11 +6,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-class NativeTypeTreeAdapter implements TreeAdapter {
+class NativeTypeAdapter implements NodeAdapter {
 
-    final TreeAdapter adapter;
+    final NodeAdapter adapter;
 
-    NativeTypeTreeAdapter(final TreeAdapter adapter) {
+    NativeTypeAdapter(final NodeAdapter adapter) {
         this.adapter = adapter;
     }
 

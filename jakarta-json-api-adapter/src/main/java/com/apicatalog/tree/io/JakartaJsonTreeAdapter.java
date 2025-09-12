@@ -13,7 +13,7 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 
-public class JakartaJsonTreeAdapter implements TreeAdapter {
+public class JakartaJsonTreeAdapter implements NodeAdapter {
 
     @Override
     public NodeType typeOf(Object node) {

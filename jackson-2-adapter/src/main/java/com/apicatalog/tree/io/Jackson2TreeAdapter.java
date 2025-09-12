@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class Jackson2TreeAdapter implements TreeAdapter {
+public class Jackson2TreeAdapter implements NodeAdapter {
 
     @Override
     public NodeType typeOf(Object node) {
