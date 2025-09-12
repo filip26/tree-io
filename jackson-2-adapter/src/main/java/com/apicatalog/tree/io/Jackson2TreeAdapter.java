@@ -150,7 +150,6 @@ public class Jackson2TreeAdapter implements NodeAdapter {
         return Collections.singleton(node);
     }
 
-
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Stream<? extends Object> asStream(Object node) {
@@ -165,7 +164,7 @@ public class Jackson2TreeAdapter implements NodeAdapter {
         }
         return Stream.of(node);
     }
-    
+
     @Override
     public boolean isNull(Object node) {
         return node == null
@@ -186,20 +185,10 @@ public class Jackson2TreeAdapter implements NodeAdapter {
     }
 
     @Override
-    public boolean isEmptyMap(Object node) {
-        return isMap(node) && ((ObjectNode) node).isEmpty();
-    }
-
-    @Override
     public boolean isCollection(Object node) {
         return node != null
                 && (node instanceof Collection
                         || JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType()));
-    }
-
-    @Override
-    public boolean isEmptyCollection(Object node) {
-        return isCollection(node) && ((ArrayNode) node).isEmpty();
     }
 
     @Override
@@ -215,5 +204,27 @@ public class Jackson2TreeAdapter implements NodeAdapter {
     @Override
     public boolean isIntegral(Object node) {
         return isNumber(node) && ((JsonNode) node).isIntegralNumber();
+    }
+
+    @Override
+    public boolean isEmpty(Object node) {
+        if (isMap(node)) {
+            return ((ObjectNode) node).isEmpty();
+        }
+        if (isCollection(node)) {
+            return ((ArrayNode) node).isEmpty();
+        }
+        throw new ClassCastException();
+    }
+
+    @Override
+    public int size(Object node) {
+        if (isMap(node)) {
+            return ((ObjectNode) node).size();
+        }
+        if (isCollection(node)) {
+            return ((ArrayNode) node).size();
+        }
+        throw new ClassCastException();
     }
 }

@@ -134,7 +134,7 @@ public class CborTreeAdapter implements NodeAdapter {
         }
         return Stream.of(node);
     }
-    
+
     @Override
     public boolean isNull(Object node) {
         // TODO Auto-generated method stub
@@ -154,19 +154,7 @@ public class CborTreeAdapter implements NodeAdapter {
     }
 
     @Override
-    public boolean isEmptyMap(Object node) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public boolean isCollection(Object node) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean isEmptyCollection(Object node) {
         // TODO Auto-generated method stub
         return false;
     }
@@ -189,4 +177,27 @@ public class CborTreeAdapter implements NodeAdapter {
                 && (((DataItem) node).getMajorType().equals(MajorType.UNSIGNED_INTEGER)
                         || ((DataItem) node).getMajorType().equals(MajorType.NEGATIVE_INTEGER));
     }
+
+    @Override
+    public boolean isEmpty(Object node) {
+        if (isMap(node)) {
+            return ((Map) node).getKeys().isEmpty();
+        }
+        if (isCollection(node)) {
+            return ((Array) node).getDataItems().isEmpty();
+        }
+        throw new ClassCastException();
+    }
+
+    @Override
+    public int size(Object node) {
+        if (isMap(node)) {
+            return ((Map) node).getKeys().size();
+        }
+        if (isCollection(node)) {
+            return ((Array) node).getDataItems().size();
+        }
+        throw new ClassCastException();
+    }
+
 }

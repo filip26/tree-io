@@ -192,33 +192,9 @@ class NativeTypeAdapter implements NodeAdapter {
         return node != null && (node instanceof Map || adapter.isMap(node));
     }
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    public boolean isEmptyMap(Object node) {
-        if (node == null) {
-            return false;
-        }
-        if (node instanceof Map) {
-            return ((Map) node).isEmpty();
-        }
-        return adapter.isEmptyMap(node);
-    }
-
     @Override
     public boolean isCollection(Object node) {
         return node != null && (node instanceof Collection || adapter.isCollection(node));
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public boolean isEmptyCollection(Object node) {
-        if (node == null) {
-            return false;
-        }
-        if (node instanceof Collection) {
-            return ((Collection) node).isEmpty();
-        }
-        return adapter.isEmptyCollection(node);
     }
 
     @Override
@@ -246,4 +222,32 @@ class NativeTypeAdapter implements NodeAdapter {
                         || node instanceof BigInteger
                         || adapter.isIntegral(node));
     }
+    
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isEmpty(Object node) {
+        if (node == null) {
+            return false;
+        }
+        if (node instanceof Map) {
+            return ((Map) node).isEmpty();
+        }
+        if (node instanceof Collection) {
+            return ((Collection) node).isEmpty();
+        }
+        return adapter.isEmpty(node);
+    }
+    
+    @SuppressWarnings("rawtypes")
+    @Override
+    public int size(Object node) {
+        if (node instanceof Map) {
+            return ((Map) node).size();
+        }
+        if (node instanceof Collection) {
+            return ((Collection) node).size();
+        }
+        return adapter.size(node);
+    }
+
 }

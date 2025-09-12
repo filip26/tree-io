@@ -99,7 +99,7 @@ public class JakartaJsonTreeAdapter implements NodeAdapter {
         }
         return Collections.singletonList(node);
     }
-    
+
     @Override
     public Stream<? extends Object> asStream(Object node) {
         if (node == null) {
@@ -130,20 +130,8 @@ public class JakartaJsonTreeAdapter implements NodeAdapter {
     }
 
     @Override
-    public boolean isEmptyMap(Object node) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
     public boolean isCollection(Object node) {
         return node != null && ValueType.ARRAY.equals(((JsonValue) node).getValueType());
-    }
-
-    @Override
-    public boolean isEmptyCollection(Object node) {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     @Override
@@ -160,4 +148,27 @@ public class JakartaJsonTreeAdapter implements NodeAdapter {
     public boolean isIntegral(Object node) {
         return isNumber(node) && ((JsonNumber) node).isIntegral();
     }
+
+    @Override
+    public boolean isEmpty(Object node) {
+        if (isMap(node)) {
+            return ((JsonObject) node).isEmpty();
+        }
+        if (isCollection(node)) {
+            return ((JsonArray) node).isEmpty();
+        }
+        throw new ClassCastException();
+    }
+
+    @Override
+    public int size(Object node) {
+        if (isMap(node)) {
+            return ((JsonObject) node).size();
+        }
+        if (isCollection(node)) {
+            return ((JsonArray) node).size();
+        }
+        throw new ClassCastException();
+    }
+
 }

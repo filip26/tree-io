@@ -29,10 +29,13 @@ public interface NodeAdapter {
 
     boolean isBoolean(Object node);
 
+    // --- Structure operations ---
+    int size(Object node);
+
+    boolean isEmpty(Object node);
+
     // --- Map operations ---
     boolean isMap(Object node);
-
-    boolean isEmptyMap(Object node);
 
     /**
      * Returns the collection of property values for a map node.
@@ -53,8 +56,6 @@ public interface NodeAdapter {
 
     // --- Collection operations ---
     boolean isCollection(Object node);
-
-    boolean isEmptyCollection(Object node);
 
     /**
      * Returns the collection of items for a collection node.
