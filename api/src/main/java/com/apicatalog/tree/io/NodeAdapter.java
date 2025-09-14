@@ -17,10 +17,6 @@ import java.util.stream.Stream;
  */
 public interface NodeAdapter {
 
-    static NodeAdapter withNativeTypes(NodeAdapter adapter) {
-        return new NativeTypeAdapter(adapter);
-    }
-
     /**
      * Returns the type of the given node.
      *
@@ -68,7 +64,7 @@ public interface NodeAdapter {
      * @return collection of child nodes
      */
     Iterable<? extends Object> iterable(Object node);
-    
+
     Stream<? extends Object> stream(Object node);
 
     // --- String operations ---
@@ -156,6 +152,6 @@ public interface NodeAdapter {
     Iterable<? extends Object> asIterable(Object node);
 
     Stream<? extends Object> asStream(Object node);
-    
+
     String asString(Object node);
 }
