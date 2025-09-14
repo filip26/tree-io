@@ -185,6 +185,11 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isBinary(Object node) {
+        return node != null && JsonNodeType.BINARY.equals(((JsonNode) node).getNodeType());
+    }
+
+    @Override
     public boolean isEmpty(Object node) {
         Objects.requireNonNull(node);
 

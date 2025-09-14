@@ -164,6 +164,11 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isBinary(Object node) {
+        return false;
+    }
+
+    @Override
     public boolean isEmpty(Object node) {
         if (node instanceof JsonObject) {
             return ((JsonObject) node).isEmpty();

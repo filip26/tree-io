@@ -29,6 +29,8 @@ public interface NodeAdapter {
 
     boolean isBoolean(Object node);
 
+    boolean isBinary(Object node);
+
     // --- Structure operations ---
     int size(Object node);
 

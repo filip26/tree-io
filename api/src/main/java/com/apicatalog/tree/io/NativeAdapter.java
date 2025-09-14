@@ -212,6 +212,11 @@ public class NativeAdapter implements NodeAdapter {
                         || node instanceof BigInteger);
     }
 
+    @Override
+    public boolean isBinary(Object node) {
+        return node != null && node instanceof byte[];
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     public boolean isEmpty(Object node) {

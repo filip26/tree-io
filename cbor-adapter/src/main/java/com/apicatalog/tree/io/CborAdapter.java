@@ -11,10 +11,12 @@ import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.DoublePrecisionFloat;
+import co.nstant.in.cbor.model.HalfPrecisionFloat;
 import co.nstant.in.cbor.model.MajorType;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.NegativeInteger;
 import co.nstant.in.cbor.model.SimpleValue;
+import co.nstant.in.cbor.model.SinglePrecisionFloat;
 import co.nstant.in.cbor.model.Special;
 import co.nstant.in.cbor.model.SpecialType;
 import co.nstant.in.cbor.model.UnicodeString;
@@ -61,7 +63,9 @@ public class CborAdapter implements NodeAdapter {
                     return NodeType.NULL;
                 }
 
-            } else if (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())) {
+            } else if (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())
+                    || SpecialType.IEEE_754_HALF_PRECISION_FLOAT.equals(((Special) node).getSpecialType())
+                    || SpecialType.IEEE_754_SINGLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())) {
                 return NodeType.NUMBER;
             }
 
@@ -120,17 +124,23 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public double doubleValue(Object node) {
+        if (node instanceof HalfPrecisionFloat) {
+            return ((HalfPrecisionFloat) node).getValue();
+        }
+        if (node instanceof SinglePrecisionFloat) {
+            return ((SinglePrecisionFloat) node).getValue();
+        }
         return ((DoublePrecisionFloat) node).getValue();
     }
 
     @Override
     public BigDecimal decimalValue(Object node) {
-        return BigDecimal.valueOf(((DoublePrecisionFloat) node).getValue());
+        return BigDecimal.valueOf(doubleValue(node));
     }
 
     @Override
     public byte[] binaryValue(Object node) {
-        throw new UnsupportedOperationException();
+        return ((ByteString) node).getBytes();
     }
 
     @Override
@@ -190,8 +200,10 @@ public class CborAdapter implements NodeAdapter {
         return node != null
                 && (MajorType.UNSIGNED_INTEGER == ((DataItem) node).getMajorType()
                         || MajorType.NEGATIVE_INTEGER == ((DataItem) node).getMajorType()
-                        || (SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
-                                && SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT.equals(((Special) node).getSpecialType())));
+                        || ((MajorType.SPECIAL == ((DataItem) node).getMajorType())
+                                && (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT == (((Special) node).getSpecialType())
+                                        || SpecialType.IEEE_754_HALF_PRECISION_FLOAT == (((Special) node).getSpecialType())
+                                        || SpecialType.IEEE_754_SINGLE_PRECISION_FLOAT == (((Special) node).getSpecialType()))));
     }
 
     @Override
@@ -199,6 +211,11 @@ public class CborAdapter implements NodeAdapter {
         return node != null
                 && (((DataItem) node).getMajorType().equals(MajorType.UNSIGNED_INTEGER)
                         || ((DataItem) node).getMajorType().equals(MajorType.NEGATIVE_INTEGER));
+    }
+
+    @Override
+    public boolean isBinary(Object node) {
+        return node != null && MajorType.BYTE_STRING == ((DataItem) node).getMajorType();
     }
 
     @Override
