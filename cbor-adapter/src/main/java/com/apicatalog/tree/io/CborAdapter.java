@@ -8,14 +8,17 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import co.nstant.in.cbor.model.Array;
+import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.DoublePrecisionFloat;
 import co.nstant.in.cbor.model.MajorType;
 import co.nstant.in.cbor.model.Map;
+import co.nstant.in.cbor.model.NegativeInteger;
 import co.nstant.in.cbor.model.SimpleValue;
 import co.nstant.in.cbor.model.Special;
 import co.nstant.in.cbor.model.SpecialType;
 import co.nstant.in.cbor.model.UnicodeString;
+import co.nstant.in.cbor.model.UnsignedInteger;
 
 public class CborAdapter implements NodeAdapter {
 
@@ -229,5 +232,76 @@ public class CborAdapter implements NodeAdapter {
             return ((UnicodeString) node).getString();
         }
         return node.toString();
+    }
+
+    public static final DataItem adapt(Object value, NodeAdapter adapter) {
+
+        if (value == null) {
+            return SimpleValue.NULL;
+        }
+
+        final NodeType dataType = adapter.type(value);
+
+        switch (dataType) {
+
+        case STRING:
+            return new UnicodeString(adapter.stringValue(value));
+
+        case NUMBER:
+            if (adapter.isIntegral(value)) {
+                final BigInteger integer = adapter.bigIntegerValue(value);
+                switch (integer.signum()) {
+                case -1:
+                    return new NegativeInteger(integer);
+                case 0:
+                    return new UnsignedInteger(BigInteger.ZERO);
+                case 1:
+                    return new UnsignedInteger(integer);
+                }
+            }
+            return new DoublePrecisionFloat(adapter.doubleValue(value));
+
+        case TRUE:
+            return SimpleValue.TRUE;
+
+        case FALSE:
+            return SimpleValue.FALSE;
+
+        case COLLECTION:
+            final Array array = new Array(adapter.size(value));
+
+            adapter.stream(value)
+                    .map(item -> adapt(item, adapter))
+                    .forEach(array::add);
+
+            return array;
+
+        case MAP:
+            if (adapter.isEmpty(value)) {
+                return new Map(0);
+            }
+
+            final Map map = new Map(adapter.size(value));
+
+            adapter.properties(value)
+                    .stream()
+                    .forEach(key -> {
+                        Object entry = adapter.property(key, value);
+                        map.put(adapt(key, adapter), adapt(entry, adapter));
+                    });
+
+            return map;
+
+        case BINARY:
+            return new ByteString(adapter.binaryValue(value));
+
+        case NULL:
+            return SimpleValue.NULL;
+
+        default:
+            break;
+        }
+
+        throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
     }
 }

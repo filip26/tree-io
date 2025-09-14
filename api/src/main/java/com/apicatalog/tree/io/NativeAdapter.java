@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -241,5 +242,69 @@ public class NativeAdapter implements NodeAdapter {
             return (String) node;
         }
         return Objects.toString(node);
+    }
+
+    public static final Object adapt(Object value, NodeAdapter adapter) {
+
+        if (value == null) {
+            return null;
+        }
+
+        final NodeType dataType = adapter.type(value);
+
+        switch (dataType) {
+
+        case STRING:
+            return adapter.stringValue(value);
+
+        case NUMBER:
+            return adapter.isIntegral(value)
+                    ? adapter.bigIntegerValue(value)
+                    : adapter.decimalValue(value);
+
+        case TRUE:
+            return true;
+
+        case FALSE:
+            return false;
+
+        case COLLECTION:
+            if (adapter.isEmpty(value)) {
+                return Collections.emptyList();
+            }
+
+            return adapter.stream(value)
+                    .map(item -> adapt(item, adapter))
+                    .collect(Collectors.toList());
+
+        case MAP:
+            if (adapter.isEmpty(value)) {
+                return Collections.emptyMap();
+            }
+
+            return adapter.properties(value)
+                    .stream()
+                    .reduce(new LinkedHashMap<>(adapter.size(value)),
+                            (map, key) -> {
+                                Object entry = adapter.property(key, value);
+                                map.put(key, adapt(entry, adapter));
+                                return map;
+                            },
+                            (map1, map2) -> { // combiner (parallel streams)
+                                map1.putAll(map2);
+                                return map1;
+                            });
+
+        case BINARY:
+            return adapter.binaryValue(value);
+
+        case NULL:
+            return null;
+
+        default:
+            break;
+        }
+
+        throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
     }
 }

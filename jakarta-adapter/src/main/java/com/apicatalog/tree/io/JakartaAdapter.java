@@ -188,7 +188,7 @@ public class JakartaAdapter implements NodeAdapter {
     public static final JsonValue adapt(Object value, NodeAdapter adapter) {
 
         if (value == null) {
-            return null;
+            return JsonValue.NULL;
         }
 
         final NodeType dataType = adapter.type(value);
