@@ -82,28 +82,29 @@ public class TreeIO {
                 return false;
             }
 
-            //FIXME ----
+            // FIXME ----
             // deep compare property names / keys
             if (!deepEqualsCollection(leftProps, leftAdapter, rightProps, rightAdapter)) {
                 return false;
             }
-            
+
             for (final Object property : leftProps) {
                 if (!deepEquals(
-                        leftAdapter.property(property, rightType), 
-                        leftAdapter, 
-                        rightProps, 
+                        leftAdapter.property(property, rightType),
+                        leftAdapter,
+                        rightProps,
                         rightAdapter)) {
                     return false;
                 }
             }
-            
+
             return true;
 
         case FALSE:
         case TRUE:
         case NULL:
             return true;
+
         default:
             return false;
         }
