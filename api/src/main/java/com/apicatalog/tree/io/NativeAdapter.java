@@ -82,6 +82,15 @@ public class NativeAdapter implements NodeAdapter {
 
     @Override
     public int intValue(Object node) {
+        if (node instanceof Long) {
+            return Math.toIntExact((Long) node);
+        }
+        if (node instanceof Integer) {
+            return (Integer) node;
+        }
+        if (node instanceof BigInteger) {
+            return ((BigInteger) node).intValueExact();
+        }
         return (Integer) node;
     }
 
@@ -92,6 +101,9 @@ public class NativeAdapter implements NodeAdapter {
         }
         if (node instanceof Integer) {
             return (Integer) node;
+        }
+        if (node instanceof BigInteger) {
+            return ((BigInteger) node).longValueExact();
         }
         throw new IllegalArgumentException();
     }
@@ -112,6 +124,9 @@ public class NativeAdapter implements NodeAdapter {
 
     @Override
     public double doubleValue(Object node) {
+        if (node instanceof BigDecimal) {
+            return ((BigDecimal) node).doubleValue();
+        }
         if (node instanceof Double) {
             return (Double) node;
         }
@@ -123,6 +138,9 @@ public class NativeAdapter implements NodeAdapter {
 
     @Override
     public BigDecimal decimalValue(Object node) {
+        if (node instanceof BigDecimal) {
+            return (BigDecimal) node;
+        }
         if (node instanceof Double) {
             return BigDecimal.valueOf((Double) node);
         }
