@@ -70,7 +70,6 @@ public class CborAdapter implements NodeAdapter {
             }
 
         default:
-
         }
 
         throw new IllegalStateException();
@@ -148,7 +147,7 @@ public class CborAdapter implements NodeAdapter {
         if (node == null) {
             return Collections.emptyList();
         }
-        if (MajorType.ARRAY.equals(((DataItem) node).getMajorType())) {
+        if (node instanceof Array) {
             return ((Array) node).getDataItems();
         }
         return Collections.singletonList(node);
@@ -159,7 +158,7 @@ public class CborAdapter implements NodeAdapter {
         if (node == null) {
             return Stream.empty();
         }
-        if (MajorType.ARRAY.equals(((DataItem) node).getMajorType())) {
+        if (node instanceof Array) {
             return ((Array) node).getDataItems().stream();
         }
         return Stream.of(node);
@@ -168,13 +167,15 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || (SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
+                || ((MajorType.SPECIAL == ((DataItem) node).getMajorType())
+                        && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
                         && SimpleValue.NULL.equals(node));
     }
 
     @Override
     public boolean isBoolean(Object node) {
         return node != null
+                && (MajorType.SPECIAL == ((DataItem) node).getMajorType())
                 && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
                 && (SimpleValue.TRUE.equals(node)
                         || SimpleValue.FALSE.equals(node));
