@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -10,7 +11,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
     /**
      * Indicates the type of node currently being visited during traversal.
      */
-    public enum State {
+    public enum Context {
 
         /**
          * Visiting the key/name of a property in a map/object.
@@ -33,14 +34,14 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 //        SCALAR
     }
 
-    protected final Deque<Object> context;
+    protected final Deque<Context> context;
 
     protected BaseNodeWriter(Deque<Object> stack, NodeAdapter adapter) {
         super(stack, adapter);
         this.context = new ArrayDeque<>();
     }
 
-    protected abstract void writeNull();
+    protected abstract void writeNull() throws IOException;
 
     protected abstract void writeString(String value);
 
@@ -64,28 +65,51 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
     protected abstract void endCollection();
 
-    public void write() {
-        while (traverse(this::write))
+    public void write() throws Exception {
+
+        Exception[] exception = new Exception[1]; // mutable holder
+        exception[0] = null;
+
+        while (exception[0] != null
+                && traverse(t -> {
+                    try {
+                        write(t);
+                    } catch (IOException e) {
+                        exception[0] = e;
+                    }
+                }))
             ;
+
+        if (exception[0] != null) {
+            throw exception[0];
+        }
 
         if (!context.isEmpty()) {
             throw new IllegalStateException();
         }
     }
 
-    protected void write(Object value) {
+    protected void write(Object value) throws IOException {
 
         if (adapter.isNull(value)) {
             writeNull();
-            if (State.PROPERTY_KEY == context.peek()) {
+            if (Context.PROPERTY_KEY == context.peek()) {
                 context.pop();
-                context.push(State.PROPERTY_VALUE);
+                context.push(Context.PROPERTY_VALUE);
             }
             return;
         }
 
         if (context.size() > depth()) {
-            if (State.PROPERTY_KEY == context.pop()) {
+            Context previous = context.pop();
+
+            if (Context.PROPERTY_VALUE == previous) {
+                endMap();
+
+            } else if (Context.COLLECTION_ELEMENT == previous) {
+                endCollection();
+
+            } else {
                 throw new IllegalStateException();
             }
         }
@@ -93,12 +117,12 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
         switch (adapter.type(value)) {
         case MAP:
             beginMap();
-            if (State.PROPERTY_KEY == context.peek()) {
+            if (Context.PROPERTY_KEY == context.peek()) {
                 context.pop();
-                context.push(State.PROPERTY_VALUE);
+                context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                context.push(State.PROPERTY_KEY);
+                context.push(Context.PROPERTY_KEY);
             } else {
                 endMap();
             }
@@ -106,12 +130,12 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
         case COLLECTION:
             beginCollection();
-            if (State.PROPERTY_KEY == context.peek()) {
+            if (Context.PROPERTY_KEY == context.peek()) {
                 context.pop();
-                context.push(State.PROPERTY_VALUE);
+                context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                context.push(State.COLLECTION_ELEMENT);
+                context.push(Context.COLLECTION_ELEMENT);
             } else {
                 endCollection();
             }
@@ -141,10 +165,9 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
             writeNull();
             break;
         }
-        if (State.PROPERTY_KEY == context.peek()) {
+        if (Context.PROPERTY_KEY == context.peek()) {
             context.pop();
-            context.push(State.PROPERTY_VALUE);
+            context.push(Context.PROPERTY_VALUE);
         }
     }
-
 }

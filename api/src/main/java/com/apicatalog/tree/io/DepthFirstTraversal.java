@@ -42,6 +42,8 @@ public class DepthFirstTraversal {
     /** Adapter that provides access to node types and their children. */
     protected final NodeAdapter adapter;
 
+    protected long visited;
+    
     /**
      * Creates a new traversal with the given stack and adapter.
      *
@@ -51,6 +53,7 @@ public class DepthFirstTraversal {
     protected DepthFirstTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
         this.stack = stack;
         this.adapter = adapter;
+        this.visited = 0;
     }
 
     /**
@@ -128,6 +131,7 @@ public class DepthFirstTraversal {
         }
 
         consumer.accept(node);
+        visited++;
 
         switch (adapter.type(node)) {
         case COLLECTION:
@@ -156,5 +160,9 @@ public class DepthFirstTraversal {
 
     public int depth() {
         return stack.size();
+    }
+    
+    public long visited() {
+        return visited;
     }
 }
