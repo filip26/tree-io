@@ -23,7 +23,7 @@
         <argLine>-Dfile.encoding=UTF-8</argLine>
         
         <jakarta.json.version>2.0.1</jakarta.json.version>
-    
+
         <!--  test resources -->
         <junit.version>5.13.4</junit.version>
     </properties>

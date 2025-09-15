@@ -27,6 +27,13 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public NodeType type(Object node) {
+        if (node == null) {
+            return NodeType.NULL;
+        }
+        if (node instanceof String) {
+            return NodeType.STRING;
+        }
+        
         switch (((JsonValue) node).getValueType()) {
         case NULL:
             return NodeType.NULL;

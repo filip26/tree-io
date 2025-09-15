@@ -6,6 +6,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -36,12 +37,38 @@ import java.util.function.Consumer;
  */
 public class DepthFirstTraversal {
 
+    /**
+     * Indicates the type of node currently being visited during traversal.
+     */
+    public enum Context {
+
+        ROOT,
+
+        /**
+         * Visiting the key/name of a property in a map/object.
+         */
+        PROPERTY_KEY,
+
+        /**
+         * Visiting the value of a property in a map/object.
+         */
+        PROPERTY_VALUE,
+
+        /**
+         * Visiting an element within a collection, array, or list.
+         */
+        COLLECTION_ELEMENT,
+
+        END,
+    }
+
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
     /** Adapter that provides access to node types and their children. */
     protected NodeAdapter adapter;
 
+    protected long depth;
     protected long visited;
 
     /**
@@ -54,6 +81,7 @@ public class DepthFirstTraversal {
         this.stack = stack;
         this.adapter = adapter;
         this.visited = 0;
+        this.depth = 0;
     }
 
     /**
@@ -95,12 +123,13 @@ public class DepthFirstTraversal {
      * @return {@code true} if there are more nodes to traverse, {@code false} if
      *         traversal is complete
      */
-    public boolean traverse(Consumer<Object> consumer) {
+    public boolean traverse(BiConsumer<Context, Object> consumer) {
 
         if (stack.isEmpty()) {
             return false;
         }
 
+        final Context ctx;
         final Object node;
         Object item = stack.peek();
 
@@ -109,57 +138,57 @@ public class DepthFirstTraversal {
             Iterator<?> it = (Iterator<?>) item;
             if (!it.hasNext()) {
                 stack.pop();
-                return !stack.isEmpty() && traverse(consumer); // tail recurse
+                depth -= 1;
+                consumer.accept(Context.END, null);
+                return !stack.isEmpty();
             }
 
             item = it.next();
 
-            if (!it.hasNext()) {
-                stack.pop();
-            }
-
             if (item instanceof Map.Entry) {
+                ctx = Context.PROPERTY_KEY;
                 Map.Entry<?, ?> entry = (Map.Entry<?, ?>) item;
                 node = entry.getKey();
-                stack.push(entry.getValue());
+                stack.push(entry);
+
             } else {
+                ctx = Context.COLLECTION_ELEMENT;
                 node = item;
             }
-        } else {
-            node = item;
-            stack.pop(); // consume plain node
-        }
 
-        consumer.accept(node);
-        visited++;
+        } else if (item instanceof Map.Entry) {
+            ctx = Context.PROPERTY_VALUE;
+            node = ((Map.Entry<?, ?>) item).getValue();
+            stack.pop();
+
+        } else {
+            ctx = Context.ROOT;
+            node = item;
+            stack.pop();
+        }
 
         switch (adapter.type(node)) {
         case COLLECTION:
-            Iterator<?> it2 = adapter.asIterable(node).iterator();
-            if (it2.hasNext()) {
-                stack.push(it2);
-            }
+            stack.push(adapter.asIterable(node).iterator());
+            depth += 1;
             break;
 
         case MAP:
-            Iterator<?> it3 = adapter.properties(node)
+            stack.push(adapter.properties(node)
                     .stream()
                     .map(prop -> new SimpleEntry<>(prop, adapter.property(prop, node)))
-                    .iterator();
-
-            if (it3.hasNext()) {
-                stack.push(it3);
-            }
+                    .iterator());
+            depth += 1;
             break;
 
         default:
+            break;
         }
 
-        return !stack.isEmpty();
-    }
+        consumer.accept(ctx, node);
+        visited++;
 
-    public int depth() {
-        return stack.size();
+        return !stack.isEmpty();
     }
 
     public long visited() {
@@ -170,6 +199,7 @@ public class DepthFirstTraversal {
         this.adapter = adapter;
         this.stack.clear();
         this.stack.push(node);
+        this.depth = 0;
         this.visited = 0;
     }
 }
