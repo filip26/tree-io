@@ -16,6 +16,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -25,6 +28,7 @@ import jakarta.json.JsonValue;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonGeneratorFactory;
 
+@TestMethodOrder(OrderAnnotation.class)
 class JakartaTest {
 
     // Enable pretty printing
@@ -40,6 +44,7 @@ class JakartaTest {
 
     @ParameterizedTest
     @MethodSource({ "resources" })
+    @Order(0)
     void testWrite(String name) throws IOException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -53,6 +58,7 @@ class JakartaTest {
 
     @ParameterizedTest
     @MethodSource({ "resources" })
+    @Order(1)
     void testMaterialize(String name) throws IOException {
         MATERIALIZER.accept(getJsonResource(name), JakartaAdapter.instance());
         assertEquals(getJsonResource(name), MATERIALIZER.value());

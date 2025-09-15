@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * A non-recursive depth-first traversal utility for arbitrary object trees.
@@ -30,12 +29,12 @@ import java.util.function.Consumer;
  * </ul>
  *
  * <p>
- * The traversal proceeds step-by-step: each call to {@link #traverse(Consumer)}
+ * The traversal proceeds step-by-step: each call to {@link #traverse(BiConsumer)}
  * visits exactly one node and schedules its children (if any). Repeated calls
  * continue traversal until the stack is empty.
  * </p>
  */
-public class DepthFirstTraversal {
+public class TreeTraversal {
 
     /**
      * Indicates the type of node currently being visited during traversal.
@@ -77,7 +76,7 @@ public class DepthFirstTraversal {
      * @param stack   the stack to use for traversal state
      * @param adapter the adapter providing node access
      */
-    protected DepthFirstTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
+    protected TreeTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
         this.stack = stack;
         this.adapter = null;
         this.visited = 0;
@@ -93,14 +92,14 @@ public class DepthFirstTraversal {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public static DepthFirstTraversal of(Object root, NodeAdapter adapter) {
+    public static TreeTraversal of(Object root, NodeAdapter adapter) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
 
         Deque<Object> stack = new ArrayDeque<>();
         stack.push(root);
 
-        return new DepthFirstTraversal(stack, adapter);
+        return new TreeTraversal(stack, adapter);
     }
 
     /**

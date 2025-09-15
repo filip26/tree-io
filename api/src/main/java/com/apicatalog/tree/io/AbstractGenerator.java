@@ -3,18 +3,18 @@ package com.apicatalog.tree.io;
 import java.io.IOException;
 import java.util.Deque;
 
-public abstract class AbstractNodeConsumer extends DepthFirstTraversal {
+public abstract class AbstractGenerator extends TreeTraversal {
 
-    public static final int MAX_DEPTH = 16;
+    public static final int MAX_DEPTH = -1;
     public static final int MAX_NODES = -1;
 
     protected int maxVisited;
     protected int maxDepth;
 
-    protected AbstractNodeConsumer(Deque<Object> stack) {
+    protected AbstractGenerator(Deque<Object> stack) {
         super(stack, null);
-        this.maxVisited = -1;
-        this.maxDepth = -1;
+        this.maxVisited = MAX_NODES;
+        this.maxDepth = MAX_DEPTH;
     }
 
     protected abstract void scalar(Context ctx, Object node) throws IOException;

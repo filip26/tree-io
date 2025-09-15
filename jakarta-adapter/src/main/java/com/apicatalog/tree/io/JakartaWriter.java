@@ -5,7 +5,7 @@ import java.util.ArrayDeque;
 
 import jakarta.json.stream.JsonGenerator;
 
-public class JakartaWriter extends AbstractNodeConsumer {
+public class JakartaWriter extends AbstractGenerator {
 
     protected final JsonGenerator writer;
 
@@ -53,11 +53,17 @@ public class JakartaWriter extends AbstractNodeConsumer {
 
     @Override
     protected void beginMap(Context ctx) throws IOException {
+        if (ctx == Context.PROPERTY_KEY) {
+            throw new IllegalStateException();
+        }
         writer.writeStartObject();
     }
 
     @Override
     protected void beginCollection(Context ctx) throws IOException {
+        if (ctx == Context.PROPERTY_KEY) {
+            throw new IllegalStateException();
+        }
         writer.writeStartArray();
     }
 

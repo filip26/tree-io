@@ -7,12 +7,9 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArray;
-import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonNumber;
 import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
@@ -33,7 +30,7 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof String) {
             return NodeType.STRING;
         }
-        
+
         switch (((JsonValue) node).getValueType()) {
         case NULL:
             return NodeType.NULL;
@@ -195,71 +192,6 @@ public class JakartaAdapter implements NodeAdapter {
             return ((JsonArray) node).size();
         }
         throw new ClassCastException();
-    }
-
-    public static final JsonValue adapt(Object value, NodeAdapter adapter) {
-
-        if (value == null) {
-            return JsonValue.NULL;
-        }
-
-        final NodeType dataType = adapter.type(value);
-
-        switch (dataType) {
-
-        case STRING:
-            return Json.createValue(adapter.stringValue(value));
-
-        case NUMBER:
-            return adapter.isIntegral(value)
-                    ? Json.createValue(adapter.bigIntegerValue(value))
-                    : Json.createValue(adapter.decimalValue(value));
-
-        case TRUE:
-            return JsonValue.TRUE;
-
-        case FALSE:
-            return JsonValue.FALSE;
-
-        case COLLECTION:
-            if (adapter.isEmpty(value)) {
-                return JsonValue.EMPTY_JSON_ARRAY;
-            }
-
-            final JsonArrayBuilder array = Json.createArrayBuilder();
-
-            adapter.stream(value)
-                    .map(item -> adapt(item, adapter))
-                    .forEach(array::add);
-
-            return array.build();
-
-        case MAP:
-            if (adapter.isEmpty(value)) {
-                return JsonValue.EMPTY_JSON_OBJECT;
-            }
-
-            final JsonObjectBuilder map = Json.createObjectBuilder();
-
-            adapter.properties(value)
-                    .stream()
-                    .map(adapter::stringValue)
-                    .forEach(key -> {
-                        Object entry = adapter.property(key, value);
-                        map.add(key, adapt(entry, adapter));
-
-                    });
-
-            return map.build();
-
-        case NULL:
-            return JsonValue.NULL;
-
-        default:
-            break;
-        }
-
-        throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
     }
 
     @Override

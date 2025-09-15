@@ -9,7 +9,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
-public class JakartaMaterializer extends AbstractNodeConsumer {
+public class JakartaMaterializer extends AbstractGenerator {
 
     protected JsonValue value;
     protected final Deque<Object> builders;
@@ -20,17 +20,21 @@ public class JakartaMaterializer extends AbstractNodeConsumer {
         this.builders = new ArrayDeque<>();
     }
 
-    public void accept(Object node, NodeAdapter adapter) throws IOException {
+    public void accept(Object node, NodeAdapter adapter) {
         // reset
         this.value = null;
         this.builders.clear();
 
-        super.accept(node, adapter);
+        try {
+            super.accept(node, adapter);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
 
     }
 
     @Override
-    protected void scalar(Context ctx, Object node) throws IOException {
+    protected void scalar(Context ctx, Object node) {
 
         switch (ctx) {
         case PROPERTY_KEY:
@@ -80,17 +84,17 @@ public class JakartaMaterializer extends AbstractNodeConsumer {
     }
 
     @Override
-    protected void beginMap(Context ctx) throws IOException {
+    protected void beginMap(Context ctx) {
         builders.push(Json.createObjectBuilder());
     }
 
     @Override
-    protected void beginCollection(Context ctx) throws IOException {
+    protected void beginCollection(Context ctx) {
         builders.push(Json.createArrayBuilder());
     }
 
     @Override
-    protected void end() throws IOException {
+    protected void end() {
         Object builder = builders.pop();
         if (builder instanceof JsonArrayBuilder) {
             value = ((JsonArrayBuilder) builder).build();
