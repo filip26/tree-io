@@ -97,7 +97,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
     protected void writeNode(Object value) throws IOException {
 
-        if (maxVisitedNodes >= visited) {
+        if (maxVisitedNodes <= visited) {
             throw new IllegalStateException();
         }
 
@@ -132,7 +132,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                if (maxDepth >= depth()) {
+                if (maxDepth < depth()) {
                     throw new IllegalStateException();
                 }
                 context.push(Context.PROPERTY_KEY);
@@ -148,7 +148,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                if (maxDepth >= depth()) {
+                if (maxDepth < depth()) {
                     throw new IllegalStateException();
                 }
                 context.push(Context.COLLECTION_ELEMENT);
