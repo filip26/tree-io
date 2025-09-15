@@ -43,31 +43,31 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
     protected abstract void writeNull() throws IOException;
 
-    protected abstract void writeString(String value);
+    protected abstract void writeString(String value) throws IOException;
 
-    protected abstract void writeNumber(BigInteger value);
+    protected abstract void writeNumber(BigInteger value) throws IOException;
 
-    protected abstract void writeNumber(BigDecimal value);
+    protected abstract void writeNumber(BigDecimal value) throws IOException;
 
-    protected abstract void writeNumber(long value);
+    protected abstract void writeNumber(long value) throws IOException;
 
-    protected abstract void writeNumber(double value);
+    protected abstract void writeNumber(double value) throws IOException;
 
-    protected abstract void writeBoolean(boolean value);
+    protected abstract void writeBoolean(boolean value) throws IOException;
 
-    protected abstract void writeByteArray(byte[] value);
+    protected abstract void writeByteArray(byte[] value) throws IOException;
 
-    protected abstract void beginMap();
+    protected abstract void beginMap() throws IOException;
 
-    protected abstract void endMap();
+    protected abstract void endMap() throws IOException;
 
-    protected abstract void beginCollection();
+    protected abstract void beginCollection() throws IOException;
 
-    protected abstract void endCollection();
+    protected abstract void endCollection() throws IOException;
 
-    public void write() throws Exception {
+    public void write() throws IOException {
 
-        Exception[] exception = new Exception[1]; // mutable holder
+        final IOException[] exception = new IOException[1]; // mutable holder
         exception[0] = null;
 
         while (exception[0] != null
