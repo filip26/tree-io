@@ -150,6 +150,11 @@ public class TreeTraversal {
                 node = entry.getKey();
                 stack.push(entry);
 
+                consumer.accept(ctx, node);
+                visited++;
+
+                return !stack.isEmpty();
+                
             } else {
                 ctx = Context.COLLECTION_ELEMENT;
                 node = item;
@@ -165,7 +170,7 @@ public class TreeTraversal {
             node = item;
             stack.pop();
         }
-
+        
         switch (adapter.type(node)) {
         case COLLECTION:
             stack.push(adapter.asIterable(node).iterator());

@@ -65,19 +65,17 @@ public abstract class AbstractGenerator extends TreeTraversal {
             return;
         }
 
-        switch (adapter.type(value)) {
-        case MAP:
+        if (adapter.isMap(value)) {
             beginMap(ctx);
             return;
+        }
 
-        case COLLECTION:
+        if (adapter.isCollection(value)) {
             beginCollection(ctx);
             return;
-
-        default:
-            scalar(ctx, value);
-            break;
         }
+
+        scalar(ctx, value);
     }
 
     public void setMaxDepth(int maxDepth) {

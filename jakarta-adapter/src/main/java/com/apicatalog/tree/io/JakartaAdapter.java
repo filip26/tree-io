@@ -24,13 +24,6 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public NodeType type(Object node) {
-        if (node == null) {
-            return NodeType.NULL;
-        }
-        if (node instanceof String) {
-            return NodeType.STRING;
-        }
-
         switch (((JsonValue) node).getValueType()) {
         case NULL:
             return NodeType.NULL;
@@ -133,33 +126,36 @@ public class JakartaAdapter implements NodeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || ValueType.NULL.equals(((JsonValue) node).getValueType());
+                || ((node instanceof JsonValue)
+                        && ValueType.NULL.equals(((JsonValue) node).getValueType()));
     }
 
     @Override
     public boolean isBoolean(Object node) {
-        return node != null && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
-                || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
+        return node != null
+                && (node instanceof JsonValue)
+                && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
+                        || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
     }
 
     @Override
     public boolean isMap(Object node) {
-        return node != null && ValueType.OBJECT.equals(((JsonValue) node).getValueType());
+        return node != null && (node instanceof JsonObject);
     }
 
     @Override
     public boolean isCollection(Object node) {
-        return node != null && ValueType.ARRAY.equals(((JsonValue) node).getValueType());
+        return node != null && (node instanceof JsonArray);
     }
 
     @Override
     public boolean isString(Object node) {
-        return node != null && ValueType.STRING.equals(((JsonValue) node).getValueType());
+        return node != null && (node instanceof JsonString);
     }
 
     @Override
     public boolean isNumber(Object node) {
-        return node != null && ValueType.NUMBER.equals(((JsonValue) node).getValueType());
+        return node != null && (node instanceof JsonNumber);
     }
 
     @Override
