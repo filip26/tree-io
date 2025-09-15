@@ -2,6 +2,7 @@ package com.apicatalog.tree.io;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,9 +30,10 @@ import java.util.function.BiConsumer;
  * </ul>
  *
  * <p>
- * The traversal proceeds step-by-step: each call to {@link #traverse(BiConsumer)}
- * visits exactly one node and schedules its children (if any). Repeated calls
- * continue traversal until the stack is empty.
+ * The traversal proceeds step-by-step: each call to
+ * {@link #traverse(BiConsumer)} visits exactly one node and schedules its
+ * children (if any). Repeated calls continue traversal until the stack is
+ * empty.
  * </p>
  */
 public class TreeTraversal {
@@ -64,6 +66,8 @@ public class TreeTraversal {
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
+    protected Comparator<Object> propertyComparator;
+
     /** Adapter that provides access to node types and their children. */
     protected NodeAdapter adapter;
 
@@ -77,22 +81,31 @@ public class TreeTraversal {
      * @param adapter the adapter providing node access
      */
     protected TreeTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
+        this(stack, adapter, (a, b) -> 0);
+    }
+
+    protected TreeTraversal(final Deque<Object> stack, final NodeAdapter adapter, Comparator<Object> propertyComparator) {
         this.stack = stack;
         this.adapter = null;
         this.visited = 0;
         this.depth = 0;
     }
 
+    public static TreeTraversal of(Object root, NodeAdapter adapter) {
+        return of(root, adapter, (a, b) -> 0);
+    }
+
     /**
      * Creates a depth-first traversal starting from the given root node.
      *
-     * @param root    the root node, must not be {@code null}
-     * @param adapter the adapter providing node access, must not be {@code null}
+     * @param root      the root node, must not be {@code null}
+     * @param adapter   the adapter providing node access, must not be {@code null}
+     * @param predicate
      * @return a new traversal instance positioned at the root
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public static TreeTraversal of(Object root, NodeAdapter adapter) {
+    public static TreeTraversal of(Object root, NodeAdapter adapter, Comparator<Object> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
 
@@ -154,7 +167,7 @@ public class TreeTraversal {
                 visited++;
 
                 return !stack.isEmpty();
-                
+
             } else {
                 ctx = Context.COLLECTION_ELEMENT;
                 node = item;
@@ -170,7 +183,7 @@ public class TreeTraversal {
             node = item;
             stack.pop();
         }
-        
+
         switch (adapter.type(node)) {
         case COLLECTION:
             stack.push(adapter.asIterable(node).iterator());
@@ -180,6 +193,7 @@ public class TreeTraversal {
         case MAP:
             stack.push(adapter.properties(node)
                     .stream()
+                    .sorted(propertyComparator)
                     .map(prop -> new SimpleEntry<>(prop, adapter.property(prop, node)))
                     .iterator());
             depth += 1;
@@ -205,5 +219,9 @@ public class TreeTraversal {
         this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
+    }
+
+    public void propertyComparator(Comparator<Object> propertyComparator) {
+        this.propertyComparator = propertyComparator;
     }
 }
