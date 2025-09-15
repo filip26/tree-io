@@ -8,6 +8,9 @@ import java.util.Deque;
 
 public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
+    public static final int MAX_DEPTH = 16;
+    public static final int MAX_NODES = -1;
+
     /**
      * Indicates the type of node currently being visited during traversal.
      */
@@ -27,18 +30,18 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
          * Visiting an element within a collection, array, or list.
          */
         COLLECTION_ELEMENT,
-//
-//        /**
-//         * Visiting a primitive/scalar node (string, number, boolean, etc.).
-//         */
-//        SCALAR
     }
 
     protected final Deque<Context> context;
 
+    protected int maxVisitedNodes;
+    protected int maxDepth;
+
     protected BaseNodeWriter(Deque<Object> stack, NodeAdapter adapter) {
         super(stack, adapter);
         this.context = new ArrayDeque<>();
+        this.maxVisitedNodes = -1;
+        this.maxDepth = -1;
     }
 
     protected abstract void writeNull() throws IOException;
@@ -65,7 +68,10 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
     protected abstract void endCollection() throws IOException;
 
-    public void write() throws IOException {
+    public void write(Object node, NodeAdapter adapter) throws IOException {
+
+        reset(node, adapter);
+        context.clear();
 
         final IOException[] exception = new IOException[1]; // mutable holder
         exception[0] = null;
@@ -73,7 +79,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
         while (exception[0] != null
                 && traverse(t -> {
                     try {
-                        write(t);
+                        writeNode(t);
                     } catch (IOException e) {
                         exception[0] = e;
                     }
@@ -89,7 +95,11 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
         }
     }
 
-    protected void write(Object value) throws IOException {
+    protected void writeNode(Object value) throws IOException {
+
+        if (maxVisitedNodes >= visited) {
+            throw new IllegalStateException();
+        }
 
         if (adapter.isNull(value)) {
             writeNull();
@@ -122,6 +132,9 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
+                if (maxDepth >= depth()) {
+                    throw new IllegalStateException();
+                }
                 context.push(Context.PROPERTY_KEY);
             } else {
                 endMap();
@@ -135,6 +148,9 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
+                if (maxDepth >= depth()) {
+                    throw new IllegalStateException();
+                }
                 context.push(Context.COLLECTION_ELEMENT);
             } else {
                 endCollection();
@@ -169,5 +185,21 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
             context.pop();
             context.push(Context.PROPERTY_VALUE);
         }
+    }
+
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public void setMaxVisitedNodes(int maxVisitedNodes) {
+        this.maxVisitedNodes = maxVisitedNodes;
+    }
+
+    public int getMaxVisitedNodes() {
+        return maxVisitedNodes;
     }
 }

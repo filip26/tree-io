@@ -35,15 +35,15 @@ import java.util.function.Consumer;
  * </p>
  */
 public class DepthFirstTraversal {
-    
+
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
     /** Adapter that provides access to node types and their children. */
-    protected final NodeAdapter adapter;
+    protected NodeAdapter adapter;
 
     protected long visited;
-    
+
     /**
      * Creates a new traversal with the given stack and adapter.
      *
@@ -161,8 +161,15 @@ public class DepthFirstTraversal {
     public int depth() {
         return stack.size();
     }
-    
+
     public long visited() {
         return visited;
+    }
+
+    public void reset(Object node, NodeAdapter adapter) {
+        this.adapter = adapter;
+        this.stack.clear();
+        this.stack.push(node);
+        this.visited = 0;
     }
 }
