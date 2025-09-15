@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public abstract class BaseNodeWriter extends DepthFirstTraversal {
+public abstract class BaseWriter extends DepthFirstTraversal {
 
     public static final int MAX_DEPTH = 16;
     public static final int MAX_NODES = -1;
@@ -37,7 +37,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
     protected int maxVisitedNodes;
     protected int maxDepth;
 
-    protected BaseNodeWriter(Deque<Object> stack, NodeAdapter adapter) {
+    protected BaseWriter(Deque<Object> stack, NodeAdapter adapter) {
         super(stack, adapter);
         this.context = new ArrayDeque<>();
         this.maxVisitedNodes = -1;
@@ -97,7 +97,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
 
     protected void writeNode(Object value) throws IOException {
 
-        if (maxVisitedNodes <= visited) {
+        if (maxVisitedNodes > 0 && maxVisitedNodes <= visited) {
             throw new IllegalStateException();
         }
 
@@ -132,7 +132,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                if (maxDepth < depth()) {
+                if (maxDepth > 0 && maxDepth < depth()) {
                     throw new IllegalStateException();
                 }
                 context.push(Context.PROPERTY_KEY);
@@ -148,7 +148,7 @@ public abstract class BaseNodeWriter extends DepthFirstTraversal {
                 context.push(Context.PROPERTY_VALUE);
             }
             if (context.size() < depth()) {
-                if (maxDepth < depth()) {
+                if (maxDepth > 0 && maxDepth < depth()) {
                     throw new IllegalStateException();
                 }
                 context.push(Context.COLLECTION_ELEMENT);
