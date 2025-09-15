@@ -25,7 +25,7 @@ import jakarta.json.JsonValue;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonGeneratorFactory;
 
-class JakartaWriterTest {
+class JakartaTest {
 
     // Enable pretty printing
     final static Map<String, Object> CONFIG = new HashMap<>();
@@ -49,8 +49,18 @@ class JakartaWriterTest {
         assertEquals(getJsonResource(name), getJson(bos.toString()));
     }
 
+    @ParameterizedTest
+    @MethodSource({ "resources" })
+    void testMaterialize(String name) throws IOException {
+
+            JakartaMaterializer materializer = new JakartaMaterializer();
+            materializer.accept(getJsonResource(name), JakartaAdapter.instance());
+            
+            assertEquals(getJsonResource(name), materializer.value());
+    }
+
     static final Stream<String> resources() throws IOException {
-        URL url = JakartaWriterTest.class.getResource("");
+        URL url = JakartaTest.class.getResource("");
 
         return Stream.of(new File(url.getPath()).listFiles())
                 .filter(File::isFile)
@@ -59,7 +69,7 @@ class JakartaWriterTest {
     }
 
     static String getResource(String name) throws IOException {
-        try (BufferedInputStream is = new BufferedInputStream(JakartaWriterTest.class.getResourceAsStream(name))) {
+        try (BufferedInputStream is = new BufferedInputStream(JakartaTest.class.getResourceAsStream(name))) {
             return new BufferedReader(
                     new InputStreamReader(is, StandardCharsets.UTF_8))
                     .lines()
@@ -69,7 +79,7 @@ class JakartaWriterTest {
 
     static JsonValue getJsonResource(String name) {
         try (JsonReader reader = Json.createReader(
-                JakartaWriterTest.class.getResourceAsStream(name))) {
+                JakartaTest.class.getResourceAsStream(name))) {
             return reader.read();
         }
     }

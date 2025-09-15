@@ -3,7 +3,7 @@ package com.apicatalog.tree.io;
 import java.io.IOException;
 import java.util.Deque;
 
-public abstract class BaseNodeConsumer extends DepthFirstTraversal {
+public abstract class AbstractNodeConsumer extends DepthFirstTraversal {
 
     public static final int MAX_DEPTH = 16;
     public static final int MAX_NODES = -1;
@@ -11,17 +11,17 @@ public abstract class BaseNodeConsumer extends DepthFirstTraversal {
     protected int maxVisited;
     protected int maxDepth;
 
-    protected BaseNodeConsumer(Deque<Object> stack, NodeAdapter adapter) {
-        super(stack, adapter);
+    protected AbstractNodeConsumer(Deque<Object> stack) {
+        super(stack, null);
         this.maxVisited = -1;
         this.maxDepth = -1;
     }
 
     protected abstract void scalar(Context ctx, Object node) throws IOException;
 
-    protected abstract void beginMap() throws IOException;
+    protected abstract void beginMap(Context ctx) throws IOException;
 
-    protected abstract void beginCollection() throws IOException;
+    protected abstract void beginCollection(Context ctx) throws IOException;
 
     protected abstract void end() throws IOException;
 
@@ -67,11 +67,11 @@ public abstract class BaseNodeConsumer extends DepthFirstTraversal {
 
         switch (adapter.type(value)) {
         case MAP:
-            beginMap();
+            beginMap(ctx);
             return;
 
         case COLLECTION:
-            beginCollection();
+            beginCollection(ctx);
             return;
 
         default:

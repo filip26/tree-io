@@ -5,12 +5,12 @@ import java.util.ArrayDeque;
 
 import jakarta.json.stream.JsonGenerator;
 
-public class JakartaWriter extends BaseNodeConsumer {
+public class JakartaWriter extends AbstractNodeConsumer {
 
     protected final JsonGenerator writer;
 
     protected JakartaWriter(JsonGenerator writer) {
-        super(new ArrayDeque<>(), JakartaAdapter.INSTANCE);
+        super(new ArrayDeque<>());
         this.writer = writer;
     }
 
@@ -47,17 +47,17 @@ public class JakartaWriter extends BaseNodeConsumer {
             return;
 
         default:
-            throw new IllegalStateException("TODO " + adapter.type(node));
+            throw new IllegalStateException();
         }
     }
 
     @Override
-    protected void beginMap() throws IOException {
+    protected void beginMap(Context ctx) throws IOException {
         writer.writeStartObject();
     }
 
     @Override
-    protected void beginCollection() throws IOException {
+    protected void beginCollection(Context ctx) throws IOException {
         writer.writeStartArray();
     }
 

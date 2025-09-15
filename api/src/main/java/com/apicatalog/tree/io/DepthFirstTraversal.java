@@ -79,7 +79,7 @@ public class DepthFirstTraversal {
      */
     protected DepthFirstTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
         this.stack = stack;
-        this.adapter = adapter;
+        this.adapter = null;
         this.visited = 0;
         this.depth = 0;
     }
