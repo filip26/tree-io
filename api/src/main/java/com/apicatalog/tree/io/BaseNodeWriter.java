@@ -1,0 +1,150 @@
+package com.apicatalog.tree.io;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+public abstract class BaseNodeWriter extends DepthFirstTraversal {
+
+    /**
+     * Indicates the type of node currently being visited during traversal.
+     */
+    public enum State {
+
+        /**
+         * Visiting the key/name of a property in a map/object.
+         */
+        PROPERTY_KEY,
+
+        /**
+         * Visiting the value of a property in a map/object.
+         */
+        PROPERTY_VALUE,
+
+        /**
+         * Visiting an element within a collection, array, or list.
+         */
+        COLLECTION_ELEMENT,
+//
+//        /**
+//         * Visiting a primitive/scalar node (string, number, boolean, etc.).
+//         */
+//        SCALAR
+    }
+
+    protected final Deque<Object> context;
+
+    protected BaseNodeWriter(Deque<Object> stack, NodeAdapter adapter) {
+        super(stack, adapter);
+        this.context = new ArrayDeque<>();
+    }
+
+    protected abstract void writeNull();
+
+    protected abstract void writeString(String value);
+
+    protected abstract void writeNumber(BigInteger value);
+
+    protected abstract void writeNumber(BigDecimal value);
+
+    protected abstract void writeNumber(long value);
+
+    protected abstract void writeNumber(double value);
+
+    protected abstract void writeBoolean(boolean value);
+
+    protected abstract void writeByteArray(byte[] value);
+
+    protected abstract void beginMap();
+
+    protected abstract void endMap();
+
+    protected abstract void beginCollection();
+
+    protected abstract void endCollection();
+
+    public void write() {
+        while (traverse(this::write))
+            ;
+
+        if (!context.isEmpty()) {
+            throw new IllegalStateException();
+        }
+    }
+
+    protected void write(Object value) {
+
+        if (adapter.isNull(value)) {
+            writeNull();
+            if (State.PROPERTY_KEY == context.peek()) {
+                context.pop();
+                context.push(State.PROPERTY_VALUE);
+            }
+            return;
+        }
+
+        if (context.size() > depth()) {
+            if (State.PROPERTY_KEY == context.pop()) {
+                throw new IllegalStateException();
+            }
+        }
+
+        switch (adapter.type(value)) {
+        case MAP:
+            beginMap();
+            if (State.PROPERTY_KEY == context.peek()) {
+                context.pop();
+                context.push(State.PROPERTY_VALUE);
+            }
+            if (context.size() < depth()) {
+                context.push(State.PROPERTY_KEY);
+            } else {
+                endMap();
+            }
+            return;
+
+        case COLLECTION:
+            beginCollection();
+            if (State.PROPERTY_KEY == context.peek()) {
+                context.pop();
+                context.push(State.PROPERTY_VALUE);
+            }
+            if (context.size() < depth()) {
+                context.push(State.COLLECTION_ELEMENT);
+            } else {
+                endCollection();
+            }
+            return;
+
+        case STRING:
+            writeString(adapter.stringValue(value));
+            break;
+
+        case BINARY:
+            writeByteArray(adapter.binaryValue(value));
+            break;
+
+        case NUMBER:
+            // TODO
+            break;
+
+        case FALSE:
+            writeBoolean(false);
+            break;
+
+        case TRUE:
+            writeBoolean(true);
+            break;
+
+        case NULL:
+            writeNull();
+            break;
+        }
+        if (State.PROPERTY_KEY == context.peek()) {
+            context.pop();
+            context.push(State.PROPERTY_VALUE);
+        }
+    }
+
+}

@@ -35,7 +35,7 @@ import java.util.function.Consumer;
  * </p>
  */
 public class DepthFirstTraversal {
-
+    
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
@@ -152,5 +152,9 @@ public class DepthFirstTraversal {
         }
 
         return !stack.isEmpty();
+    }
+
+    public int depth() {
+        return stack.size();
     }
 }
