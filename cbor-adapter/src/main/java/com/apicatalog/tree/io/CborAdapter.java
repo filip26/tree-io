@@ -14,11 +14,13 @@ import co.nstant.in.cbor.model.DoublePrecisionFloat;
 import co.nstant.in.cbor.model.HalfPrecisionFloat;
 import co.nstant.in.cbor.model.MajorType;
 import co.nstant.in.cbor.model.Map;
+import co.nstant.in.cbor.model.NegativeInteger;
 import co.nstant.in.cbor.model.SimpleValue;
 import co.nstant.in.cbor.model.SinglePrecisionFloat;
 import co.nstant.in.cbor.model.Special;
 import co.nstant.in.cbor.model.SpecialType;
 import co.nstant.in.cbor.model.UnicodeString;
+import co.nstant.in.cbor.model.UnsignedInteger;
 
 public class CborAdapter implements NodeAdapter {
 
@@ -165,7 +167,7 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || ((MajorType.SPECIAL == ((DataItem) node).getMajorType())
+                || (node instanceof Special
                         && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
                         && SimpleValue.NULL.equals(node));
     }
@@ -173,7 +175,7 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isBoolean(Object node) {
         return node != null
-                && (MajorType.SPECIAL == ((DataItem) node).getMajorType())
+                && (node instanceof Special)
                 && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
                 && (SimpleValue.TRUE.equals(node)
                         || SimpleValue.FALSE.equals(node));
@@ -181,25 +183,25 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public boolean isMap(Object node) {
-        return node != null && MajorType.MAP == ((DataItem) node).getMajorType();
+        return node != null && (node instanceof Map);
     }
 
     @Override
     public boolean isCollection(Object node) {
-        return node != null && MajorType.ARRAY == ((DataItem) node).getMajorType();
+        return node != null && (node instanceof Array);
     }
 
     @Override
     public boolean isString(Object node) {
-        return node != null && MajorType.UNICODE_STRING == ((DataItem) node).getMajorType();
+        return node != null && (node instanceof UnicodeString);
     }
 
     @Override
     public boolean isNumber(Object node) {
         return node != null
-                && (MajorType.UNSIGNED_INTEGER == ((DataItem) node).getMajorType()
-                        || MajorType.NEGATIVE_INTEGER == ((DataItem) node).getMajorType()
-                        || ((MajorType.SPECIAL == ((DataItem) node).getMajorType())
+                && ((node instanceof UnsignedInteger)
+                        || (node instanceof NegativeInteger)
+                        || ((node instanceof Special)
                                 && (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT == (((Special) node).getSpecialType())
                                         || SpecialType.IEEE_754_HALF_PRECISION_FLOAT == (((Special) node).getSpecialType())
                                         || SpecialType.IEEE_754_SINGLE_PRECISION_FLOAT == (((Special) node).getSpecialType()))));
@@ -208,21 +210,21 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isIntegral(Object node) {
         return node != null
-                && (((DataItem) node).getMajorType().equals(MajorType.UNSIGNED_INTEGER)
-                        || ((DataItem) node).getMajorType().equals(MajorType.NEGATIVE_INTEGER));
+                && ((node instanceof UnsignedInteger)
+                        || (node instanceof NegativeInteger));
     }
 
     @Override
     public boolean isBinary(Object node) {
-        return node != null && MajorType.BYTE_STRING == ((DataItem) node).getMajorType();
+        return node != null && (node instanceof ByteString);
     }
 
     @Override
     public boolean isEmpty(Object node) {
-        if (isMap(node)) {
+        if (node instanceof Map) {
             return ((Map) node).getKeys().isEmpty();
         }
-        if (isCollection(node)) {
+        if (node instanceof Array) {
             return ((Array) node).getDataItems().isEmpty();
         }
         throw new ClassCastException();
@@ -230,10 +232,10 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public int size(Object node) {
-        if (isMap(node)) {
+        if (node instanceof Map) {
             return ((Map) node).getKeys().size();
         }
-        if (isCollection(node)) {
+        if (node instanceof Array) {
             return ((Array) node).getDataItems().size();
         }
         throw new ClassCastException();
