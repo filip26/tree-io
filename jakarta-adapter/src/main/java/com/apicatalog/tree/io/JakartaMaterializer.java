@@ -5,47 +5,111 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
 public class JakartaMaterializer extends AbstractNodeConsumer {
 
     protected JsonValue value;
-    protected String key;
     protected final Deque<Object> builders;
- 
-    
+
     public JakartaMaterializer() {
         super(new ArrayDeque<>());
         this.value = null;
-        this.key = null;
         this.builders = new ArrayDeque<>();
+    }
+
+    public void accept(Object node, NodeAdapter adapter) throws IOException {
+        // reset
+        this.value = null;
+        this.builders.clear();
+
+        super.accept(node, adapter);
+
     }
 
     @Override
     protected void scalar(Context ctx, Object node) throws IOException {
-        // TODO Auto-generated method stub
-        
+
+        switch (ctx) {
+        case PROPERTY_KEY:
+            builders.push(adapter.asString(node));
+            return;
+
+        case PROPERTY_VALUE:
+            String key = (String) builders.pop();
+            ((JsonObjectBuilder) builders.peek()).add(key, toJsonValue(node));
+            return;
+
+        case COLLECTION_ELEMENT:
+            ((JsonArrayBuilder) builders.peek()).add(toJsonValue(node));
+            return;
+
+        case ROOT:
+            value = toJsonValue(node);
+            return;
+
+        default:
+            throw new IllegalStateException();
+        }
+    }
+
+    protected JsonValue toJsonValue(Object node) {
+        switch (adapter.type(node)) {
+        case STRING:
+            return Json.createValue(adapter.stringValue(node));
+
+        case NULL:
+            return JsonValue.NULL;
+
+        case TRUE:
+            return JsonValue.TRUE;
+
+        case FALSE:
+            return JsonValue.FALSE;
+
+        case NUMBER:
+            return adapter.isIntegral(node)
+                    ? Json.createValue(adapter.bigIntegerValue(node))
+                    : Json.createValue(adapter.decimalValue(node));
+
+        default:
+            throw new IllegalStateException();
+        }
     }
 
     @Override
     protected void beginMap(Context ctx) throws IOException {
-        
-        // TODO Auto-generated method stub
-        
+        builders.push(Json.createObjectBuilder());
     }
 
     @Override
     protected void beginCollection(Context ctx) throws IOException {
-        // TODO Auto-generated method stub
-        
+        builders.push(Json.createArrayBuilder());
     }
 
     @Override
     protected void end() throws IOException {
-        // TODO Auto-generated method stub
-        
+        Object builder = builders.pop();
+        if (builder instanceof JsonArrayBuilder) {
+            value = ((JsonArrayBuilder) builder).build();
+        }
+        if (builder instanceof JsonObjectBuilder) {
+            value = ((JsonObjectBuilder) builder).build();
+        }
+
+        if (!builders.isEmpty()) {
+            if (builders.peek() instanceof String) {
+                String key = (String) builders.pop();
+                ((JsonObjectBuilder) builders.peek()).add(key, value);
+            }
+            if (builders.peek() instanceof JsonArrayBuilder) {
+                ((JsonArrayBuilder) builders.peek()).add(value);
+            }
+        }
     }
-    
+
     public JsonValue value() {
         return value;
     }
