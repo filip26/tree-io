@@ -2,6 +2,7 @@ package com.apicatalog.tree.io;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Deque;
 
 import jakarta.json.stream.JsonGenerator;
 
@@ -9,8 +10,12 @@ public class JakartaWriter extends AbstractGenerator {
 
     protected final JsonGenerator writer;
 
-    protected JakartaWriter(JsonGenerator writer) {
-        super(new ArrayDeque<>());
+    public JakartaWriter(JsonGenerator writer) {
+        this(writer, new ArrayDeque<>());
+    }
+
+    protected JakartaWriter(JsonGenerator writer, Deque<Object> stack) {
+        super(stack);
         this.writer = writer;
     }
 
