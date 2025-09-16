@@ -30,10 +30,9 @@ import java.util.function.BiConsumer;
  * </ul>
  *
  * <p>
- * The traversal proceeds step-by-step: each call to
- * {@link #step(BiConsumer)} visits exactly one node and schedules its
- * children (if any). Repeated calls continue traversal until the stack is
- * empty.
+ * The traversal proceeds step-by-step: each call to {@link #step(BiConsumer)}
+ * visits exactly one node and schedules its children (if any). Repeated calls
+ * continue traversal until the stack is empty.
  * </p>
  */
 public class NodeVisitor {
@@ -68,7 +67,7 @@ public class NodeVisitor {
 
     protected int maxVisited;
     protected int maxDepth;
-    
+
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
@@ -80,11 +79,11 @@ public class NodeVisitor {
     protected long depth;
     protected long visited;
 
-    /** Runtime */ 
+    /** Runtime */
     protected Object node;
     protected NodeType nodeType;
     protected Context nodeCtx;
-    
+
     /**
      * Creates a new traversal with the given stack and adapter.
      *
@@ -112,8 +111,9 @@ public class NodeVisitor {
     /**
      * Creates a depth-first traversal starting from the given root node.
      *
-     * @param root      the root node, must not be {@code null}
-     * @param adapter   the adapter providing node access, must not be {@code null}
+     * @param root               the root node, must not be {@code null}
+     * @param adapter            the adapter providing node access, must not be
+     *                           {@code null}
      * @param propertyComparator
      * @return a new traversal instance positioned at the root
      * @throws NullPointerException if {@code root} or {@code adapter} is
@@ -154,7 +154,7 @@ public class NodeVisitor {
         if (stack.isEmpty()) {
             return false;
         }
-        
+
         if (maxVisited > 0 && maxVisited <= visited) {
             throw new IllegalStateException();
         }
@@ -171,8 +171,8 @@ public class NodeVisitor {
             if (!it.hasNext()) {
                 stack.pop();
                 depth -= 1;
-                node = null;
-                nodeType = NodeType.NULL;
+                node = stack.pop();
+                nodeType = (NodeType) stack.pop();
                 nodeCtx = Context.END;
                 return !stack.isEmpty();
             }
@@ -214,14 +214,18 @@ public class NodeVisitor {
         }
 
         nodeType = adapter.type(node);
-        
+
         switch (nodeType) {
         case COLLECTION:
+            stack.push(NodeType.COLLECTION);
+            stack.push(node);
             stack.push(adapter.asIterable(node).iterator());
             depth += 1;
             break;
 
         case MAP:
+            stack.push(NodeType.MAP);
+            stack.push(node);
             stack.push(adapter.properties(node)
                     .stream()
                     .sorted(propertyComparator)
@@ -254,7 +258,7 @@ public class NodeVisitor {
     public void propertyComparator(Comparator<Object> propertyComparator) {
         this.propertyComparator = propertyComparator;
     }
-    
+
     public void maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
     }
@@ -269,5 +273,17 @@ public class NodeVisitor {
 
     public int maxVisited() {
         return maxVisited;
+    }
+
+    public Object node() {
+        return node;
+    }
+
+    public Context nodeContext() {
+        return nodeCtx;
+    }
+
+    public NodeType nodeType() {
+        return nodeType;
     }
 }
