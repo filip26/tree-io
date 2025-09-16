@@ -31,7 +31,7 @@ import java.util.function.BiConsumer;
  *
  * <p>
  * The traversal proceeds step-by-step: each call to
- * {@link #traverse(BiConsumer)} visits exactly one node and schedules its
+ * {@link #step(BiConsumer)} visits exactly one node and schedules its
  * children (if any). Repeated calls continue traversal until the stack is
  * empty.
  * </p>
@@ -63,6 +63,12 @@ public class NodeVisitor {
         END,
     }
 
+    public static final int MAX_DEPTH = -1;
+    public static final int MAX_NODES = -1;
+
+    protected int maxVisited;
+    protected int maxDepth;
+    
     /** Traversal stack; elements may be nodes or iterators of child nodes. */
     protected final Deque<Object> stack;
 
@@ -74,6 +80,11 @@ public class NodeVisitor {
     protected long depth;
     protected long visited;
 
+    /** Runtime */ 
+    protected Object node;
+    protected NodeType nodeType;
+    protected Context nodeCtx;
+    
     /**
      * Creates a new traversal with the given stack and adapter.
      *
@@ -90,6 +101,8 @@ public class NodeVisitor {
         this.visited = 0;
         this.depth = 0;
         this.propertyComparator = propertyComparator;
+        this.maxVisited = MAX_NODES;
+        this.maxDepth = MAX_DEPTH;
     }
 
     public static NodeVisitor of(Object root, NodeAdapter adapter) {
@@ -136,14 +149,19 @@ public class NodeVisitor {
      * @return {@code true} if there are more nodes to traverse, {@code false} if
      *         traversal is complete
      */
-    public boolean traverse(BiConsumer<Context, Object> consumer) {
+    public boolean step() {
 
         if (stack.isEmpty()) {
             return false;
         }
+        
+        if (maxVisited > 0 && maxVisited <= visited) {
+            throw new IllegalStateException();
+        }
+        if (maxDepth > 0 && maxDepth < depth) {
+            throw new IllegalStateException();
+        }
 
-        final Context ctx;
-        final Object node;
         Object item = stack.peek();
 
         // map or collection
@@ -153,20 +171,24 @@ public class NodeVisitor {
             if (!it.hasNext()) {
                 stack.pop();
                 depth -= 1;
-                consumer.accept(Context.END, null);
+                node = null;
+                nodeType = NodeType.NULL;
+                nodeCtx = Context.END;
                 return !stack.isEmpty();
             }
 
             item = it.next();
 
             if (item instanceof Map.Entry) {
-                ctx = Context.PROPERTY_KEY;
+                nodeCtx = Context.PROPERTY_KEY;
                 Map.Entry<?, ?> entry = (Map.Entry<?, ?>) item;
 
                 stack.push(entry);
 
-                // process property
-                consumer.accept(ctx, entry.getKey());
+                // process property key
+                node = entry.getKey();
+                nodeType = adapter.type(node);
+
                 visited++;
 
                 // process property value
@@ -174,24 +196,26 @@ public class NodeVisitor {
 
             } else {
                 // process collection element
-                ctx = Context.COLLECTION_ELEMENT;
+                nodeCtx = Context.COLLECTION_ELEMENT;
                 node = item;
             }
 
         } else if (item instanceof Map.Entry) {
             // process property value
-            ctx = Context.PROPERTY_VALUE;
+            nodeCtx = Context.PROPERTY_VALUE;
             node = ((Map.Entry<?, ?>) item).getValue();
             stack.pop();
 
         } else {
             // process root value
-            ctx = Context.ROOT;
+            nodeCtx = Context.ROOT;
             node = item;
             stack.pop();
         }
 
-        switch (adapter.type(node)) {
+        nodeType = adapter.type(node);
+        
+        switch (nodeType) {
         case COLLECTION:
             stack.push(adapter.asIterable(node).iterator());
             depth += 1;
@@ -210,7 +234,6 @@ public class NodeVisitor {
             break;
         }
 
-        consumer.accept(ctx, node);
         visited++;
 
         return !stack.isEmpty();
@@ -230,5 +253,21 @@ public class NodeVisitor {
 
     public void propertyComparator(Comparator<Object> propertyComparator) {
         this.propertyComparator = propertyComparator;
+    }
+    
+    public void maxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
+    public int maxDepth() {
+        return maxDepth;
+    }
+
+    public void maxVisited(int maxVisitedNodes) {
+        this.maxVisited = maxVisitedNodes;
+    }
+
+    public int maxVisited() {
+        return maxVisited;
     }
 }

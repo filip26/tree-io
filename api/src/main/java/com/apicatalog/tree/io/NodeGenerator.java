@@ -5,45 +5,33 @@ import java.util.Deque;
 
 public abstract class NodeGenerator extends NodeVisitor {
 
-    public static final int MAX_DEPTH = -1;
-    public static final int MAX_NODES = -1;
-
-    protected int maxVisited;
-    protected int maxDepth;
-
-    protected NodeGenerator(Deque<Object> stack) {
-        super(stack, null);
-        this.maxVisited = MAX_NODES;
-        this.maxDepth = MAX_DEPTH;
+    public enum PropertyKeyPolicy {
+        StringOnly,
+        ScalarOnly,
+        Any
     }
 
-    protected abstract void scalar(Context ctx, Object node) throws IOException;
+    protected final PropertyKeyPolicy policy;
+    
+    protected NodeGenerator(Deque<Object> stack, PropertyKeyPolicy policy) {
+        super(stack, null);
+        this.policy = policy;
+    }
 
-    protected abstract void beginMap(Context ctx) throws IOException;
+    protected abstract void scalar(Object node) throws IOException;
 
-    protected abstract void beginCollection(Context ctx) throws IOException;
+    protected abstract void beginMap() throws IOException;
+
+    protected abstract void beginCollection() throws IOException;
 
     protected abstract void end() throws IOException;
 
-    public void accept(Object node, NodeAdapter adapter) throws IOException {
+    public void node(Object node, NodeAdapter adapter) throws IOException {
 
         reset(node, adapter);
 
-        final IOException[] exception = new IOException[1]; // mutable holder
-        exception[0] = null;
-
-        while (exception[0] == null
-                && traverse((ctx, t) -> {
-                    try {
-                        accept(ctx, t);
-                    } catch (IOException e) {
-                        exception[0] = e;
-                    }
-                }))
-            ;
-
-        if (exception[0] != null) {
-            throw exception[0];
+        while (step()) {
+            node(node);
         }
 
         if (depth > 0) {
@@ -51,46 +39,42 @@ public abstract class NodeGenerator extends NodeVisitor {
         }
     }
 
-    protected void accept(Context ctx, Object value) throws IOException {
+    protected void node(Object value) throws IOException {
 
-        if (maxVisited > 0 && maxVisited <= visited) {
-            throw new IllegalStateException();
-        }
-        if (maxDepth > 0 && maxDepth < depth) {
-            throw new IllegalStateException();
-        }
-
-        if (Context.END == ctx) {
+        if (nodeCtx == Context.END) {
             end();
-            return;
+            return;            
+        }
+        
+        if (nodeCtx == Context.PROPERTY_KEY) {
+            switch (policy) {
+            case ScalarOnly:
+                if (nodeType != null && !nodeType.isScalar()) {
+                    throw new IllegalStateException();
+                }
+                
+                break;
+            case StringOnly:
+                if (NodeType.STRING != nodeType) {
+                    throw new IllegalStateException();
+                }
+                break;
+                
+            default:
+                break;
+            }            
         }
 
         if (adapter.isMap(value)) {
-            beginMap(ctx);
+            beginMap();
             return;
         }
 
         if (adapter.isCollection(value)) {
-            beginCollection(ctx);
+            beginCollection();
             return;
         }
 
-        scalar(ctx, value);
-    }
-
-    public void setMaxDepth(int maxDepth) {
-        this.maxDepth = maxDepth;
-    }
-
-    public int getMaxDepth() {
-        return maxDepth;
-    }
-
-    public void setMaxVisited(int maxVisitedNodes) {
-        this.maxVisited = maxVisitedNodes;
-    }
-
-    public int getMaxVisited() {
-        return maxVisited;
+        scalar(value);
     }
 }

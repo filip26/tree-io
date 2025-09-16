@@ -15,13 +15,13 @@ public class JakartaWriter extends NodeGenerator {
     }
 
     protected JakartaWriter(JsonGenerator writer, Deque<Object> stack) {
-        super(stack);
+        super(stack, PropertyKeyPolicy.StringOnly);
         this.writer = writer;
     }
 
     @Override
-    protected void scalar(Context ctx, Object node) throws IOException {
-        if (ctx == Context.PROPERTY_KEY) {
+    protected void scalar(Object node) throws IOException {
+        if (nodeCtx == Context.PROPERTY_KEY) {
             writer.writeKey(adapter.asString(node));
             return;
         }
@@ -57,16 +57,16 @@ public class JakartaWriter extends NodeGenerator {
     }
 
     @Override
-    protected void beginMap(Context ctx) throws IOException {
-        if (ctx == Context.PROPERTY_KEY) {
+    protected void beginMap() throws IOException {
+        if (nodeCtx == Context.PROPERTY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartObject();
     }
 
     @Override
-    protected void beginCollection(Context ctx) throws IOException {
-        if (ctx == Context.PROPERTY_KEY) {
+    protected void beginCollection() throws IOException {
+        if (nodeCtx == Context.PROPERTY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartArray();

@@ -51,7 +51,7 @@ class JakartaTest {
 
         try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
             JakartaWriter writer = new JakartaWriter(generator);
-            writer.accept(getJsonResource(name), JakartaAdapter.instance());
+            writer.node(getJsonResource(name), JakartaAdapter.instance());
         }
         assertEquals(getJsonResource(name), getJson(bos.toString()));
     }
@@ -60,7 +60,7 @@ class JakartaTest {
     @MethodSource({ "resources" })
     @Order(1)
     void testMaterialize(String name) throws IOException {
-        MATERIALIZER.accept(getJsonResource(name), JakartaAdapter.instance());
+        MATERIALIZER.node(getJsonResource(name), JakartaAdapter.instance());
         assertEquals(getJsonResource(name), MATERIALIZER.value());
     }
 

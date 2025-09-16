@@ -21,27 +21,27 @@ public class CborMaterializer extends NodeGenerator {
     protected final Deque<Object> builders;
 
     public CborMaterializer() {
-        super(new ArrayDeque<>());
+        super(new ArrayDeque<>(), PropertyKeyPolicy.Any);
         this.value = null;
         this.builders = new ArrayDeque<>();
     }
 
-    public void accept(Object node, NodeAdapter adapter) {
+    public void node(Object node, NodeAdapter adapter) {
         // reset
         this.value = null;
         this.builders.clear();
 
         try {
-            super.accept(node, adapter);
+            super.node(node, adapter);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
 
     @Override
-    protected void scalar(Context ctx, Object node) {
+    protected void scalar(Object node) {
 
-        switch (ctx) {
+        switch (nodeCtx) {
         case PROPERTY_KEY:
             builders.push(toScalar(node));
             return;
@@ -101,12 +101,12 @@ public class CborMaterializer extends NodeGenerator {
     }
 
     @Override
-    protected void beginMap(Context ctx) {
+    protected void beginMap() {
         builders.push(new Map());
     }
 
     @Override
-    protected void beginCollection(Context ctx) {
+    protected void beginCollection() {
         builders.push(new Array());
     }
 

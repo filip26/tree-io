@@ -16,18 +16,18 @@ public class JakartaMaterializer extends NodeGenerator {
     protected final Deque<Object> builders;
 
     public JakartaMaterializer() {
-        super(new ArrayDeque<>());
+        super(new ArrayDeque<>(), PropertyKeyPolicy.StringOnly);
         this.value = null;
         this.builders = new ArrayDeque<>();
     }
 
-    public void accept(Object node, NodeAdapter adapter) {
+    public void node(Object node, NodeAdapter adapter) {
         // reset
         this.value = null;
         this.builders.clear();
 
         try {
-            super.accept(node, adapter);
+            super.node(node, adapter);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
@@ -35,9 +35,9 @@ public class JakartaMaterializer extends NodeGenerator {
     }
 
     @Override
-    protected void scalar(Context ctx, Object node) {
+    protected void scalar(Object node) {
 
-        switch (ctx) {
+        switch (nodeCtx) {
         case PROPERTY_KEY:
             builders.push(adapter.asString(node));
             return;
@@ -89,12 +89,12 @@ public class JakartaMaterializer extends NodeGenerator {
     }
 
     @Override
-    protected void beginMap(Context ctx) {
+    protected void beginMap() {
         builders.push(JsonValue.EMPTY_JSON_OBJECT);
     }
 
     @Override
-    protected void beginCollection(Context ctx) {
+    protected void beginCollection() {
         builders.push(Json.createArrayBuilder());
     }
 
