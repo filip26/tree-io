@@ -10,7 +10,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
-public class JakartaMaterializer extends AbstractGenerator {
+public class JakartaMaterializer extends NodeGenerator {
 
     protected JsonValue value;
     protected final Deque<Object> builders;

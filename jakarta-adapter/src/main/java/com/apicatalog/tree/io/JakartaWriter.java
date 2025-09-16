@@ -6,7 +6,7 @@ import java.util.Deque;
 
 import jakarta.json.stream.JsonGenerator;
 
-public class JakartaWriter extends AbstractGenerator {
+public class JakartaWriter extends NodeGenerator {
 
     protected final JsonGenerator writer;
 

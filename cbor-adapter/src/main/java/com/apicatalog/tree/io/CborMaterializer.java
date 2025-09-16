@@ -15,7 +15,7 @@ import co.nstant.in.cbor.model.SimpleValue;
 import co.nstant.in.cbor.model.UnicodeString;
 import co.nstant.in.cbor.model.UnsignedInteger;
 
-public class CborMaterializer extends AbstractGenerator {
+public class CborMaterializer extends NodeGenerator {
 
     protected DataItem value;
     protected final Deque<Object> builders;

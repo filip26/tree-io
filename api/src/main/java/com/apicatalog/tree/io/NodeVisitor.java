@@ -36,7 +36,7 @@ import java.util.function.BiConsumer;
  * empty.
  * </p>
  */
-public class TreeTraversal {
+public class NodeVisitor {
 
     /**
      * Indicates the type of node currently being visited during traversal.
@@ -80,11 +80,11 @@ public class TreeTraversal {
      * @param stack   the stack to use for traversal state
      * @param adapter the adapter providing node access
      */
-    protected TreeTraversal(final Deque<Object> stack, final NodeAdapter adapter) {
+    protected NodeVisitor(final Deque<Object> stack, final NodeAdapter adapter) {
         this(stack, adapter, (a, b) -> 0);
     }
 
-    protected TreeTraversal(final Deque<Object> stack, final NodeAdapter adapter, Comparator<Object> propertyComparator) {
+    protected NodeVisitor(final Deque<Object> stack, final NodeAdapter adapter, Comparator<Object> propertyComparator) {
         this.stack = stack;
         this.adapter = null;
         this.visited = 0;
@@ -92,7 +92,7 @@ public class TreeTraversal {
         this.propertyComparator = propertyComparator;
     }
 
-    public static TreeTraversal of(Object root, NodeAdapter adapter) {
+    public static NodeVisitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, (a, b) -> 0);
     }
 
@@ -101,19 +101,19 @@ public class TreeTraversal {
      *
      * @param root      the root node, must not be {@code null}
      * @param adapter   the adapter providing node access, must not be {@code null}
-     * @param predicate
+     * @param propertyComparator
      * @return a new traversal instance positioned at the root
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public static TreeTraversal of(Object root, NodeAdapter adapter, Comparator<Object> propertyComparator) {
+    public static NodeVisitor of(Object root, NodeAdapter adapter, Comparator<Object> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
 
         Deque<Object> stack = new ArrayDeque<>();
         stack.push(root);
 
-        return new TreeTraversal(stack, adapter);
+        return new NodeVisitor(stack, adapter);
     }
 
     /**

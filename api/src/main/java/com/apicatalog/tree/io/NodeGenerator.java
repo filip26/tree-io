@@ -3,7 +3,7 @@ package com.apicatalog.tree.io;
 import java.io.IOException;
 import java.util.Deque;
 
-public abstract class AbstractGenerator extends TreeTraversal {
+public abstract class NodeGenerator extends NodeVisitor {
 
     public static final int MAX_DEPTH = -1;
     public static final int MAX_NODES = -1;
@@ -11,7 +11,7 @@ public abstract class AbstractGenerator extends TreeTraversal {
     protected int maxVisited;
     protected int maxDepth;
 
-    protected AbstractGenerator(Deque<Object> stack) {
+    protected NodeGenerator(Deque<Object> stack) {
         super(stack, null);
         this.maxVisited = MAX_NODES;
         this.maxDepth = MAX_DEPTH;
