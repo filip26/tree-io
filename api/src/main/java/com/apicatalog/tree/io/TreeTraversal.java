@@ -89,6 +89,7 @@ public class TreeTraversal {
         this.adapter = null;
         this.visited = 0;
         this.depth = 0;
+        this.propertyComparator = propertyComparator;
     }
 
     public static TreeTraversal of(Object root, NodeAdapter adapter) {
@@ -145,6 +146,7 @@ public class TreeTraversal {
         final Object node;
         Object item = stack.peek();
 
+        // map or collection
         if (item instanceof Iterator) {
 
             Iterator<?> it = (Iterator<?>) item;
@@ -160,25 +162,30 @@ public class TreeTraversal {
             if (item instanceof Map.Entry) {
                 ctx = Context.PROPERTY_KEY;
                 Map.Entry<?, ?> entry = (Map.Entry<?, ?>) item;
-                node = entry.getKey();
+
                 stack.push(entry);
 
-                consumer.accept(ctx, node);
+                // process property
+                consumer.accept(ctx, entry.getKey());
                 visited++;
 
-                return !stack.isEmpty();
+                // process property value
+                return true;
 
             } else {
+                // process collection element
                 ctx = Context.COLLECTION_ELEMENT;
                 node = item;
             }
 
         } else if (item instanceof Map.Entry) {
+            // process property value
             ctx = Context.PROPERTY_VALUE;
             node = ((Map.Entry<?, ?>) item).getValue();
             stack.pop();
 
         } else {
+            // process root value
             ctx = Context.ROOT;
             node = item;
             stack.pop();

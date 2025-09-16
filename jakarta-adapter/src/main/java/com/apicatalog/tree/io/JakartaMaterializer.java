@@ -6,6 +6,7 @@ import java.util.Deque;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
@@ -43,6 +44,10 @@ public class JakartaMaterializer extends AbstractGenerator {
 
         case PROPERTY_VALUE:
             String key = (String) builders.pop();
+            if (builders.peek() instanceof JsonObject) {
+                builders.pop();
+                builders.push(Json.createObjectBuilder());
+            }
             ((JsonObjectBuilder) builders.peek()).add(key, toJsonValue(node));
             return;
 
@@ -85,7 +90,7 @@ public class JakartaMaterializer extends AbstractGenerator {
 
     @Override
     protected void beginMap(Context ctx) {
-        builders.push(Json.createObjectBuilder());
+        builders.push(JsonValue.EMPTY_JSON_OBJECT);
     }
 
     @Override
@@ -96,16 +101,27 @@ public class JakartaMaterializer extends AbstractGenerator {
     @Override
     protected void end() {
         Object builder = builders.pop();
+
         if (builder instanceof JsonArrayBuilder) {
             value = ((JsonArrayBuilder) builder).build();
-        }
-        if (builder instanceof JsonObjectBuilder) {
+
+        } else if (builder instanceof JsonObjectBuilder) {
             value = ((JsonObjectBuilder) builder).build();
+
+        } else if (builder instanceof JsonValue) {
+            value = (JsonValue) builder;
+
+        } else {
+            throw new IllegalStateException();
         }
 
         if (!builders.isEmpty()) {
             if (builders.peek() instanceof String) {
                 String key = (String) builders.pop();
+                if (builders.peek() instanceof JsonObject) {
+                    builders.pop();
+                    builders.push(Json.createObjectBuilder());
+                }
                 ((JsonObjectBuilder) builders.peek()).add(key, value);
             }
             if (builders.peek() instanceof JsonArrayBuilder) {
