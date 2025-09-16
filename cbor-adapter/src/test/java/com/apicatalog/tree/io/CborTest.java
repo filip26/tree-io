@@ -2,17 +2,12 @@ package com.apicatalog.tree.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -28,17 +23,16 @@ import co.nstant.in.cbor.model.DataItem;
 @TestMethodOrder(OrderAnnotation.class)
 class CborTest {
 
-
-//    final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(CONFIG);
-//
     final static CborMaterializer MATERIALIZER = new CborMaterializer();
 
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(1)
     void testMaterialize(String name) throws IOException, CborException {
-        MATERIALIZER.accept(getCborResource(name), CborAdapter.instance());
-        assertEquals(getCborResource(name), MATERIALIZER.value());
+        System.out.println(getCborResource(name).iterator().next());
+        MATERIALIZER.accept(getCborResource(name).iterator().next(), CborAdapter.instance());
+
+        assertEquals(getCborResource(name).iterator().next(), MATERIALIZER.value());
     }
 
     static final Stream<String> resources() throws IOException {
@@ -50,23 +44,10 @@ class CborTest {
                 .filter(name -> name.endsWith(".cbor"));
     }
 
-    static String getResource(String name) throws IOException {
-        try (BufferedInputStream is = new BufferedInputStream(CborTest.class.getResourceAsStream(name))) {
-            return new BufferedReader(
-                    new InputStreamReader(is, StandardCharsets.UTF_8))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-        }
-    }
-
     static List<DataItem> getCborResource(String name) throws CborException, IOException {
         return CborDecoder.decode(toByteArray(CborTest.class.getResourceAsStream(name)));
     }
 
-    static List<DataItem> getCbor(String cbor) throws CborException {
-        return CborDecoder.decode(cbor.getBytes(StandardCharsets.UTF_8));        
-    }
-    
     static byte[] toByteArray(InputStream in) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] data = new byte[8192]; // 8 KB buffer
