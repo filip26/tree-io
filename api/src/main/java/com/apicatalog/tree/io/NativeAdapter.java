@@ -20,6 +20,22 @@ public class NativeAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isNode(Object node) {
+        return node == null
+                || node instanceof String
+                || node instanceof Boolean
+                || node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || node instanceof Double
+                || node instanceof BigDecimal
+                || node instanceof Float
+                || node instanceof Map
+                || node instanceof Collection
+                || node instanceof byte[];
+    }
+
+    @Override
     public NodeType type(Object node) {
         if (node == null) {
             return NodeType.NULL;

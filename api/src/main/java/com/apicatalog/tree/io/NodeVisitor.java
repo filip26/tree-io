@@ -274,16 +274,4 @@ public class NodeVisitor {
     public int maxVisited() {
         return maxVisited;
     }
-
-    public Object node() {
-        return node;
-    }
-
-    public Context nodeContext() {
-        return nodeCtx;
-    }
-
-    public NodeType nodeType() {
-        return nodeType;
-    }
 }

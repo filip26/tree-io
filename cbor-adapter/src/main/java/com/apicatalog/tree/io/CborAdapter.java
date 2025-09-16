@@ -30,8 +30,12 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isNode(Object node) {
+        return node != null && node instanceof DataItem;
+    }
+    
+    @Override
     public NodeType type(Object node) {
-
         switch (((DataItem) node).getMajorType()) {
 
         case MAP:

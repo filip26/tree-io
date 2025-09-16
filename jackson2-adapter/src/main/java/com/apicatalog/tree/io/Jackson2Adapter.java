@@ -25,8 +25,12 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType type(Object node) {
+    public boolean isNode(Object node) {
+        return node != null && node instanceof JsonNode;
+    }
 
+    @Override
+    public NodeType type(Object node) {
 
         switch (((JsonNode) node).getNodeType()) {
         case NULL:

@@ -17,6 +17,8 @@ import java.util.stream.Stream;
  */
 public interface NodeAdapter {
 
+    boolean isNode(Object node);
+    
     /**
      * Returns the type of the given node.
      *
