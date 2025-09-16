@@ -226,10 +226,10 @@ public class NodeVisitor {
         case MAP:
             stack.push(NodeType.MAP);
             stack.push(node);
-            stack.push(adapter.properties(node)
+            stack.push(adapter.keys(node)
                     .stream()
                     .sorted(propertyComparator)
-                    .map(prop -> new SimpleEntry<>(prop, adapter.property(prop, node)))
+                    .map(key -> new SimpleEntry<>(key, adapter.property(key, node)))
                     .iterator());
             depth += 1;
             break;

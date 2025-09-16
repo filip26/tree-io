@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -39,24 +40,26 @@ public interface NodeAdapter {
     boolean isEmpty(Object node);
 
     // --- Map operations ---
-    boolean isMap(Object node);
-
+    Set<NodeType> keyTypes();
+    
+    boolean isMap(Object node); 
+    
     /**
-     * Returns the collection of property names for a map node.
+     * Returns the collection of property keys for a map node.
      *
      * @param node the map node
-     * @return collection of property names
+     * @return collection of property keys
      */
-    Collection<? extends Object> properties(Object node);
+    Collection<? extends Object> keys(Object node);
 
     /**
      * Returns the value of a property from a map node.
      *
-     * @param property the property key
+     * @param key the property key
      * @param node     the map node containing the property
      * @return the child node associated with the property key
      */
-    Object property(Object property, Object node);
+    Object property(Object key, Object node);
 
     // --- Collection operations ---
     boolean isCollection(Object node);

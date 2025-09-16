@@ -2,16 +2,26 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class NativeAdapter implements NodeAdapter {
+
+    protected static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING
+    ));
 
     protected static final NativeAdapter INSTANCE = new NativeAdapter();
 
@@ -67,9 +77,14 @@ public class NativeAdapter implements NodeAdapter {
         throw new IllegalArgumentException();
     }
 
+    @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Collection<? extends Object> properties(Object node) {
+    public Collection<? extends Object> keys(Object node) {
         return ((Map) node).keySet();
     }
 
@@ -321,7 +336,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyMap();
             }
 
-            return adapter.properties(value)
+            return adapter.keys(value)
                     .stream()
                     .reduce(new LinkedHashMap<>(adapter.size(value)),
                             (map, key) -> {

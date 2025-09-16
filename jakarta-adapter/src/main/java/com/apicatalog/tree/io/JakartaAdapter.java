@@ -16,6 +16,8 @@ import jakarta.json.JsonValue.ValueType;
 
 public class JakartaAdapter implements NodeAdapter {
 
+    static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
+    
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
     public static final JakartaAdapter instance() {
@@ -59,7 +61,12 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Set<String> properties(Object node) {
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
+    
+    @Override
+    public Set<String> keys(Object node) {
         return ((JsonObject) node).keySet();
     }
 

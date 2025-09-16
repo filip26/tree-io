@@ -18,6 +18,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Jackson2Adapter implements NodeAdapter {
 
+    protected static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
+
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 
     public static final Jackson2Adapter instance() {
@@ -55,7 +57,12 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
-    public Set<String> properties(Object node) {
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
+    
+    @Override
+    public Set<String> keys(Object node) {
         return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 

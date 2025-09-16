@@ -2,9 +2,12 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import co.nstant.in.cbor.model.Array;
@@ -23,6 +26,13 @@ import co.nstant.in.cbor.model.UnsignedInteger;
 
 public class CborAdapter implements NodeAdapter {
 
+    protected static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING
+    ));
+    
     static final CborAdapter INSTANCE = new CborAdapter();
 
     public static final CborAdapter instance() {
@@ -77,9 +87,14 @@ public class CborAdapter implements NodeAdapter {
 
         throw new IllegalStateException();
     }
+    
+    @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
 
     @Override
-    public Collection<DataItem> properties(Object node) {
+    public Collection<DataItem> keys(Object node) {
         return ((Map) node).getKeys();
     }
 

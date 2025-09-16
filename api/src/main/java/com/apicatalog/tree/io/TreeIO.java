@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class TreeIO {
+public class TreeIO<T> {
 
     protected final NodeAdapter adapter;
-    protected final Object root;
+    protected final T root;
 
-    public TreeIO(Object root, NodeAdapter adapter) {
+    public TreeIO(T root, NodeAdapter adapter) {
         this.root = root;
         this.adapter = adapter;
     }
@@ -75,8 +75,8 @@ public class TreeIO {
                     rightAdapter);
 
         case MAP:
-            final Collection<? extends Object> leftProps = leftAdapter.properties(left);
-            final Collection<? extends Object> rightProps = rightAdapter.properties(right);
+            final Collection<? extends Object> leftProps = leftAdapter.keys(left);
+            final Collection<? extends Object> rightProps = rightAdapter.keys(right);
 
             if (leftProps.size() != rightProps.size()) {
                 return false;
