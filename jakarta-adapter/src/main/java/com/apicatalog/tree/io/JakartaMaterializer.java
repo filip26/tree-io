@@ -12,18 +12,18 @@ import jakarta.json.JsonValue;
 
 public class JakartaMaterializer extends NodeGenerator {
 
-    protected JsonValue value;
+    protected JsonValue json;
     protected final Deque<Object> builders;
 
     public JakartaMaterializer() {
         super(new ArrayDeque<>(), PropertyKeyPolicy.StringOnly);
-        this.value = null;
+        this.json = null;
         this.builders = new ArrayDeque<>();
     }
 
     public void node(Object node, NodeAdapter adapter) {
         // reset
-        this.value = null;
+        this.json = null;
         this.builders.clear();
 
         try {
@@ -37,7 +37,7 @@ public class JakartaMaterializer extends NodeGenerator {
     @Override
     protected void scalar(Object node) {
 
-        switch (nodeCtx) {
+        switch (nodeContext) {
         case PROPERTY_KEY:
             builders.push(adapter.asString(node));
             return;
@@ -56,7 +56,7 @@ public class JakartaMaterializer extends NodeGenerator {
             return;
 
         case ROOT:
-            value = toJsonValue(node);
+            json = toJsonValue(node);
             return;
 
         default:
@@ -103,13 +103,13 @@ public class JakartaMaterializer extends NodeGenerator {
         Object builder = builders.pop();
 
         if (builder instanceof JsonArrayBuilder) {
-            value = ((JsonArrayBuilder) builder).build();
+            json = ((JsonArrayBuilder) builder).build();
 
         } else if (builder instanceof JsonObjectBuilder) {
-            value = ((JsonObjectBuilder) builder).build();
+            json = ((JsonObjectBuilder) builder).build();
 
         } else if (builder instanceof JsonValue) {
-            value = (JsonValue) builder;
+            json = (JsonValue) builder;
 
         } else {
             throw new IllegalStateException();
@@ -122,15 +122,15 @@ public class JakartaMaterializer extends NodeGenerator {
                     builders.pop();
                     builders.push(Json.createObjectBuilder());
                 }
-                ((JsonObjectBuilder) builders.peek()).add(key, value);
+                ((JsonObjectBuilder) builders.peek()).add(key, json);
             }
             if (builders.peek() instanceof JsonArrayBuilder) {
-                ((JsonArrayBuilder) builders.peek()).add(value);
+                ((JsonArrayBuilder) builders.peek()).add(json);
             }
         }
     }
 
-    public JsonValue value() {
-        return value;
+    public JsonValue json() {
+        return json;
     }
 }

@@ -21,7 +21,7 @@ public class JakartaWriter extends NodeGenerator {
 
     @Override
     protected void scalar(Object node) throws IOException {
-        if (nodeCtx == Context.PROPERTY_KEY) {
+        if (nodeContext == Context.PROPERTY_KEY) {
             writer.writeKey(adapter.asString(node));
             return;
         }
@@ -58,7 +58,7 @@ public class JakartaWriter extends NodeGenerator {
 
     @Override
     protected void beginMap() throws IOException {
-        if (nodeCtx == Context.PROPERTY_KEY) {
+        if (nodeContext == Context.PROPERTY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartObject();
@@ -66,7 +66,7 @@ public class JakartaWriter extends NodeGenerator {
 
     @Override
     protected void beginCollection() throws IOException {
-        if (nodeCtx == Context.PROPERTY_KEY) {
+        if (nodeContext == Context.PROPERTY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartArray();

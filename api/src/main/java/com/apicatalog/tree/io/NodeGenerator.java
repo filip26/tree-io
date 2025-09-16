@@ -12,7 +12,7 @@ public abstract class NodeGenerator extends NodeVisitor {
     }
 
     protected final PropertyKeyPolicy policy;
-    
+
     protected NodeGenerator(Deque<Object> stack, PropertyKeyPolicy policy) {
         super(stack, null);
         this.policy = policy;
@@ -31,7 +31,7 @@ public abstract class NodeGenerator extends NodeVisitor {
         reset(node, adapter);
 
         while (step()) {
-            node(node);
+            node();
         }
 
         if (depth > 0) {
@@ -39,42 +39,42 @@ public abstract class NodeGenerator extends NodeVisitor {
         }
     }
 
-    protected void node(Object value) throws IOException {
+    protected void node() throws IOException {
 
-        if (nodeCtx == Context.END) {
+        if (nodeContext == Context.END) {
             end();
-            return;            
+            return;
         }
-        
-        if (nodeCtx == Context.PROPERTY_KEY) {
+
+        if (nodeContext == Context.PROPERTY_KEY) {
             switch (policy) {
             case ScalarOnly:
                 if (nodeType != null && !nodeType.isScalar()) {
                     throw new IllegalStateException();
                 }
-                
+
                 break;
             case StringOnly:
                 if (NodeType.STRING != nodeType) {
                     throw new IllegalStateException();
                 }
                 break;
-                
+
             default:
                 break;
-            }            
+            }
         }
 
-        if (adapter.isMap(value)) {
+        if (NodeType.MAP == nodeType) {
             beginMap();
             return;
         }
 
-        if (adapter.isCollection(value)) {
+        if (NodeType.COLLECTION == nodeType) {
             beginCollection();
             return;
         }
 
-        scalar(value);
+        scalar(node);
     }
 }

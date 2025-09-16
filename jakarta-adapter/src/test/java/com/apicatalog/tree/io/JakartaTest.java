@@ -61,7 +61,7 @@ class JakartaTest {
     @Order(1)
     void testMaterialize(String name) throws IOException {
         MATERIALIZER.node(getJsonResource(name), JakartaAdapter.instance());
-        assertEquals(getJsonResource(name), MATERIALIZER.value());
+        assertEquals(getJsonResource(name), MATERIALIZER.json());
     }
 
     static final Stream<String> resources() throws IOException {

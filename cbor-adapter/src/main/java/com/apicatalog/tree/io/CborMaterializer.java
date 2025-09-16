@@ -41,7 +41,7 @@ public class CborMaterializer extends NodeGenerator {
     @Override
     protected void scalar(Object node) {
 
-        switch (nodeCtx) {
+        switch (nodeContext) {
         case PROPERTY_KEY:
             builders.push(toScalar(node));
             return;

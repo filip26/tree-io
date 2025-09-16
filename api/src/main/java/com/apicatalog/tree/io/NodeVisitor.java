@@ -82,7 +82,7 @@ public class NodeVisitor {
     /** Runtime */
     protected Object node;
     protected NodeType nodeType;
-    protected Context nodeCtx;
+    protected Context nodeContext;
 
     /**
      * Creates a new traversal with the given stack and adapter.
@@ -173,14 +173,14 @@ public class NodeVisitor {
                 depth -= 1;
                 node = stack.pop();
                 nodeType = (NodeType) stack.pop();
-                nodeCtx = Context.END;
+                nodeContext = Context.END;
                 return !stack.isEmpty();
             }
 
             item = it.next();
 
             if (item instanceof Map.Entry) {
-                nodeCtx = Context.PROPERTY_KEY;
+                nodeContext = Context.PROPERTY_KEY;
                 Map.Entry<?, ?> entry = (Map.Entry<?, ?>) item;
 
                 stack.push(entry);
@@ -196,19 +196,19 @@ public class NodeVisitor {
 
             } else {
                 // process collection element
-                nodeCtx = Context.COLLECTION_ELEMENT;
+                nodeContext = Context.COLLECTION_ELEMENT;
                 node = item;
             }
 
         } else if (item instanceof Map.Entry) {
             // process property value
-            nodeCtx = Context.PROPERTY_VALUE;
+            nodeContext = Context.PROPERTY_VALUE;
             node = ((Map.Entry<?, ?>) item).getValue();
             stack.pop();
 
         } else {
             // process root value
-            nodeCtx = Context.ROOT;
+            nodeContext = Context.ROOT;
             node = item;
             stack.pop();
         }
@@ -255,8 +255,8 @@ public class NodeVisitor {
         this.visited = 0;
     }
 
-    public void propertyComparator(Comparator<Object> propertyComparator) {
-        this.propertyComparator = propertyComparator;
+    public void keyComparator(Comparator<Object> keyComparator) {
+        this.propertyComparator = keyComparator;
     }
 
     public void maxDepth(int maxDepth) {
