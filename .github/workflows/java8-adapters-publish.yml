@@ -1,0 +1,38 @@
+name: Publish Adapters to the Maven Central
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: maven-central
+    strategy:
+      fail-fast: false
+      matrix:
+        module: 
+          - jakarta-adapter
+#          - jackson2-adapter
+          - cbor-adapter    
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: central
+          server-username: CENTRAL_TOKEN_ID
+          server-password: CENTRAL_TOKEN_SECRET
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Build and Deploy ${{ matrix.module }}
+        working-directory: ${{ matrix.module }}
+        run: mvn -B -Pmaven-central deploy
+        env:
+          CENTRAL_TOKEN_ID: ${{ secrets.CENTRAL_TOKEN_ID }}
+          CENTRAL_TOKEN_SECRET: ${{ secrets.CENTRAL_TOKEN_SECRET }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+          MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+

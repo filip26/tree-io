@@ -1,9 +1,6 @@
-name: Publish JRE8 to the Maven Central
+name: Publish API to the Maven Central
 
 on:
-  release:
-    types: [created]
-    
   workflow_dispatch:
   
 jobs:
@@ -23,7 +20,8 @@ jobs:
           server-password: CENTRAL_TOKEN_SECRET
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - name: Publish packages
+      - name: Build and Deploy
+        working-directory: api
         run: mvn -B -Pmaven-central deploy
         env:
           CENTRAL_TOKEN_ID: ${{ secrets.CENTRAL_TOKEN_ID }}
