@@ -7,7 +7,7 @@
 
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io</artifactId>
-    <version>0.7.1-SNAPSHOT</version>
+    <version>0.7.1</version>
     <packaging>pom</packaging> 
 
     <name>Tree I/O</name>
@@ -24,7 +24,7 @@
     <modules>
         <module>api</module>
         <module>jakarta-adapter</module>
-        <module>jackson2-adapter</module>
+      <!--  <module>jackson2-adapter</module>-->
         <module>cbor-adapter</module>
     </modules>
 
