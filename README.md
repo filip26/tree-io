@@ -24,7 +24,7 @@
  Jackson 2 Tree Model  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jackson.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jackson) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jackson/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jackson) 
  CBOR                  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-cbor.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-cbor) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-cbor/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-cbor) 
 
-## Artefacts
+## Artifacts
 
 ```xml
 <!-- Core API: uniform interfaces implemented by all adapters -->
@@ -60,11 +60,11 @@
 
 ## Contributing
 
-All PR's welcome!
+Contributions are welcome! Please submit a pull request.
 
 ### Building
 
-Fork and clone the project repository.
+Fork and clone the repository, then build with Maven:
 
 ```bash
 > cd tree-io
