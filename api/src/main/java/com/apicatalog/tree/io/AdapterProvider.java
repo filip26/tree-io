@@ -4,16 +4,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
-public class NodeAdapterProvider {
-
+class AdapterProvider {
+    
     protected final Collection<NodeAdapter> adapters;
 
-    protected NodeAdapterProvider(final Collection<NodeAdapter> adapters) {
+    protected AdapterProvider(final Collection<NodeAdapter> adapters) {
         this.adapters = adapters;
     }
 
-    public static final NodeAdapterProvider of(NodeAdapter... adapters) {
-        return new NodeAdapterProvider(Arrays.asList(adapters));
+    public static final AdapterProvider of(NodeAdapter... adapters) {
+        return new AdapterProvider(Arrays.asList(adapters));
     }
 
     public Optional<NodeAdapter> findAdapter(Object node) {

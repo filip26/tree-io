@@ -5,12 +5,36 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 
+/**
+ * Immutable representation of a tree structure accessed through a
+ * {@link NodeAdapter}.
+ * <p>
+ * A {@code TreeIO} instance binds a root node with its adapter, providing a
+ * uniform way to traverse or compare trees of arbitrary underlying object
+ * models.
+ * </p>
+ *
+ * @param <T> the type of the root node
+ */
 public class TreeIO<T> {
 
     protected final NodeAdapter adapter;
     protected final T root;
 
+    /**
+     * Creates a new immutable tree with the given root node and
+     * adapter.
+     *
+     * @param root    the root node of the tree, must not be {@code null}
+     * @param adapter the adapter providing access to node types and values, must
+     *                not be {@code null}
+     * @throws NullPointerException if {@code root} or {@code adapter} is
+     *                              {@code null}
+     */
     public TreeIO(T root, NodeAdapter adapter) {
+        Objects.requireNonNull(root);
+        Objects.requireNonNull(adapter);
+
         this.root = root;
         this.adapter = adapter;
     }
@@ -23,7 +47,7 @@ public class TreeIO<T> {
         return root;
     }
 
-    public static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
+    static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
 
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
