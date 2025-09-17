@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-jackson2</artifactId>
-    <version>0.7.0-SNAPSHOT</version>
+    <version>0.7.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/filip26/tree-io</url>
     <scm>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>com.apicatalog</groupId>
             <artifactId>tree-io-api</artifactId>
-            <version>0.7.0-SNAPSHOT</version>
+            <version>0.7.1-SNAPSHOT</version>
         </dependency>
 
      	<dependency>
