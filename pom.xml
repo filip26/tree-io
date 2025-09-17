@@ -7,7 +7,7 @@
 
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io</artifactId>
-    <version>0.7.4</version>
+    <version>0.7.5</version>
     <packaging>pom</packaging> 
 
     <name>Tree I/O</name>
@@ -27,4 +27,19 @@
       <!--  <module>jackson2-adapter</module>-->
         <module>cbor-adapter</module>
     </modules>
+    
+    <build>
+      <pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.1.2</version>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+        </plugins>
+      </pluginManagement>
+    </build>    
 </project>
