@@ -7,22 +7,45 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * Interface providing a uniform abstraction for reading tree-like data
- * structures.
+ * Provides a uniform abstraction for reading tree-like data structures.
  * <p>
- * Implementations can work with any tree representation (JSON, YAML, CBOR,
- * etc.) and any underlying library (Jackson, Gson, Jakarta, etc.). Methods
- * throw {@link IllegalArgumentException}, {@link ClassCastException},
- * {@link NullPointerException}, {@link IllegalStateException} if the node is
- * not of the expected type or processing error.
+ * Implementations can support any tree representation (JSON, YAML, CBOR, etc.)
+ * and any underlying library (Jackson, Gson, Jakarta, etc.).
+ * <p>
+ * Each adapter may support only a subset of nodes from a representation.
+ * Methods may throw {@link IllegalArgumentException},
+ * {@link ClassCastException}, {@link NullPointerException}, or
+ * {@link IllegalStateException} if a node cannot be processed or an operation
+ * fails.
  */
 public interface NodeAdapter {
 
     // --- Features ---
+
+    /**
+     * Checks whether the given object can be processed by this adapter.
+     * <p>
+     * Returns true if the adapter is capable of handling the node type; false
+     * otherwise.
+     *
+     * @param node the object to check
+     * @return true if the node can be adapted by this adapter, false otherwise
+     */
     boolean isNode(Object node);
-    
+
+    /**
+     * Returns the set of node types supported by this adapter.
+     *
+     * @return a set of supported node types
+     */
     Set<NodeType> nodeTypes();
 
+    /**
+     * Returns the set of node types that are supported as keys in map nodes for
+     * this adapter.
+     *
+     * @return a set of supported key node types
+     */
     Set<NodeType> keyTypes();
 
     /**
@@ -33,52 +56,116 @@ public interface NodeAdapter {
      */
     NodeType type(Object node);
 
+    /**
+     * Checks whether the node represents a null value.
+     *
+     * @param node the node to check
+     * @return true if the node is null, false otherwise
+     */
     boolean isNull(Object node);
 
+    /**
+     * Checks whether the node represents a boolean value.
+     *
+     * @param node the node to check
+     * @return true if the node is a boolean, false otherwise
+     */
     boolean isBoolean(Object node);
 
+    /**
+     * Checks whether the node contains binary data.
+     *
+     * @param node the node to check
+     * @return true if the node is binary, false otherwise
+     */
     boolean isBinary(Object node);
 
     // --- Structure operations ---
+
+    /**
+     * Returns the number of entries in a map node or items in a collection node.
+     * <p>
+     * Intended for nodes of type {@link NodeType#MAP} or
+     * {@link NodeType#COLLECTION}.
+     *
+     * @param node the node to inspect
+     * @return number of entries (for map) or items (for collection)
+     */
     int size(Object node);
 
+    /**
+     * Checks whether a map node has no entries or a collection node has no items.
+     * <p>
+     * This method is intended for nodes of type {@link NodeType#MAP} or
+     * {@link NodeType#COLLECTION}.
+     *
+     * @param node the node to inspect
+     * @return true if the map has no entries or the collection has no items, false
+     *         otherwise
+     */
     boolean isEmpty(Object node);
 
     // --- Map operations ---
-    
-    boolean isMap(Object node); 
-    
+
     /**
-     * Returns the collection of property keys for a map node.
+     * Checks whether the node represents a map (object) structure.
+     *
+     * @param node the node to check
+     * @return true if the node is a map, false otherwise
+     */
+    boolean isMap(Object node);
+
+    /**
+     * Returns the collection of property key nodes for a map node.
      *
      * @param node the map node
-     * @return collection of property keys
+     * @return collection of property key nodes
      */
     Collection<? extends Object> keys(Object node);
 
     /**
-     * Returns the value of a property from a map node.
+     * Returns the property value associated with the specified key node in a map node.
      *
-     * @param key the property key
-     * @param node     the map node containing the property
-     * @return the child node associated with the property key
+     * @param key  the property key node
+     * @param node the map node containing the property
+     * @return the property value node corresponding to the property key
      */
     Object property(Object key, Object node);
 
     // --- Collection operations ---
+
+    /**
+     * Checks whether the node represents a collection.
+     *
+     * @param node the node to check
+     * @return true if the node is a collection, false otherwise
+     */
     boolean isCollection(Object node);
 
     /**
-     * Returns the collection of items for a collection node.
+     * Returns the child nodes of a collection node as an {@link Iterable}.
      *
      * @param node the collection node
-     * @return collection of child nodes
+     * @return iterable of child nodes
      */
     Iterable<? extends Object> iterable(Object node);
 
+    /**
+     * Returns the child nodes of a collection node as a {@link Stream}.
+     *
+     * @param node the collection node
+     * @return stream of child nodes
+     */
     Stream<? extends Object> stream(Object node);
 
     // --- String operations ---
+
+    /**
+     * Checks whether the node represents a string value.
+     *
+     * @param node the node to check
+     * @return true if the node is a string, false otherwise
+     */
     boolean isString(Object node);
 
     /**
@@ -90,19 +177,27 @@ public interface NodeAdapter {
     String stringValue(Object node);
 
     // --- Number operations ---
+
+    /**
+     * Checks whether the node represents a numeric value.
+     *
+     * @param node the node to check
+     * @return true if the node is numeric, false otherwise
+     */
     boolean isNumber(Object node);
 
     /**
-     * Returns false if the number node is a decimal type (floating point or
-     * BigDecimal).
+     * Checks whether a number node represents an integral value.
+     * <p>
+     * Returns false for floating-point or {@link BigDecimal} nodes.
      *
      * @param node the number node
-     * @return true if node is integral value
+     * @return true if the node is integral, false otherwise
      */
     boolean isIntegral(Object node);
 
     /**
-     * Returns the integer value of the number node.
+     * Returns the integer value of a number node.
      *
      * @param node the number node
      * @return integer value
@@ -110,7 +205,7 @@ public interface NodeAdapter {
     int intValue(Object node);
 
     /**
-     * Returns the long value of the number node.
+     * Returns the long value of a number node.
      *
      * @param node the number node
      * @return long value
@@ -118,7 +213,7 @@ public interface NodeAdapter {
     long longValue(Object node);
 
     /**
-     * Returns the BigInteger value of the number node.
+     * Returns the {@link BigInteger} value of a number node.
      *
      * @param node the number node
      * @return BigInteger value
@@ -126,7 +221,7 @@ public interface NodeAdapter {
     BigInteger bigIntegerValue(Object node);
 
     /**
-     * Returns the double value of the number node.
+     * Returns the double value of a number node.
      *
      * @param node the number node
      * @return double value
@@ -134,7 +229,7 @@ public interface NodeAdapter {
     double doubleValue(Object node);
 
     /**
-     * Returns the BigDecimal value of the number node.
+     * Returns the {@link BigDecimal} value of a number node.
      *
      * @param node the number node
      * @return BigDecimal value
@@ -147,22 +242,35 @@ public interface NodeAdapter {
      * Returns the binary value of the node as a byte array.
      *
      * @param node the binary node
-     * @return byte array content
+     * @return byte array representation
      */
     byte[] binaryValue(Object node);
 
     /**
-     * If the node is a collection then returns the node, converts the node into an
-     * empty collection in a case of null or single item collection.
-     * 
-     * Allows to iterate over elements without checking a node type.
-     * 
-     * @param node
-     * @return
+     * Returns the node as an iterable.
+     * <p>
+     * If the node is null, returns an empty iterable. If it is a single element,
+     * wraps it as a singleton iterable. Useful for iterating without type checks.
+     *
+     * @param node the node to convert
+     * @return iterable of elements
      */
     Iterable<? extends Object> asIterable(Object node);
 
+    /**
+     * Returns the node as a stream.
+     *
+     * @param node the node to convert
+     * @return stream of elements
+     */
     Stream<? extends Object> asStream(Object node);
 
+    /**
+     * Returns the string representation of the node, converting other types as
+     * needed.
+     *
+     * @param node the node to convert
+     * @return string representation
+     */
     String asString(Object node);
 }

@@ -30,7 +30,7 @@ import java.util.function.BiConsumer;
  * </ul>
  *
  * <p>
- * The traversal proceeds step-by-step: each call to {@link #step(BiConsumer)}
+ * The traversal proceeds step-by-step: each call to {@link #step()}
  * visits exactly one node and schedules its children (if any). Repeated calls
  * continue traversal until the stack is empty.
  * </p>
@@ -145,7 +145,6 @@ public class NodeVisitor {
      * the {@link NodeAdapter} and pushed onto the stack if available.
      * </p>
      *
-     * @param consumer a consumer to receive the current node, not {@code null}
      * @return {@code true} if a node has been processed, otherwise {@code false} if
      *         traversal is complete
      */
