@@ -4,7 +4,7 @@
 
 **tree-io** provides a consistent abstraction for working with **tree-like data structures**.  It is **format-agnostic** (JSON, YAML, CBOR, …) and **library-agnostic** (Jackson, Gson, Jakarta, …),  allowing you to **read, manipulate, and write trees uniformly** without depending on a specific parser or serializer.
 
-## ⚡ Features
+## ✨ Features
 
 - 🌐 Uniform, library-agnostic API for tree data processing
 - 🗂️ Supports multiple formats: JSON, YAML, CBOR
