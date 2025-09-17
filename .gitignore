@@ -22,7 +22,6 @@
 hs_err_pid*
 
 .metadata
-bin/
 tmp/
 *.tmp
 *.bak
