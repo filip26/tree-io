@@ -40,7 +40,6 @@ public abstract class NodeGenerator extends NodeVisitor {
     }
 
     protected void node() throws IOException {
-
         if (nodeContext == Context.END) {
             end();
             return;

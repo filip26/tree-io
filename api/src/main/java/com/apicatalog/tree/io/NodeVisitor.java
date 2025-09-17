@@ -146,7 +146,7 @@ public class NodeVisitor {
      * </p>
      *
      * @param consumer a consumer to receive the current node, not {@code null}
-     * @return {@code true} if there are more nodes to traverse, {@code false} if
+     * @return {@code true} if a node has been processed, otherwise {@code false} if
      *         traversal is complete
      */
     public boolean step() {
@@ -174,7 +174,7 @@ public class NodeVisitor {
                 node = stack.pop();
                 nodeType = (NodeType) stack.pop();
                 nodeContext = Context.END;
-                return !stack.isEmpty();
+                return true;
             }
 
             item = it.next();
@@ -239,8 +239,7 @@ public class NodeVisitor {
         }
 
         visited++;
-
-        return !stack.isEmpty();
+        return true;
     }
 
     public long visited() {
