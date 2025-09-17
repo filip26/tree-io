@@ -20,6 +20,10 @@ jobs:
           server-password: CENTRAL_TOKEN_SECRET
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Export GNUPGHOME
+        run: echo "GNUPGHOME=${HOME}/.gnupg" >> $GITHUB_ENV
+      - name: List secret keys
+        run: gpg --list-secret-keys --keyid-format LONG
       - name: Build and Deploy
         working-directory: api
         run: mvn -B -Pmaven-central deploy
