@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-jackson2</artifactId>
-    <version>0.7.2</version>
+    <version>0.7.4</version>
     <packaging>jar</packaging>
     <url>https://github.com/filip26/tree-io</url>
     <scm>
@@ -31,8 +31,8 @@
     <name>Tree I/O - Jackson 2 Tree Model Adapter</name>
 
     <description>
+    Adapter implementation for the Jackson 2 Tree Model, providing tree access via the Tree I/O API.
     </description>
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -62,7 +62,7 @@
         <dependency>
             <groupId>com.apicatalog</groupId>
             <artifactId>tree-io-api</artifactId>
-            <version>0.7.2</version>
+            <version>0.7.4</version>
         </dependency>
 
      	<dependency>

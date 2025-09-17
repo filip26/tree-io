@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-api</artifactId>
-    <version>0.7.2</version>
+    <version>0.7.4</version>
     <packaging>jar</packaging>
     <url>https://github.com/filip26/tree-io</url>
     <scm>
@@ -26,10 +26,11 @@
     </properties>
 
     <name>Tree I/O - API</name>
-
+    
     <description>
+    Tree I/O provides a uniform, adaptable, and pluggable representation of hierarchical value trees. This module defines the core API, including node adapters and traversal utilities.
     </description>
-
+    
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
