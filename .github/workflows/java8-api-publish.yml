@@ -28,4 +28,5 @@ jobs:
           CENTRAL_TOKEN_SECRET: ${{ secrets.CENTRAL_TOKEN_SECRET }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
           MAVEN_GPG_PRIVATE_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          GNUPGHOME: ${{ env.GNUPGHOME }}
 
