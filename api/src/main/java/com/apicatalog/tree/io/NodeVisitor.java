@@ -7,81 +7,88 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 /**
- * A non-recursive depth-first traversal utility for arbitrary object trees.
+ * A non-recursive depth-first traversal for arbitrary trees.
  * <p>
- * This class uses an explicit {@link Deque} as a stack to drive traversal,
- * avoiding recursion. It relies on a {@link NodeAdapter} to abstract access to
- * collections and map-like structures.
+ * Traverses trees in depth-first order, visiting nodes one at a time via
+ * {@link #step()}. The traversal distinguishes between the root node, map
+ * property keys and values, and collection elements using {@link Context}.
  * </p>
  *
  * <p>
  * Traversal rules:
  * </p>
  * <ul>
- * <li>When visiting a {@code Map}-like node, keys are delivered to the consumer
- * before their corresponding values. Values are pushed back onto the stack to
- * be visited later.</li>
- * <li>When visiting a collection/array node, its elements are traversed in
- * iteration order.</li>
- * <li>Other node types are delivered to the consumer directly.</li>
+ * <li>When visiting a map-like node, keys are visited before their
+ * corresponding values.</li>
+ * <li>When visiting a collection or array node, elements are visited in
+ * insertion order.</li>
+ * <li>Other node types are visited directly.</li>
  * </ul>
  *
  * <p>
- * The traversal proceeds step-by-step: each call to {@link #step()}
- * visits exactly one node and schedules its children (if any). Repeated calls
- * continue traversal until the stack is empty.
+ * Traversal proceeds until all nodes have been visited or limits (maximum depth
+ * or maximum nodes) are reached.
  * </p>
  */
 public class NodeVisitor {
 
     /**
-     * Indicates the type of node currently being visited during traversal.
+     * Indicates the role of the node during traversal.
      */
     public enum Context {
 
+        /** Node is the root of the tree. */
         ROOT,
 
-        /**
-         * Visiting the key/name of a property in a map/object.
-         */
+        /** Node is a property key in a map. */
         PROPERTY_KEY,
 
-        /**
-         * Visiting the value of a property in a map/object.
-         */
+        /** Node is a property value in a map. */
         PROPERTY_VALUE,
 
-        /**
-         * Visiting an element within a collection, array, or list.
-         */
+        /** Node is an element of a collection or array. */
         COLLECTION_ELEMENT,
 
+        /** Marks the end of a collection or map. */
         END,
     }
 
-    public static final int MAX_DEPTH = -1;
-    public static final int MAX_NODES = -1;
+    /** Sentinel value indicating no maximum depth limit. */
+    public static final int UNLIMITED_DEPTH = -1;
 
+    /** Sentinel value indicating no maximum node visit limit. */
+    public static final int UNLIMITED_NODES = -1;
+
+    /** Maximum number of nodes allowed to be visited. */
     protected int maxVisited;
+
+    /** Maximum depth allowed during traversal. */
     protected int maxDepth;
 
-    /** Traversal stack; elements may be nodes or iterators of child nodes. */
+    /** Stack used for traversal. */
     protected final Deque<Object> stack;
 
-    protected Comparator<Object> propertyComparator;
+    /** Comparator for map keys. */
+    protected Comparator<Object> keyComparator;
 
-    /** Adapter that provides access to node types and their children. */
+    /** Adapter providing access to node types and children. */
     protected NodeAdapter adapter;
 
+    /** Current depth. */
     protected long depth;
+
+    /** Number of nodes visited. */
     protected long visited;
 
-    /** Runtime */
+    /** Current node. */
     protected Object node;
+
+    /** Type of the current node. */
     protected NodeType nodeType;
+
+    /** Role of the current node. */
     protected Context nodeContext;
 
     /**
@@ -99,25 +106,40 @@ public class NodeVisitor {
         this.adapter = null;
         this.visited = 0;
         this.depth = 0;
-        this.propertyComparator = propertyComparator;
-        this.maxVisited = MAX_NODES;
-        this.maxDepth = MAX_DEPTH;
+        this.keyComparator = propertyComparator;
+        this.maxVisited = UNLIMITED_NODES;
+        this.maxDepth = UNLIMITED_DEPTH;
     }
 
+    /**
+     * Creates a new {@code NodeVisitor} starting at the given root node, using the
+     * default property key ordering - insertion order.
+     *
+     * @param root    the root node to start traversal from, must not be
+     *                {@code null}
+     * @param adapter the adapter providing access to node types and children, must
+     *                not be {@code null}
+     * @return a new {@code NodeVisitor} instance positioned at the root node
+     * @throws NullPointerException if {@code root} or {@code adapter} is
+     *                              {@code null}
+     */
     public static NodeVisitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, (a, b) -> 0);
     }
 
     /**
-     * Creates a depth-first traversal starting from the given root node.
+     * Creates a new {@code NodeVisitor} starting at the given root node, using a
+     * custom comparator for ordering map property keys.
      *
-     * @param root               the root node, must not be {@code null}
-     * @param adapter            the adapter providing node access, must not be
+     * @param root               the root node to start traversal from, must not be
      *                           {@code null}
-     * @param propertyComparator
-     * @return a new traversal instance positioned at the root
-     * @throws NullPointerException if {@code root} or {@code adapter} is
-     *                              {@code null}
+     * @param adapter            the adapter providing access to node types and
+     *                           children, must not be {@code null}
+     * @param propertyComparator comparator used to order map keys during traversal,
+     *                           must not be {@code null}
+     * @return a new {@code NodeVisitor} instance positioned at the root node
+     * @throws NullPointerException if {@code root}, {@code adapter}, or
+     *                              {@code propertyComparator} is {@code null}
      */
     public static NodeVisitor of(Object root, NodeAdapter adapter, Comparator<Object> propertyComparator) {
         Objects.requireNonNull(root);
@@ -130,23 +152,20 @@ public class NodeVisitor {
     }
 
     /**
-     * Advances the traversal by one step and delivers the current node to the
-     * provided consumer.
+     * Advances the traversal by one step.
      *
      * <p>
-     * If the current stack element is an {@link Iterator}, its next value is
-     * retrieved. If that value is a {@link Map.Entry}, the key is delivered to the
-     * consumer immediately and the corresponding value is pushed back onto the
-     * stack for later traversal.
+     * Processes exactly one node, updating {@link #node}, {@link #nodeType}, and
+     * {@link #nodeContext} to describe it. Subsequent calls continue traversal
+     * until the entire tree has been visited.
      * </p>
-     *
-     * <p>
-     * After delivering a node to the consumer, its children are discovered using
-     * the {@link NodeAdapter} and pushed onto the stack if available.
-     * </p>
-     *
-     * @return {@code true} if a node has been processed, otherwise {@code false} if
-     *         traversal is complete
+     * 
+     * @return {@code true} if a node was processed, or {@code false} if traversal
+     *         is complete
+     * @throws IllegalStateException if the traversal exceeds the maximum node count
+     *                               or the maximum depth configured via
+     *                               {@link #maxVisited(int)} or
+     *                               {@link #maxDepth(int)}
      */
     public boolean step() {
 
@@ -227,7 +246,7 @@ public class NodeVisitor {
             stack.push(node);
             stack.push(adapter.keys(node)
                     .stream()
-                    .sorted(propertyComparator)
+                    .sorted(keyComparator)
                     .map(key -> new SimpleEntry<>(key, adapter.property(key, node)))
                     .iterator());
             depth += 1;
@@ -241,10 +260,17 @@ public class NodeVisitor {
         return true;
     }
 
+    /** Returns the number of nodes visited. */
     public long visited() {
         return visited;
     }
 
+    /**
+     * Resets the traversal with a new root node and adapter.
+     *
+     * @param node    the new root node
+     * @param adapter the adapter providing access to node types
+     */
     public void reset(Object node, NodeAdapter adapter) {
         this.adapter = adapter;
         this.stack.clear();
@@ -253,22 +279,62 @@ public class NodeVisitor {
         this.visited = 0;
     }
 
+    /**
+     * Sets the comparator used to order map property keys during traversal.
+     *
+     * <p>
+     * The comparator determines the order in which map keys are visited. By
+     * default, keys are visited in insertion order if no comparator is set.
+     *
+     * @param keyComparator comparator for map keys; must not be null
+     */
     public void keyComparator(Comparator<Object> keyComparator) {
-        this.propertyComparator = keyComparator;
+        this.keyComparator = keyComparator;
     }
 
+    /**
+     * Sets the maximum depth of traversal.
+     *
+     * <p>
+     * If the traversal reaches this depth, further children will not be visited.
+     * Use {@link #UNLIMITED_DEPTH} (-1) to indicate no depth limit (default).
+     * </p>
+     *
+     * @param maxDepth maximum depth allowed during traversal
+     */
     public void maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
     }
 
+    /**
+     * Returns the maximum depth allowed during traversal.
+     *
+     * @return maximum depth; -1 if no limit
+     */
     public int maxDepth() {
         return maxDepth;
     }
 
+    /**
+     * Sets the maximum number of nodes that can be visited during traversal.
+     *
+     * <p>
+     * If the number of visited nodes reaches this limit, {@link #step()} will throw
+     * {@link IllegalStateException}. Use {@link #UNLIMITED_NODES} (-1) to indicate
+     * no limit (default).
+     * </p>
+     *
+     * @param maxVisitedNodes maximum number of nodes to visit
+     */
     public void maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
     }
 
+    /**
+     * Returns the maximum number of nodes that can be visited during traversal.
+     *
+     * @return maximum number of nodes; -1 if no limit
+     */
     public int maxVisited() {
         return maxVisited;
     }
