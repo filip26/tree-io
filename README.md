@@ -16,8 +16,62 @@
 - Uniform processing of tree-structured data
 - Building library-agnostic processors and pipelines
 
-## Example
+## Implementations
 
-```javascript
+ Adapter               | Version | Documentation
+-----------------------|---------|---------------
+ Jakarta JSON API      | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jakarta.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jakarta) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jakarta/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jakarta) 
+ Jackson 2 Tree Model  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jackson.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jackson) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jackson/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jackson) 
+ CBOR                  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-cbor.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-cbor) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-cbor/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-cbor) 
 
+## Artefacts
+
+```xml
+<!-- Core API: uniform interfaces implemented by all adapters -->
+<dependency>
+    <groupId>com.apicatalog</groupId>
+    <artifactId>tree-io-api</artifactId>
+    <version>${tree-io.version}</version>
+</dependency>
+
+<!-- Available adapters: include the one(s) matching your use case -->
+
+<!-- Jakarta JSON API adapter -->
+<dependency>
+    <groupId>com.apicatalog</groupId>
+    <artifactId>tree-io-jakarta</artifactId>
+    <version>${tree-io.version}</version>
+</dependency>
+
+<!-- Jackson 2 Tree Model adapter -->
+<dependency>
+    <groupId>com.apicatalog</groupId>
+    <artifactId>tree-io-jackson2</artifactId>
+    <version>${tree-io.version}</version>
+</dependency>
+
+<!-- CBOR adapter -->
+<dependency>
+    <groupId>com.apicatalog</groupId>
+    <artifactId>tree-io-cbor</artifactId>
+    <version>${tree-io.version}</version>
+</dependency>
 ```
+
+## Contributing
+
+All PR's welcome!
+
+### Building
+
+Fork and clone the project repository.
+
+```bash
+> cd tree-io
+> mvn package
+```
+
+## Commercial Support
+
+Commercial support and consulting are available.  
+For inquiries, please contact: filip26@gmail.com
