@@ -16,14 +16,23 @@ import java.util.stream.Stream;
 
 public class NativeAdapter implements NodeAdapter {
 
-    protected static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
-            NodeType.STRING
-    ));
+            NodeType.STRING,
+            NodeType.BINARY,
+            NodeType.FALSE,
+            NodeType.TRUE,
+            NodeType.NULL));
 
-    protected static final NativeAdapter INSTANCE = new NativeAdapter();
+    static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING));
+
+    static final NativeAdapter INSTANCE = new NativeAdapter();
 
     public static final NativeAdapter instance() {
         return INSTANCE;
@@ -43,6 +52,11 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Map
                 || node instanceof Collection
                 || node instanceof byte[];
+    }
+
+    @Override
+    public Set<NodeType> nodeTypes() {
+        return VALUES;
     }
 
     @Override

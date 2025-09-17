@@ -18,8 +18,13 @@ import java.util.stream.Stream;
  */
 public interface NodeAdapter {
 
+    // --- Features ---
     boolean isNode(Object node);
     
+    Set<NodeType> nodeTypes();
+
+    Set<NodeType> keyTypes();
+
     /**
      * Returns the type of the given node.
      *
@@ -40,7 +45,6 @@ public interface NodeAdapter {
     boolean isEmpty(Object node);
 
     // --- Map operations ---
-    Set<NodeType> keyTypes();
     
     boolean isMap(Object node); 
     

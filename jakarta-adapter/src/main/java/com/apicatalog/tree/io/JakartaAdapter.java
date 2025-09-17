@@ -2,8 +2,10 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -16,8 +18,17 @@ import jakarta.json.JsonValue.ValueType;
 
 public class JakartaAdapter implements NodeAdapter {
 
+    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING,
+            NodeType.FALSE,
+            NodeType.TRUE,
+            NodeType.NULL));
+
     static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
-    
+
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
     public static final JakartaAdapter instance() {
@@ -32,13 +43,18 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
+    public Set<NodeType> nodeTypes() {
+        return VALUES;
+    }
+
+    @Override
     public NodeType type(Object node) {
-        
+
         // property keys are strings
         if (node instanceof String) {
             return NodeType.STRING;
         }
-        
+
         // all other values
         switch (((JsonValue) node).getValueType()) {
         case NULL:
@@ -64,7 +80,7 @@ public class JakartaAdapter implements NodeAdapter {
     public Set<NodeType> keyTypes() {
         return KEYS;
     }
-    
+
     @Override
     public Set<String> keys(Object node) {
         return ((JsonObject) node).keySet();
@@ -87,6 +103,10 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public String stringValue(Object node) {
+        // keys
+        if (node instanceof String) {
+            return (String) node;
+        }
         return ((JsonString) node).getString();
     }
 
@@ -171,7 +191,7 @@ public class JakartaAdapter implements NodeAdapter {
 
     @Override
     public boolean isString(Object node) {
-        return node != null && (node instanceof JsonString);
+        return node != null && (node instanceof String || node instanceof JsonString);
     }
 
     @Override

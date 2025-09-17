@@ -3,8 +3,10 @@ package com.apicatalog.tree.io;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -18,7 +20,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Jackson2Adapter implements NodeAdapter {
 
-    protected static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
+    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING,
+            NodeType.FALSE,
+            NodeType.TRUE,
+            NodeType.NULL));
+
+    static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
 
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 
@@ -29,6 +40,11 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public boolean isNode(Object node) {
         return node != null && node instanceof JsonNode;
+    }
+
+    @Override
+    public Set<NodeType> nodeTypes() {
+        return VALUES;
     }
 
     @Override
@@ -60,7 +76,7 @@ public class Jackson2Adapter implements NodeAdapter {
     public Set<NodeType> keyTypes() {
         return KEYS;
     }
-    
+
     @Override
     public Set<String> keys(Object node) {
         return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());

@@ -26,13 +26,22 @@ import co.nstant.in.cbor.model.UnsignedInteger;
 
 public class CborAdapter implements NodeAdapter {
 
-    protected static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
-            NodeType.STRING
-    ));
-    
+            NodeType.STRING,
+            NodeType.BINARY,
+            NodeType.FALSE,
+            NodeType.TRUE,
+            NodeType.NULL));
+
+    static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+            NodeType.COLLECTION,
+            NodeType.MAP,
+            NodeType.NUMBER,
+            NodeType.STRING));
+
     static final CborAdapter INSTANCE = new CborAdapter();
 
     public static final CborAdapter instance() {
@@ -43,7 +52,12 @@ public class CborAdapter implements NodeAdapter {
     public boolean isNode(Object node) {
         return node != null && node instanceof DataItem;
     }
-    
+
+    @Override
+    public Set<NodeType> nodeTypes() {
+        return VALUES;
+    }
+
     @Override
     public NodeType type(Object node) {
         switch (((DataItem) node).getMajorType()) {
@@ -87,7 +101,7 @@ public class CborAdapter implements NodeAdapter {
 
         throw new IllegalStateException();
     }
-    
+
     @Override
     public Set<NodeType> keyTypes() {
         return KEYS;
