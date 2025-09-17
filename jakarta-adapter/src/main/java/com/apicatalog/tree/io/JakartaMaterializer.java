@@ -123,8 +123,7 @@ public class JakartaMaterializer extends NodeGenerator {
                     builders.push(Json.createObjectBuilder());
                 }
                 ((JsonObjectBuilder) builders.peek()).add(key, json);
-            }
-            if (builders.peek() instanceof JsonArrayBuilder) {
+            } else if (builders.peek() instanceof JsonArrayBuilder) {
                 ((JsonArrayBuilder) builders.peek()).add(json);
             }
         }

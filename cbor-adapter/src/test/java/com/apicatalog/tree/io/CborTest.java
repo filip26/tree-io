@@ -29,9 +29,7 @@ class CborTest {
     @MethodSource({ "resources" })
     @Order(1)
     void testMaterialize(String name) throws IOException, CborException {
-        System.out.println(getCborResource(name).iterator().next());
         MATERIALIZER.node(getCborResource(name).iterator().next(), CborAdapter.instance());
-
         assertEquals(getCborResource(name).iterator().next(), MATERIALIZER.value());
     }
 

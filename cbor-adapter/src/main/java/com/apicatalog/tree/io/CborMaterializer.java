@@ -125,20 +125,21 @@ public class CborMaterializer extends NodeGenerator {
         }
 
         if (!builders.isEmpty()) {
-            if (builders.peek() instanceof DataItem) {
-                DataItem key = (DataItem) builders.pop();
-                ((Map) builders.peek()).put(key, value);
-
-            } else if (builders.peek() instanceof Array) {
+            if (builders.peek() instanceof Array) {
                 ((Array) builders.peek()).add(value);
 
             } else if (builders.peek() instanceof Map) {
                 builders.push(value);
 
+            } else if (builders.peek() instanceof DataItem) {
+                DataItem key = (DataItem) builders.pop();
+                ((Map) builders.peek()).put(key, value);
+
             } else {
                 throw new IllegalStateException();
             }
         }
+
     }
 
     public DataItem value() {
