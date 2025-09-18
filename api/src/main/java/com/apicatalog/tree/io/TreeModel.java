@@ -9,21 +9,20 @@ import java.util.Objects;
  * Immutable representation of a tree structure accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@code TreeIO} instance binds a root node with its adapter, providing a
+ * A {@code TreeModel} instance binds a root node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
  *
  * @param <T> the type of the root node
  */
-public class TreeIO<T> {
+public class TreeModel {
 
     protected final NodeAdapter adapter;
-    protected final T root;
+    protected final Object root;
 
     /**
-     * Creates a new immutable tree with the given root node and
-     * adapter.
+     * Creates a new immutable tree with the given root node and adapter.
      *
      * @param root    the root node of the tree, must not be {@code null}
      * @param adapter the adapter providing access to node types and values, must
@@ -31,7 +30,7 @@ public class TreeIO<T> {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public TreeIO(T root, NodeAdapter adapter) {
+    public TreeModel(Object root, NodeAdapter adapter) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
 
