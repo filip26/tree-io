@@ -2,12 +2,15 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.json.JsonArray;
@@ -94,17 +97,23 @@ public class JakartaAdapter implements NodeAdapter {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<Object, Object>> properties(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         return (Iterable)((JsonObject) node).entrySet();
     }
 
+    public Iterable<Entry<?, ?>> properties(Object node, Comparator<Map.Entry<?, ?>> comparator) {
+        final ArrayList<Entry<?, ?>> sorted = new ArrayList<>(((JsonObject) node).entrySet());
+        Collections.sort(sorted, comparator);
+        return sorted;
+    }
+
     @Override
-    public Collection<? extends Object> iterable(Object node) {
+    public Collection<?> iterable(Object node) {
         return (JsonArray) node;
     }
 
     @Override
-    public Stream<? extends Object> stream(Object node) {
+    public Stream<?> stream(Object node) {
         return ((JsonArray) node).stream();
     }
 
@@ -148,7 +157,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<? extends Object> asIterable(Object node) {
+    public Collection<?> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
@@ -160,7 +169,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Stream<? extends Object> asStream(Object node) {
+    public Stream<?> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }

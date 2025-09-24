@@ -125,27 +125,27 @@ public class CborAdapter implements NodeAdapter {
         }
         throw new ClassCastException();
     }
-    
+
     @Override
-    public Iterable<Entry<Object, Object>> properties(Object node) {
-        
+    public Iterable<Entry<?, ?>> properties(Object node) {
+
         final Collection<DataItem> keys = keys(node);
-    
-        return new Iterable<Entry<Object,Object>>() {
-            
+
+        return new Iterable<Entry<?, ?>>() {
+
             @Override
-            public Iterator<Entry<Object, Object>> iterator() {
+            public Iterator<Entry<?, ?>> iterator() {
                 // TODO Auto-generated method stub
-                return new Iterator<Entry<Object,Object>>() {
-                    
+                return new Iterator<Entry<?, ?>>() {
+
                     final Iterator<DataItem> kit = keys.iterator();
-                    
+
                     @Override
                     public Entry<Object, Object> next() {
                         final DataItem key = kit.next();
-                        return new SimpleEntry<>(key, ((Map)node).get(key));
+                        return new SimpleEntry<>(key, ((Map) node).get(key));
                     }
-                    
+
                     @Override
                     public boolean hasNext() {
                         return kit.hasNext();
@@ -315,7 +315,7 @@ public class CborAdapter implements NodeAdapter {
         }
         return node.toString();
     }
-    
+
     @Override
     public BigDecimal asDecimal(Object node) {
         if (isIntegral(node)) {

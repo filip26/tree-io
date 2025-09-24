@@ -111,7 +111,7 @@ public class NativeAdapter implements NodeAdapter {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<Object, Object>> properties(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         return ((Map) node).entrySet();
     }
 

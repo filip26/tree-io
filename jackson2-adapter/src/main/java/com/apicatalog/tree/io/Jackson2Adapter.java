@@ -89,7 +89,7 @@ public class Jackson2Adapter implements NodeAdapter {
     }
     
     @Override
-    public Iterable<Entry<Object, Object>> properties(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         // TODO Auto-generated method stub
         return null;
     }
