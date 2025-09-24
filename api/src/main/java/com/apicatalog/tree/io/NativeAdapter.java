@@ -62,7 +62,7 @@ public class NativeAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType type(Object node) {
+    public NodeType typeOf(Object node) {
         if (node == null) {
             return NodeType.NULL;
         }
@@ -365,7 +365,7 @@ public class NativeAdapter implements NodeAdapter {
             return null;
         }
 
-        final NodeType dataType = adapter.type(value);
+        final NodeType dataType = adapter.typeOf(value);
 
         switch (dataType) {
 

@@ -65,7 +65,7 @@ public class CborMaterializer extends NodeGenerator {
     }
 
     protected DataItem toScalar(Object value) {
-        switch (adapter.type(value)) {
+        switch (adapter.typeOf(value)) {
         case STRING:
             return new UnicodeString(adapter.stringValue(value));
 

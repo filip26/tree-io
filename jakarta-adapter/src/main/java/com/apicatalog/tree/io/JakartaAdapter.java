@@ -44,12 +44,17 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
+
+    @Override
     public Set<NodeType> nodeTypes() {
         return VALUES;
     }
 
     @Override
-    public NodeType type(Object node) {
+    public NodeType typeOf(Object node) {
 
         // property keys are strings
         if (node instanceof String) {
@@ -78,17 +83,12 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
-    }
-
-    @Override
     public Set<String> keys(Object node) {
         return ((JsonObject) node).keySet();
     }
 
     @Override
-    public Object property(Object property, Object node) {
+    public JsonValue property(Object property, Object node) {
         return ((JsonObject) node).get(property);
     }
 
@@ -105,12 +105,12 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Iterable<?> items(Object node) {
+    public Iterable<JsonValue> items(Object node) {
         return (JsonArray) node;
     }
 
     @Override
-    public Stream<?> streamItems(Object node) {
+    public Stream<JsonValue> streamItems(Object node) {
         return ((JsonArray) node).stream();
     }
 
@@ -154,7 +154,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<?> asIterable(Object node) {
+    public Collection<JsonValue> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
@@ -162,11 +162,11 @@ public class JakartaAdapter implements NodeAdapter {
         if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
             return ((JsonArray) node);
         }
-        return Collections.singletonList(node);
+        return Collections.singletonList((JsonValue) node);
     }
 
     @Override
-    public Stream<?> asStream(Object node) {
+    public Stream<JsonValue> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
@@ -174,7 +174,7 @@ public class JakartaAdapter implements NodeAdapter {
         if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
             return ((JsonArray) node).stream();
         }
-        return Stream.of(node);
+        return Stream.of((JsonValue) node);
     }
 
     @Override

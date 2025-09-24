@@ -26,7 +26,7 @@ public class JakartaWriter extends NodeGenerator {
             return;
         }
 
-        switch (adapter.type(node)) {
+        switch (adapter.typeOf(node)) {
         case FALSE:
             writer.write(false);
             return;

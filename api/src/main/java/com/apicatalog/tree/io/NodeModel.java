@@ -56,8 +56,8 @@ public class NodeModel {
             return false;
         }
 
-        NodeType leftType = leftAdapter.type(left);
-        NodeType rightType = rightAdapter.type(right);
+        NodeType leftType = leftAdapter.typeOf(left);
+        NodeType rightType = rightAdapter.typeOf(right);
 
         if (leftType != rightType) {
             return false;

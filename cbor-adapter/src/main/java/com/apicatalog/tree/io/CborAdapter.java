@@ -62,7 +62,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType type(Object node) {
+    public NodeType typeOf(Object node) {
         switch (((DataItem) node).getMajorType()) {
 
         case MAP:
@@ -130,7 +130,7 @@ public class CborAdapter implements NodeAdapter {
     public Iterable<Entry<?, ?>> entries(Object node) {
         return new Iterable<Entry<?, ?>>() {
 
-            final Collection<DataItem> keys = ((Map) node).getKeys();
+            final Collection<DataItem> keys = keys(node);
 
             @Override
             public Iterator<Entry<?, ?>> iterator() {
@@ -142,7 +142,7 @@ public class CborAdapter implements NodeAdapter {
                     @Override
                     public Entry<?, ?> next() {
                         final DataItem key = kit.next();
-                        return new SimpleEntry<>(key, ((Map) node).get(key));
+                        return new SimpleEntry<>(key, property(key, node));
                     }
 
                     @Override
@@ -156,7 +156,7 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public Stream<Entry<?, ?>> streamEntries(Object node) {
-        return ((Map) node).getKeys().stream().map(key -> new SimpleEntry<>(key, ((Map) node).get(key)));
+        return keys(node).stream().map(key -> new SimpleEntry<>(key, property(key, node)));
     }
 
     @Override

@@ -205,7 +205,7 @@ public class NodeVisitor {
 
                 // process property key
                 node = entry.getKey();
-                nodeType = adapter.type(node);
+                nodeType = adapter.typeOf(node);
 
                 visited++;
 
@@ -231,7 +231,7 @@ public class NodeVisitor {
             stack.pop();
         }
 
-        nodeType = adapter.type(node);
+        nodeType = adapter.typeOf(node);
 
         switch (nodeType) {
         case COLLECTION:

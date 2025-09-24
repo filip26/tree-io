@@ -55,7 +55,7 @@ public interface NodeAdapter {
      * @param node the node to inspect
      * @return the {@link NodeType} of the node
      */
-    NodeType type(Object node);
+    NodeType typeOf(Object node);
 
     /**
      * Checks whether the node represents a null value.
@@ -122,8 +122,6 @@ public interface NodeAdapter {
      * @param node the map node
      * @return collection of property key nodes
      */
-    // TODO deprecate in favor of properties?
-    @Deprecated
     Collection<?> keys(Object node);
 
     /**
@@ -134,8 +132,6 @@ public interface NodeAdapter {
      * @param node the map node containing the property
      * @return the property value node corresponding to the property key
      */
-    // TODO deprecate in favor of properties?
-    @Deprecated
     Object property(Object key, Object node);
 
     Iterable<Entry<?, ?>> entries(Object node);

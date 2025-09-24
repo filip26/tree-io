@@ -49,7 +49,7 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType type(Object node) {
+    public NodeType typeOf(Object node) {
 
         switch (((JsonNode) node).getNodeType()) {
         case NULL:
