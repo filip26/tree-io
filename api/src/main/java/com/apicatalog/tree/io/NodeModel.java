@@ -93,17 +93,17 @@ public class NodeModel {
             }
 
             return deepEqualsCollection(
-                    leftAdapter.items(left),
+                    leftAdapter.elements(left),
                     leftAdapter,
-                    rightAdapter.items(right),
+                    rightAdapter.elements(right),
                     rightAdapter);
 
         case MAP:
-            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.streamEntries(left)
+            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.propertyStream(left)
                     .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
-            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.streamEntries(right)
+            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.propertyStream(right)
                     .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 

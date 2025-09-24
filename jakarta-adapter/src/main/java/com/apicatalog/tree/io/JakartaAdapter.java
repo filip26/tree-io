@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -94,23 +95,23 @@ public class JakartaAdapter implements NodeAdapter {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> entries(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         return (Iterable) ((JsonObject) node).entrySet();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<Entry<?, ?>> streamEntries(Object node) {
+    public Stream<Entry<?, ?>> propertyStream(Object node) {
         return (Stream) ((JsonObject) node).entrySet().stream();
     }
 
     @Override
-    public Iterable<JsonValue> items(Object node) {
+    public Iterable<JsonValue> elements(Object node) {
         return (JsonArray) node;
     }
 
     @Override
-    public Stream<JsonValue> streamItems(Object node) {
+    public Stream<JsonValue> elementStream(Object node) {
         return ((JsonArray) node).stream();
     }
 
@@ -262,7 +263,7 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof JsonString) {
             return ((JsonString) node).getString();
         }
-        return node.toString();
+        return Objects.toString(node);
     }
 
     @Override

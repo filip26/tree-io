@@ -112,25 +112,25 @@ public class NativeAdapter implements NodeAdapter {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> entries(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         return ((Map) node).entrySet();
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<Entry<?, ?>> streamEntries(Object node) {
+    public Stream<Entry<?, ?>> propertyStream(Object node) {
         return ((Map) node).entrySet().stream();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<? extends Object> items(Object node) {
+    public Iterable<? extends Object> elements(Object node) {
         return ((Iterable) node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<? extends Object> streamItems(Object node) {
+    public Stream<? extends Object> elementStream(Object node) {
         return ((Collection) node).stream();
     }
 
@@ -388,7 +388,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyList();
             }
 
-            return adapter.streamItems(value)
+            return adapter.elementStream(value)
                     .map(item -> adapt(item, adapter))
                     .collect(Collectors.toList());
 
@@ -397,7 +397,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyMap();
             }
 
-            return adapter.streamEntries(value)
+            return adapter.propertyStream(value)
                     .reduce(new LinkedHashMap<>(adapter.size(value)),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));

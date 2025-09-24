@@ -134,9 +134,9 @@ public interface NodeAdapter {
      */
     Object property(Object key, Object node);
 
-    Iterable<Entry<?, ?>> entries(Object node);
+    Iterable<Entry<?, ?>> properties(Object node);
 
-    Stream<Entry<?, ?>> streamEntries(Object node);
+    Stream<Entry<?, ?>> propertyStream(Object node);
 
     // --- Collection operations ---
 
@@ -170,7 +170,7 @@ public interface NodeAdapter {
      * @param node the collection node
      * @return iterable of child nodes
      */
-    Iterable<?> items(Object node);
+    Iterable<?> elements(Object node);
 
     /**
      * Returns the child nodes of a collection node as a {@link Stream}.
@@ -178,7 +178,7 @@ public interface NodeAdapter {
      * @param node the collection node
      * @return stream of child nodes
      */
-    Stream<?> streamItems(Object node);
+    Stream<?> elementStream(Object node);
 
     // --- String operations ---
 

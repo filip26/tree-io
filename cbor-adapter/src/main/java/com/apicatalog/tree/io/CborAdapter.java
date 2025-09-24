@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -43,7 +44,8 @@ public class CborAdapter implements NodeAdapter {
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
-            NodeType.STRING));
+            NodeType.STRING,
+            NodeType.BINARY));
 
     static final CborAdapter INSTANCE = new CborAdapter();
 
@@ -54,6 +56,11 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isNode(Object node) {
         return node != null && node instanceof DataItem;
+    }
+
+    @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
     }
 
     @Override
@@ -106,35 +113,23 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
-    }
-
-    @Override
     public Collection<DataItem> keys(Object node) {
         return ((Map) node).getKeys();
     }
 
     @Override
     public DataItem property(Object property, Object node) {
-//        if (property instanceof DataItem) {
         return ((Map) node).get((DataItem) property);
-//        }
-//        if (property instanceof String) {
-//            return ((Map) node).get(new UnicodeString((String) property));
-//        }
-//        throw new ClassCastException();
     }
 
     @Override
-    public Iterable<Entry<?, ?>> entries(Object node) {
+    public Iterable<Entry<?, ?>> properties(Object node) {
         return new Iterable<Entry<?, ?>>() {
 
             final Collection<DataItem> keys = keys(node);
 
             @Override
             public Iterator<Entry<?, ?>> iterator() {
-                // TODO Auto-generated method stub
                 return new Iterator<Entry<?, ?>>() {
 
                     final Iterator<DataItem> kit = keys.iterator();
@@ -155,17 +150,17 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Stream<Entry<?, ?>> streamEntries(Object node) {
+    public Stream<Entry<?, ?>> propertyStream(Object node) {   
         return keys(node).stream().map(key -> new SimpleEntry<>(key, property(key, node)));
     }
 
     @Override
-    public List<DataItem> items(Object node) {
+    public List<DataItem> elements(Object node) {
         return ((Array) node).getDataItems();
     }
 
     @Override
-    public Stream<DataItem> streamItems(Object node) {
+    public Stream<DataItem> elementStream(Object node) {
         return ((Array) node).getDataItems().stream();
     }
 
@@ -211,25 +206,25 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<? extends Object> asIterable(Object node) {
+    public Collection<DataItem> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
         if (node instanceof Array) {
             return ((Array) node).getDataItems();
         }
-        return Collections.singletonList(node);
+        return Collections.singleton((DataItem) node);
     }
 
     @Override
-    public Stream<? extends Object> asStream(Object node) {
+    public Stream<DataItem> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
         if (node instanceof Array) {
             return ((Array) node).getDataItems().stream();
         }
-        return Stream.of(node);
+        return Stream.of((DataItem) node);
     }
 
     @Override
@@ -327,7 +322,7 @@ public class CborAdapter implements NodeAdapter {
         if (node instanceof UnicodeString) {
             return ((UnicodeString) node).getString();
         }
-        return node.toString();
+        return Objects.toString(node);
     }
 
     @Override

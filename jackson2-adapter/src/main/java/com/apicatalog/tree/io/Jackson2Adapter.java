@@ -87,26 +87,26 @@ public class Jackson2Adapter implements NodeAdapter {
     public JsonNode property(Object property, Object node) {
         return ((ObjectNode) node).get((String) property);
     }
-    
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> entries(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+    public Iterable<Entry<?, ?>> properties(Object node) {
+        return (Iterable)((ObjectNode) node).properties();
     }
-    
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<Entry<?, ?>> streamEntries(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+    public Stream<Entry<?, ?>> propertyStream(Object node) {
+        return (Stream) ((ObjectNode) node).propertyStream();
     }
 
     @Override
-    public Collection<JsonNode> items(Object node) {
+    public Collection<JsonNode> elements(Object node) {
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
 
     @Override
-    public Stream<JsonNode> streamItems(Object node) {
+    public Stream<JsonNode> elementStream(Object node) {
         return ((ArrayNode) node).valueStream();
     }
 
@@ -151,7 +151,7 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Collection<Object> asIterable(Object node) {
+    public Collection<JsonNode> asIterable(Object node) {
         if (node == null) {
             return Collections.emptySet();
         }
@@ -162,14 +162,14 @@ public class Jackson2Adapter implements NodeAdapter {
             return ((ArrayNode) node).valueStream().collect(Collectors.toList());
         }
         if (node instanceof Stream) {
-            return ((Stream<Object>) node).collect(Collectors.toList());
+            return ((Stream<JsonNode>) node).collect(Collectors.toList());
         }
-        return Collections.singleton(node);
+        return Collections.singleton((JsonNode) node);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Stream<? extends Object> asStream(Object node) {
+    public Stream<JsonNode> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
@@ -182,7 +182,7 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream();
         }
-        return Stream.of(node);
+        return Stream.of((JsonNode) node);
     }
 
     @Override
@@ -206,12 +206,12 @@ public class Jackson2Adapter implements NodeAdapter {
     public boolean isCollection(Object node) {
         return node != null && JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType());
     }
-    
+
     @Override
     public boolean isSet(Object node) {
         return false;
     }
-    
+
     @Override
     public boolean isList(Object node) {
         return isCollection(node);
@@ -273,9 +273,9 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof JsonNode) {
             return ((JsonNode) node).asText();
         }
-        return node.toString();
+        return Objects.toString(node);
     }
-    
+
     @Override
     public BigDecimal asDecimal(Object node) {
         // TODO Auto-generated method stub
