@@ -1,11 +1,11 @@
 package com.apicatalog.tree.io;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 /**
@@ -141,7 +141,7 @@ public class NodeVisitor {
      * @throws NullPointerException if {@code root}, {@code adapter}, or
      *                              {@code propertyComparator} is {@code null}
      */
-    public static NodeVisitor of(Object root, NodeAdapter adapter, Comparator<Object> propertyComparator) {
+    public static NodeVisitor of(Object root, NodeAdapter adapter, Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
 
@@ -244,10 +244,8 @@ public class NodeVisitor {
         case MAP:
             stack.push(NodeType.MAP);
             stack.push(node);
-            stack.push(adapter.keys(node)
-                    .stream()
+            stack.push(adapter.streamEntries(node)
                     .sorted(keyComparator)
-                    .map(key -> new SimpleEntry<>(key, adapter.property(key, node)))
                     .iterator());
             depth += 1;
             break;

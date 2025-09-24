@@ -1,7 +1,6 @@
 package com.apicatalog.tree.io;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -47,7 +46,6 @@ public class NodeModel {
     public Object node() {
         return node;
     }
-    
 
     static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
 
@@ -101,30 +99,26 @@ public class NodeModel {
                     rightAdapter);
 
         case MAP:
-            final Collection<? extends Object> leftProps = leftAdapter.keys(left);
-            final Collection<? extends Object> rightProps = rightAdapter.keys(right);
+            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.streamEntries(left)
+                    .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .iterator();
 
-            if (leftProps.size() != rightProps.size()) {
-                return false;
-            }
+            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.streamEntries(right)
+                    .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .iterator();
 
-            // FIXME ----
-            // deep compare property names / keys
-            if (!deepEqualsCollection(leftProps, leftAdapter, rightProps, rightAdapter)) {
-                return false;
-            }
+            while (leftEntries.hasNext() && rightEntries.hasNext()) {
 
-            for (final Object property : leftProps) {
-                if (!deepEquals(
-                        leftAdapter.property(property, rightType),
-                        leftAdapter,
-                        rightProps,
-                        rightAdapter)) {
+                final Entry<?, ?> leftEntry = leftEntries.next();
+                final Entry<?, ?> rightEntry = rightEntries.next();
+
+                if (!deepEquals(leftEntry.getKey(), leftAdapter, rightEntry.getKey(), rightAdapter)
+                        || !deepEquals(leftEntry.getValue(), leftAdapter, rightEntry.getValue(), rightAdapter)) {
                     return false;
                 }
             }
 
-            return true;
+            return !leftEntries.hasNext() && !rightEntries.hasNext();
 
         case FALSE:
         case TRUE:
@@ -154,15 +148,14 @@ public class NodeModel {
         // Check if both iterators are exhausted
         return !leftIterator.hasNext() && !rightIterator.hasNext();
     }
-    
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Comparator<Entry<?, ?>> comparingEntry(Function<Entry<?, ?>, Comparable> keyExtractor) {
         return (Entry<?, ?> arg0, Entry<?, ?> arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 
-    //static <T,U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T,? extends U> keyExtractor)
-    public static Comparator<?> comparingNode(Function<Object, Comparable<Object>> keyExtractor) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Comparator<?> comparingNode(Function<Object, Comparable> keyExtractor) {
         return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 }

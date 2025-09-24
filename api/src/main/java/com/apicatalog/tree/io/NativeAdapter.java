@@ -2,11 +2,9 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -399,12 +397,10 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyMap();
             }
 
-            return adapter.keys(value)
-                    .stream()
+            return adapter.streamEntries(value)
                     .reduce(new LinkedHashMap<>(adapter.size(value)),
-                            (map, key) -> {
-                                Object entry = adapter.property(key, value);
-                                map.put(key, adapt(entry, adapter));
+                            (map, entry) -> {
+                                map.put(entry.getKey(), adapt(entry.getValue(), adapter));
                                 return map;
                             },
                             (map1, map2) -> { // combiner (parallel streams)
