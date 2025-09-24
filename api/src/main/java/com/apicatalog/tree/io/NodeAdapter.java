@@ -122,27 +122,26 @@ public interface NodeAdapter {
      * @param node the map node
      * @return collection of property key nodes
      */
-    //TODO deprecate in favor of properties?
+    // TODO deprecate in favor of properties?
     @Deprecated
     Collection<?> keys(Object node);
 
     /**
-     * Returns the property value associated with the specified key node in a map node.
+     * Returns the property value associated with the specified key node in a map
+     * node.
      *
      * @param key  the property key node
      * @param node the map node containing the property
      * @return the property value node corresponding to the property key
      */
-    //TODO deprecate in favor of properties?
+    // TODO deprecate in favor of properties?
     @Deprecated
     Object property(Object key, Object node);
 
-    //TODO + comparator and + filter?
     Iterable<Entry<?, ?>> entries(Object node);
-    
+
     Stream<Entry<?, ?>> streamEntries(Object node);
-    
-    
+
     // --- Collection operations ---
 
     /**

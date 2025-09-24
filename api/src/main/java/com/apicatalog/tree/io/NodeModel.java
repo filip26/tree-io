@@ -2,8 +2,11 @@ package com.apicatalog.tree.io;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Immutable representation of a tree structure accessed through a
@@ -150,5 +153,16 @@ public class NodeModel {
 
         // Check if both iterators are exhausted
         return !leftIterator.hasNext() && !rightIterator.hasNext();
+    }
+    
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Comparator<Entry<?, ?>> comparingEntry(Function<Entry<?, ?>, Comparable> keyExtractor) {
+        return (Entry<?, ?> arg0, Entry<?, ?> arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    }
+
+    //static <T,U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T,? extends U> keyExtractor)
+    public static Comparator<?> comparingNode(Function<Object, Comparable<Object>> keyExtractor) {
+        return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 }
