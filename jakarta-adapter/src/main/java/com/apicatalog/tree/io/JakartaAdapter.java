@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import jakarta.json.JsonArray;
@@ -89,6 +90,12 @@ public class JakartaAdapter implements NodeAdapter {
     @Override
     public Object property(Object property, Object node) {
         return ((JsonObject) node).get(property);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Iterable<Entry<Object, Object>> properties(Object node) {
+        return (Iterable)((JsonObject) node).entrySet();
     }
 
     @Override
@@ -240,5 +247,13 @@ public class JakartaAdapter implements NodeAdapter {
             return ((JsonString) node).getString();
         }
         return node.toString();
+    }
+    
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        if (node instanceof JsonNumber) {
+            return ((JsonNumber)node).bigDecimalValue();
+        }
+        throw new IllegalArgumentException();
     }
 }

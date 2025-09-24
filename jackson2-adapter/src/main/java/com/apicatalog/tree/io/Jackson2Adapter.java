@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -85,6 +86,12 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public JsonNode property(Object property, Object node) {
         return ((ObjectNode) node).get((String) property);
+    }
+    
+    @Override
+    public Iterable<Entry<Object, Object>> properties(Object node) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
@@ -251,5 +258,11 @@ public class Jackson2Adapter implements NodeAdapter {
             return ((JsonNode) node).asText();
         }
         return node.toString();
+    }
+    
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

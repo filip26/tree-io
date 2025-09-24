@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,6 +107,12 @@ public class NativeAdapter implements NodeAdapter {
     @Override
     public Object property(Object property, Object node) {
         return ((Map) node).get(property);
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Iterable<Entry<Object, Object>> properties(Object node) {
+        return ((Map) node).entrySet();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -310,6 +317,29 @@ public class NativeAdapter implements NodeAdapter {
             return (String) node;
         }
         return Objects.toString(node);
+    }
+    
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        if (node instanceof BigDecimal) {
+            return ((BigDecimal) node);
+        }
+        if (node instanceof Double) {
+            return BigDecimal.valueOf((double) node);
+        }
+        if (node instanceof Float) {
+            return BigDecimal.valueOf((float) node);
+        }
+        if (node instanceof Integer) {
+            return BigDecimal.valueOf((int) node);
+        }
+        if (node instanceof Long) {
+            return BigDecimal.valueOf((long) node);
+        }
+        if (node instanceof BigInteger) {
+            return BigDecimal.valueOf(((BigInteger) node).longValueExact());
+        }
+        throw new IllegalArgumentException();
     }
 
     public static final Object adapt(Object value, NodeAdapter adapter) {

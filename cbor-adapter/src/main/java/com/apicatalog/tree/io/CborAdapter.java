@@ -2,11 +2,14 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -121,6 +124,35 @@ public class CborAdapter implements NodeAdapter {
             return ((Map) node).get(new UnicodeString((String) property));
         }
         throw new ClassCastException();
+    }
+    
+    @Override
+    public Iterable<Entry<Object, Object>> properties(Object node) {
+        
+        final Collection<DataItem> keys = keys(node);
+    
+        return new Iterable<Entry<Object,Object>>() {
+            
+            @Override
+            public Iterator<Entry<Object, Object>> iterator() {
+                // TODO Auto-generated method stub
+                return new Iterator<Entry<Object,Object>>() {
+                    
+                    final Iterator<DataItem> kit = keys.iterator();
+                    
+                    @Override
+                    public Entry<Object, Object> next() {
+                        final DataItem key = kit.next();
+                        return new SimpleEntry<>(key, ((Map)node).get(key));
+                    }
+                    
+                    @Override
+                    public boolean hasNext() {
+                        return kit.hasNext();
+                    }
+                };
+            }
+        };
     }
 
     @Override
@@ -282,5 +314,13 @@ public class CborAdapter implements NodeAdapter {
             return ((UnicodeString) node).getString();
         }
         return node.toString();
+    }
+    
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        if (isIntegral(node)) {
+            return BigDecimal.valueOf(longValue(node));
+        }
+        return decimalValue(node);
     }
 }

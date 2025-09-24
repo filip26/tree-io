@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -121,6 +122,7 @@ public interface NodeAdapter {
      * @param node the map node
      * @return collection of property key nodes
      */
+    //TODO deprecate in favor of properties?    
     Collection<? extends Object> keys(Object node);
 
     /**
@@ -130,8 +132,11 @@ public interface NodeAdapter {
      * @param node the map node containing the property
      * @return the property value node corresponding to the property key
      */
+    //TODO deprecate in favor of properties?
     Object property(Object key, Object node);
 
+    Iterable<Map.Entry<Object, Object>> properties(Object node);
+    
     // --- Collection operations ---
 
     /**
@@ -273,4 +278,6 @@ public interface NodeAdapter {
      * @return string representation
      */
     String asString(Object node);
+
+    BigDecimal asDecimal(Object node);
 }

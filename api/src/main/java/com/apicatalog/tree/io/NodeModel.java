@@ -9,32 +9,31 @@ import java.util.Objects;
  * Immutable representation of a tree structure accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@code TreeModel} instance binds a root node with its adapter, providing a
+ * A {@code NodeModel} instance binds a node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
  *
- * @param <T> the type of the root node
  */
-public class TreeModel {
+public class NodeModel {
 
     protected final NodeAdapter adapter;
-    protected final Object root;
+    protected final Object node;
 
     /**
      * Creates a new immutable tree with the given root node and adapter.
      *
-     * @param root    the root node of the tree, must not be {@code null}
+     * @param node    the root node of the tree, must not be {@code null}
      * @param adapter the adapter providing access to node types and values, must
      *                not be {@code null}
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public TreeModel(Object root, NodeAdapter adapter) {
-        Objects.requireNonNull(root);
+    public NodeModel(Object node, NodeAdapter adapter) {
+        Objects.requireNonNull(node);
         Objects.requireNonNull(adapter);
 
-        this.root = root;
+        this.node = node;
         this.adapter = adapter;
     }
 
@@ -42,9 +41,10 @@ public class TreeModel {
         return adapter;
     }
 
-    public Object root() {
-        return root;
+    public Object node() {
+        return node;
     }
+    
 
     static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
 
@@ -151,5 +151,4 @@ public class TreeModel {
         // Check if both iterators are exhausted
         return !leftIterator.hasNext() && !rightIterator.hasNext();
     }
-
 }
