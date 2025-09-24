@@ -134,9 +134,9 @@ public interface NodeAdapter {
      */
     Object property(Object key, Object node);
 
-    Iterable<Entry<?, ?>> properties(Object node);
+    Iterable<Entry<?, ?>> entries(Object node);
 
-    Stream<Entry<?, ?>> propertyStream(Object node);
+    Stream<Entry<?, ?>> entryStream(Object node);
 
     // --- Collection operations ---
 

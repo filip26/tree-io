@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class Jackson2Adapter implements NodeAdapter {
@@ -40,7 +39,14 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public boolean isNode(Object node) {
-        return node != null && node instanceof JsonNode;
+        return node != null && (node instanceof JsonNode // values
+                || node instanceof String // keys
+        );
+    }
+
+    @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
     }
 
     @Override
@@ -50,7 +56,12 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public NodeType typeOf(Object node) {
+        // property keys are strings
+        if (node instanceof String) {
+            return NodeType.STRING;
+        }
 
+        // all other values
         switch (((JsonNode) node).getNodeType()) {
         case NULL:
         case MISSING:
@@ -68,14 +79,8 @@ public class Jackson2Adapter implements NodeAdapter {
         case BINARY:
             return NodeType.BINARY;
         default:
+            throw new IllegalArgumentException();
         }
-
-        throw new IllegalArgumentException();
-    }
-
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
     }
 
     @Override
@@ -90,13 +95,13 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
-        return (Iterable)((ObjectNode) node).properties();
+    public Iterable<Entry<?, ?>> entries(Object node) {
+        return (Iterable) ((ObjectNode) node).properties();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<Entry<?, ?>> propertyStream(Object node) {
+    public Stream<Entry<?, ?>> entryStream(Object node) {
         return (Stream) ((ObjectNode) node).propertyStream();
     }
 
@@ -112,6 +117,11 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public String stringValue(Object node) {
+        // keys
+        if (node instanceof String) {
+            return (String) node;
+        }
+        // values
         return ((JsonNode) node).textValue();
     }
 
@@ -188,23 +198,30 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || JsonNodeType.NULL.equals(((JsonNode) node).getNodeType())
-                || JsonNodeType.MISSING.equals(((JsonNode) node).getNodeType());
+                || (node instanceof JsonNode
+                        && (((JsonNode) node).isNull()
+                                || ((JsonNode) node).isMissingNode()));
     }
 
     @Override
     public boolean isBoolean(Object node) {
-        return node != null && JsonNodeType.BOOLEAN.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isBoolean();
     }
 
     @Override
     public boolean isMap(Object node) {
-        return node != null && JsonNodeType.OBJECT.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isObject();
     }
 
     @Override
     public boolean isCollection(Object node) {
-        return node != null && JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isArray();
     }
 
     @Override
@@ -221,22 +238,29 @@ public class Jackson2Adapter implements NodeAdapter {
     public boolean isString(Object node) {
         return node != null
                 && (node instanceof String
-                        || JsonNodeType.STRING.equals(((JsonNode) node).getNodeType()));
+                        || (node instanceof JsonNode
+                                && ((JsonNode) node).isTextual()));
     }
 
     @Override
     public boolean isNumber(Object node) {
-        return node != null && JsonNodeType.NUMBER.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isNumber();
     }
 
     @Override
     public boolean isIntegral(Object node) {
-        return isNumber(node) && ((JsonNode) node).isIntegralNumber();
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isIntegralNumber();
     }
 
     @Override
     public boolean isBinary(Object node) {
-        return node != null && JsonNodeType.BINARY.equals(((JsonNode) node).getNodeType());
+        return node != null
+                && node instanceof JsonNode
+                && ((JsonNode) node).isBinary();
     }
 
     @Override
@@ -278,7 +302,6 @@ public class Jackson2Adapter implements NodeAdapter {
 
     @Override
     public BigDecimal asDecimal(Object node) {
-        // TODO Auto-generated method stub
-        return null;
+        return ((JsonNode) node).decimalValue();
     }
 }

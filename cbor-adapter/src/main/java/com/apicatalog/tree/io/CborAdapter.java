@@ -123,7 +123,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
+    public Iterable<Entry<?, ?>> entries(Object node) {
         return new Iterable<Entry<?, ?>>() {
 
             final Collection<DataItem> keys = keys(node);
@@ -150,7 +150,7 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public Stream<Entry<?, ?>> propertyStream(Object node) {   
+    public Stream<Entry<?, ?>> entryStream(Object node) {   
         return keys(node).stream().map(key -> new SimpleEntry<>(key, property(key, node)));
     }
 

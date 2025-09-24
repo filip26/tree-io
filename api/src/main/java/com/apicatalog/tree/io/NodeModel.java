@@ -99,11 +99,11 @@ public class NodeModel {
                     rightAdapter);
 
         case MAP:
-            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.propertyStream(left)
+            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
                     .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
-            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.propertyStream(right)
+            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
                     .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 

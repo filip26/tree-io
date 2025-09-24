@@ -244,7 +244,7 @@ public class NodeVisitor {
         case MAP:
             stack.push(NodeType.MAP);
             stack.push(node);
-            stack.push(adapter.propertyStream(node)
+            stack.push(adapter.entryStream(node)
                     .sorted(keyComparator)
                     .iterator());
             depth += 1;

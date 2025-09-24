@@ -112,13 +112,13 @@ public class NativeAdapter implements NodeAdapter {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
+    public Iterable<Entry<?, ?>> entries(Object node) {
         return ((Map) node).entrySet();
     }
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<Entry<?, ?>> propertyStream(Object node) {
+    public Stream<Entry<?, ?>> entryStream(Object node) {
         return ((Map) node).entrySet().stream();
     }
 
@@ -397,7 +397,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyMap();
             }
 
-            return adapter.propertyStream(value)
+            return adapter.entryStream(value)
                     .reduce(new LinkedHashMap<>(adapter.size(value)),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));
