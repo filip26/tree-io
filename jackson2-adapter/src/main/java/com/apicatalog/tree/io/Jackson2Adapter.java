@@ -89,8 +89,8 @@ public class Jackson2Adapter implements NodeAdapter {
     }
 
     @Override
-    public JsonNode property(Object property, Object node) {
-        return ((ObjectNode) node).get((String) property);
+    public JsonNode property(Object key, Object node) {
+        return ((ObjectNode) node).get((String) key);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
