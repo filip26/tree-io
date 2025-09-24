@@ -117,21 +117,20 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public DataItem property(Object property, Object node) {
-        if (property instanceof DataItem) {
-            return ((Map) node).get((DataItem) property);
-        }
-        if (property instanceof String) {
-            return ((Map) node).get(new UnicodeString((String) property));
-        }
-        throw new ClassCastException();
+//        if (property instanceof DataItem) {
+        return ((Map) node).get((DataItem) property);
+//        }
+//        if (property instanceof String) {
+//            return ((Map) node).get(new UnicodeString((String) property));
+//        }
+//        throw new ClassCastException();
     }
 
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
-
-        final Collection<DataItem> keys = keys(node);
-
+    public Iterable<Entry<?, ?>> entries(Object node) {
         return new Iterable<Entry<?, ?>>() {
+
+            final Collection<DataItem> keys = ((Map) node).getKeys();
 
             @Override
             public Iterator<Entry<?, ?>> iterator() {
@@ -141,7 +140,7 @@ public class CborAdapter implements NodeAdapter {
                     final Iterator<DataItem> kit = keys.iterator();
 
                     @Override
-                    public Entry<Object, Object> next() {
+                    public Entry<?, ?> next() {
                         final DataItem key = kit.next();
                         return new SimpleEntry<>(key, ((Map) node).get(key));
                     }
@@ -156,12 +155,17 @@ public class CborAdapter implements NodeAdapter {
     }
 
     @Override
-    public List<DataItem> iterable(Object node) {
+    public Stream<Entry<?, ?>> streamEntries(Object node) {
+        return ((Map) node).getKeys().stream().map(key -> new SimpleEntry<>(key, ((Map) node).get(key)));
+    }
+
+    @Override
+    public List<DataItem> items(Object node) {
         return ((Array) node).getDataItems();
     }
 
     @Override
-    public Stream<DataItem> stream(Object node) {
+    public Stream<DataItem> streamItems(Object node) {
         return ((Array) node).getDataItems().stream();
     }
 
@@ -252,6 +256,16 @@ public class CborAdapter implements NodeAdapter {
 
     @Override
     public boolean isCollection(Object node) {
+        return node != null && (node instanceof Array);
+    }
+
+    @Override
+    public boolean isSet(Object node) {
+        return false;
+    }
+
+    @Override
+    public boolean isList(Object node) {
         return node != null && (node instanceof Array);
     }
 

@@ -3,7 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -122,7 +122,8 @@ public interface NodeAdapter {
      * @param node the map node
      * @return collection of property key nodes
      */
-    //TODO deprecate in favor of properties?    
+    //TODO deprecate in favor of properties?
+    @Deprecated
     Collection<?> keys(Object node);
 
     /**
@@ -133,9 +134,14 @@ public interface NodeAdapter {
      * @return the property value node corresponding to the property key
      */
     //TODO deprecate in favor of properties?
+    @Deprecated
     Object property(Object key, Object node);
 
-    Iterable<Map.Entry<?, ?>> properties(Object node);
+    //TODO + comparator and + filter?
+    Iterable<Entry<?, ?>> entries(Object node);
+    
+    Stream<Entry<?, ?>> streamEntries(Object node);
+    
     
     // --- Collection operations ---
 
@@ -148,12 +154,28 @@ public interface NodeAdapter {
     boolean isCollection(Object node);
 
     /**
+     * Preserves insertion order and can contain duplicates.
+     * 
+     * @param node
+     * @return
+     */
+    boolean isList(Object node);
+
+    /**
+     * Contains only unique elements. Is unordered.
+     * 
+     * @param node
+     * @return
+     */
+    boolean isSet(Object node);
+
+    /**
      * Returns the child nodes of a collection node as an {@link Iterable}.
      *
      * @param node the collection node
      * @return iterable of child nodes
      */
-    Iterable<?> iterable(Object node);
+    Iterable<?> items(Object node);
 
     /**
      * Returns the child nodes of a collection node as a {@link Stream}.
@@ -161,7 +183,7 @@ public interface NodeAdapter {
      * @param node the collection node
      * @return stream of child nodes
      */
-    Stream<?> stream(Object node);
+    Stream<?> streamItems(Object node);
 
     // --- String operations ---
 

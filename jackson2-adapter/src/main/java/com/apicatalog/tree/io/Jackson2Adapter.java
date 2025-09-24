@@ -8,9 +8,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -89,18 +89,24 @@ public class Jackson2Adapter implements NodeAdapter {
     }
     
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
+    public Iterable<Entry<?, ?>> entries(Object node) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
+    public Stream<Entry<?, ?>> streamEntries(Object node) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public Collection<JsonNode> iterable(Object node) {
+    public Collection<JsonNode> items(Object node) {
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
 
     @Override
-    public Stream<JsonNode> stream(Object node) {
+    public Stream<JsonNode> streamItems(Object node) {
         return ((ArrayNode) node).valueStream();
     }
 
@@ -199,6 +205,16 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public boolean isCollection(Object node) {
         return node != null && JsonNodeType.ARRAY.equals(((JsonNode) node).getNodeType());
+    }
+    
+    @Override
+    public boolean isSet(Object node) {
+        return false;
+    }
+    
+    @Override
+    public boolean isList(Object node) {
+        return isCollection(node);
     }
 
     @Override

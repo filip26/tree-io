@@ -2,16 +2,19 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -111,19 +114,25 @@ public class NativeAdapter implements NodeAdapter {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
+    public Iterable<Entry<?, ?>> entries(Object node) {
         return ((Map) node).entrySet();
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<Entry<?, ?>> streamEntries(Object node) {
+        return ((Map) node).entrySet().stream();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<? extends Object> iterable(Object node) {
+    public Iterable<? extends Object> items(Object node) {
         return ((Iterable) node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<? extends Object> stream(Object node) {
+    public Stream<? extends Object> streamItems(Object node) {
         return ((Collection) node).stream();
     }
 
@@ -259,6 +268,16 @@ public class NativeAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isList(Object node) {
+        return node != null && node instanceof List;
+    }
+    
+    @Override
+    public boolean isSet(Object node) {
+        return node != null && node instanceof Collection;
+    }
+    
+    @Override
     public boolean isString(Object node) {
         return node != null && node instanceof String;
     }
@@ -371,7 +390,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyList();
             }
 
-            return adapter.stream(value)
+            return adapter.streamItems(value)
                     .map(item -> adapt(item, adapter))
                     .collect(Collectors.toList());
 

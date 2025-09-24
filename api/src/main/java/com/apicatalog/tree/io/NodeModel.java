@@ -92,9 +92,9 @@ public class NodeModel {
             }
 
             return deepEqualsCollection(
-                    leftAdapter.iterable(left),
+                    leftAdapter.items(left),
                     leftAdapter,
-                    rightAdapter.iterable(right),
+                    rightAdapter.items(right),
                     rightAdapter);
 
         case MAP:

@@ -2,13 +2,10 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -94,26 +91,26 @@ public class JakartaAdapter implements NodeAdapter {
     public Object property(Object property, Object node) {
         return ((JsonObject) node).get(property);
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<Entry<?, ?>> properties(Object node) {
-        return (Iterable)((JsonObject) node).entrySet();
+    public Iterable<Entry<?, ?>> entries(Object node) {
+        return (Iterable) ((JsonObject) node).entrySet();
     }
 
-    public Iterable<Entry<?, ?>> properties(Object node, Comparator<Map.Entry<?, ?>> comparator) {
-        final ArrayList<Entry<?, ?>> sorted = new ArrayList<>(((JsonObject) node).entrySet());
-        Collections.sort(sorted, comparator);
-        return sorted;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<Entry<?, ?>> streamEntries(Object node) {
+        return (Stream) ((JsonObject) node).entrySet().stream();
     }
 
     @Override
-    public Collection<?> iterable(Object node) {
+    public Iterable<?> items(Object node) {
         return (JsonArray) node;
     }
 
     @Override
-    public Stream<?> stream(Object node) {
+    public Stream<?> streamItems(Object node) {
         return ((JsonArray) node).stream();
     }
 
@@ -206,6 +203,16 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isSet(Object node) {
+        return false;
+    }
+
+    @Override
+    public boolean isList(Object node) {
+        return node != null && (node instanceof JsonArray);
+    }
+
+    @Override
     public boolean isString(Object node) {
         return node != null && (node instanceof String || node instanceof JsonString);
     }
@@ -257,11 +264,11 @@ public class JakartaAdapter implements NodeAdapter {
         }
         return node.toString();
     }
-    
+
     @Override
     public BigDecimal asDecimal(Object node) {
         if (node instanceof JsonNumber) {
-            return ((JsonNumber)node).bigDecimalValue();
+            return ((JsonNumber) node).bigDecimalValue();
         }
         throw new IllegalArgumentException();
     }
