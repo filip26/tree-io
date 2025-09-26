@@ -55,7 +55,7 @@ public interface NodeAdapter {
      * @param node the node to inspect
      * @return the {@link NodeType} of the node
      */
-    NodeType typeOf(Object node);
+    NodeType type(Object node);
 
     /**
      * Checks whether the node represents a null value.

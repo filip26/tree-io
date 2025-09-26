@@ -26,7 +26,7 @@ public class Jackson2Writer extends NodeGenerator {
             return;
         }
 
-        switch (adapter.typeOf(node)) {
+        switch (adapter.type(node)) {
         case FALSE:
             writer.writeBoolean(false);
             return;

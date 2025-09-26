@@ -55,7 +55,7 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public NodeType typeOf(Object node) {
+    public NodeType type(Object node) {
 
         // property keys are strings
         if (node instanceof String) {

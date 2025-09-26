@@ -65,7 +65,7 @@ public class JakartaMaterializer extends NodeGenerator {
     }
 
     protected JsonValue toJsonValue(Object node) {
-        switch (adapter.typeOf(node)) {
+        switch (adapter.type(node)) {
         case STRING:
             return Json.createValue(adapter.stringValue(node));
 
