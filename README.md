@@ -22,7 +22,7 @@
  Adapter               | Version | Documentation
 -----------------------|---------|---------------
  Jakarta JSON API      | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jakarta.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jakarta) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jakarta/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jakarta) 
- Jackson 2 Tree Model  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jackson.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jackson) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jackson/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jackson) 
+ Jackson 2 Tree Model  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jackson2.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jackson2) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jackson2/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jackson2) 
  CBOR                  | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-cbor.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-cbor) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-cbor/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-cbor) 
 
 ## 📦 Artifacts
