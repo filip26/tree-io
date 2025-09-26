@@ -20,7 +20,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,17 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @TestMethodOrder(OrderAnnotation.class)
 class Jackson2Test {
 
-//    // Enable pretty printing
-//    final static Map<String, Object> CONFIG = new HashMap<>();
-//
-//    static {
-//        CONFIG.put(JsonGenerator.PRETTY_PRINTING, true);
-//    }
-
     final static ObjectMapper MAPPER = new ObjectMapper();
     final static JsonFactory FACTORY = JsonFactory.builder().build();
-    
-//    final static JakartaMaterializer MATERIALIZER = new JakartaMaterializer();
 
     @ParameterizedTest
     @MethodSource({ "resources" })

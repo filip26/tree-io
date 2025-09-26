@@ -134,8 +134,20 @@ public interface NodeAdapter {
      */
     Object property(Object key, Object node);
 
+    /**
+     * Returns all key-value pairs of the given map node as an {@link Iterable}.
+     *
+     * @param node the map node
+     * @return iterable of key-value entries
+     */
     Iterable<Entry<?, ?>> entries(Object node);
 
+    /**
+     * Returns all key-value pairs of the given map node as a {@link Stream}.
+     *
+     * @param node the map node
+     * @return stream of key-value entries
+     */
     Stream<Entry<?, ?>> entryStream(Object node);
 
     // --- Collection operations ---
@@ -296,5 +308,11 @@ public interface NodeAdapter {
      */
     String asString(Object node);
 
+    /**
+     * Converts the given node to a {@link BigDecimal}, if possible.
+     *
+     * @param node the node to convert
+     * @return BigDecimal representation of the node
+     */
     BigDecimal asDecimal(Object node);
 }

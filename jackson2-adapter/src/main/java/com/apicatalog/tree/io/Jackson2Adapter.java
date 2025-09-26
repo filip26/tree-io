@@ -18,6 +18,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+/**
+ * {@code Jackson2Adapter} is a {@link NodeAdapter} implementation that bridges
+ * between a generic tree model and the Jackson 2 {@link JsonNode} API.
+ * <p>
+ * It provides type inspection, value extraction, and traversal utilities for
+ * working with JSON content represented as Jackson nodes. Keys are represented
+ * as {@link String} values, while values may be any supported {@link JsonNode}
+ * subtype. Supported node types include:
+ * <ul>
+ * <li>{@link NodeType#STRING}</li>
+ * <li>{@link NodeType#NUMBER}</li>
+ * <li>{@link NodeType#TRUE}</li>
+ * <li>{@link NodeType#FALSE}</li>
+ * <li>{@link NodeType#NULL}</li>
+ * <li>{@link NodeType#COLLECTION} (arrays)</li>
+ * <li>{@link NodeType#MAP} (objects)</li>
+ * <li>{@link NodeType#BINARY}</li>
+ * </ul>
+ * <p>
+ * This adapter is implemented as a stateless singleton; use {@link #instance()}
+ * to obtain the shared instance.
+ */
 public class Jackson2Adapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
