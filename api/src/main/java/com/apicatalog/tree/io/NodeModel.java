@@ -1,41 +1,41 @@
 package com.apicatalog.tree.io;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Immutable representation of a tree structure accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@code TreeIO} instance binds a root node with its adapter, providing a
+ * A {@code NodeModel} instance binds a node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
  *
- * @param <T> the type of the root node
  */
-public class TreeIO<T> {
+public class NodeModel {
 
     protected final NodeAdapter adapter;
-    protected final T root;
+    protected final Object node;
 
     /**
-     * Creates a new immutable tree with the given root node and
-     * adapter.
+     * Creates a new immutable tree with the given root node and adapter.
      *
-     * @param root    the root node of the tree, must not be {@code null}
+     * @param node    the root node of the tree, must not be {@code null}
      * @param adapter the adapter providing access to node types and values, must
      *                not be {@code null}
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public TreeIO(T root, NodeAdapter adapter) {
-        Objects.requireNonNull(root);
+    public NodeModel(Object node, NodeAdapter adapter) {
+        Objects.requireNonNull(node);
         Objects.requireNonNull(adapter);
 
-        this.root = root;
+        this.node = node;
         this.adapter = adapter;
     }
 
@@ -43,8 +43,8 @@ public class TreeIO<T> {
         return adapter;
     }
 
-    public Object root() {
-        return root;
+    public Object node() {
+        return node;
     }
 
     static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
@@ -93,36 +93,32 @@ public class TreeIO<T> {
             }
 
             return deepEqualsCollection(
-                    leftAdapter.iterable(left),
+                    leftAdapter.elements(left),
                     leftAdapter,
-                    rightAdapter.iterable(right),
+                    rightAdapter.elements(right),
                     rightAdapter);
 
         case MAP:
-            final Collection<? extends Object> leftProps = leftAdapter.keys(left);
-            final Collection<? extends Object> rightProps = rightAdapter.keys(right);
+            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
+                    .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .iterator();
 
-            if (leftProps.size() != rightProps.size()) {
-                return false;
-            }
+            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
+                    .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .iterator();
 
-            // FIXME ----
-            // deep compare property names / keys
-            if (!deepEqualsCollection(leftProps, leftAdapter, rightProps, rightAdapter)) {
-                return false;
-            }
+            while (leftEntries.hasNext() && rightEntries.hasNext()) {
 
-            for (final Object property : leftProps) {
-                if (!deepEquals(
-                        leftAdapter.property(property, rightType),
-                        leftAdapter,
-                        rightProps,
-                        rightAdapter)) {
+                final Entry<?, ?> leftEntry = leftEntries.next();
+                final Entry<?, ?> rightEntry = rightEntries.next();
+
+                if (!deepEquals(leftEntry.getKey(), leftAdapter, rightEntry.getKey(), rightAdapter)
+                        || !deepEquals(leftEntry.getValue(), leftAdapter, rightEntry.getValue(), rightAdapter)) {
                     return false;
                 }
             }
 
-            return true;
+            return !leftEntries.hasNext() && !rightEntries.hasNext();
 
         case FALSE:
         case TRUE:
@@ -153,4 +149,13 @@ public class TreeIO<T> {
         return !leftIterator.hasNext() && !rightIterator.hasNext();
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Comparator<Entry<?, ?>> comparingEntry(Function<Entry<?, ?>, Comparable> keyExtractor) {
+        return (Entry<?, ?> arg0, Entry<?, ?> arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Comparator<?> comparingNode(Function<Object, Comparable> keyExtractor) {
+        return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    }
 }

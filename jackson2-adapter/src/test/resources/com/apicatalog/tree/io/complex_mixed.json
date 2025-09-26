@@ -1,0 +1,28 @@
+{
+  "id": "C1",
+  "attributes": [
+    {
+      "k": "a",
+      "v": 1
+    },
+    {
+      "k": "b",
+      "v": [
+        1,
+        2,
+        {
+          "nested": true
+        }
+      ]
+    }
+  ],
+  "flags": [
+    true,
+    false,
+    null
+  ],
+  "details": {
+    "text": "multi\nline\nstring",
+    "unicode": "Δοκιμή"
+  }
+}

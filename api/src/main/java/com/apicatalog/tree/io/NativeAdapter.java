@@ -7,7 +7,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -107,16 +109,28 @@ public class NativeAdapter implements NodeAdapter {
     public Object property(Object property, Object node) {
         return ((Map) node).get(property);
     }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Iterable<Entry<?, ?>> entries(Object node) {
+        return ((Map) node).entrySet();
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<Entry<?, ?>> entryStream(Object node) {
+        return ((Map) node).entrySet().stream();
+    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Iterable<? extends Object> iterable(Object node) {
+    public Iterable<? extends Object> elements(Object node) {
         return ((Iterable) node);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<? extends Object> stream(Object node) {
+    public Stream<? extends Object> elementStream(Object node) {
         return ((Collection) node).stream();
     }
 
@@ -252,6 +266,16 @@ public class NativeAdapter implements NodeAdapter {
     }
 
     @Override
+    public boolean isList(Object node) {
+        return node != null && node instanceof List;
+    }
+    
+    @Override
+    public boolean isSet(Object node) {
+        return node != null && node instanceof Collection;
+    }
+    
+    @Override
     public boolean isString(Object node) {
         return node != null && node instanceof String;
     }
@@ -311,6 +335,29 @@ public class NativeAdapter implements NodeAdapter {
         }
         return Objects.toString(node);
     }
+    
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        if (node instanceof BigDecimal) {
+            return ((BigDecimal) node);
+        }
+        if (node instanceof Double) {
+            return BigDecimal.valueOf((double) node);
+        }
+        if (node instanceof Float) {
+            return BigDecimal.valueOf((float) node);
+        }
+        if (node instanceof Integer) {
+            return BigDecimal.valueOf((int) node);
+        }
+        if (node instanceof Long) {
+            return BigDecimal.valueOf((long) node);
+        }
+        if (node instanceof BigInteger) {
+            return BigDecimal.valueOf(((BigInteger) node).longValueExact());
+        }
+        throw new IllegalArgumentException();
+    }
 
     public static final Object adapt(Object value, NodeAdapter adapter) {
 
@@ -341,7 +388,7 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyList();
             }
 
-            return adapter.stream(value)
+            return adapter.elementStream(value)
                     .map(item -> adapt(item, adapter))
                     .collect(Collectors.toList());
 
@@ -350,12 +397,10 @@ public class NativeAdapter implements NodeAdapter {
                 return Collections.emptyMap();
             }
 
-            return adapter.keys(value)
-                    .stream()
+            return adapter.entryStream(value)
                     .reduce(new LinkedHashMap<>(adapter.size(value)),
-                            (map, key) -> {
-                                Object entry = adapter.property(key, value);
-                                map.put(key, adapt(entry, adapter));
+                            (map, entry) -> {
+                                map.put(entry.getKey(), adapt(entry.getValue(), adapter));
                                 return map;
                             },
                             (map1, map2) -> { // combiner (parallel streams)

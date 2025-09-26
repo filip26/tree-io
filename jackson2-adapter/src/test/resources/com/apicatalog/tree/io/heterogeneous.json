@@ -1,0 +1,15 @@
+{
+  "string": "text",
+  "number": 42,
+  "decimal": 12.34,
+  "boolean": true,
+  "null": null,
+  "array": [
+    1,
+    2,
+    3
+  ],
+  "object": {
+    "nestedKey": "nestedValue"
+  }
+}

@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -121,16 +122,33 @@ public interface NodeAdapter {
      * @param node the map node
      * @return collection of property key nodes
      */
-    Collection<? extends Object> keys(Object node);
+    Collection<?> keys(Object node);
 
     /**
-     * Returns the property value associated with the specified key node in a map node.
+     * Returns the property value associated with the specified key node in a map
+     * node.
      *
      * @param key  the property key node
      * @param node the map node containing the property
      * @return the property value node corresponding to the property key
      */
     Object property(Object key, Object node);
+
+    /**
+     * Returns all key-value pairs of the given map node as an {@link Iterable}.
+     *
+     * @param node the map node
+     * @return iterable of key-value entries
+     */
+    Iterable<Entry<?, ?>> entries(Object node);
+
+    /**
+     * Returns all key-value pairs of the given map node as a {@link Stream}.
+     *
+     * @param node the map node
+     * @return stream of key-value entries
+     */
+    Stream<Entry<?, ?>> entryStream(Object node);
 
     // --- Collection operations ---
 
@@ -143,12 +161,28 @@ public interface NodeAdapter {
     boolean isCollection(Object node);
 
     /**
+     * Preserves insertion order and can contain duplicates.
+     * 
+     * @param node
+     * @return
+     */
+    boolean isList(Object node);
+
+    /**
+     * Contains only unique elements. Is unordered.
+     * 
+     * @param node
+     * @return
+     */
+    boolean isSet(Object node);
+
+    /**
      * Returns the child nodes of a collection node as an {@link Iterable}.
      *
      * @param node the collection node
      * @return iterable of child nodes
      */
-    Iterable<? extends Object> iterable(Object node);
+    Iterable<?> elements(Object node);
 
     /**
      * Returns the child nodes of a collection node as a {@link Stream}.
@@ -156,7 +190,7 @@ public interface NodeAdapter {
      * @param node the collection node
      * @return stream of child nodes
      */
-    Stream<? extends Object> stream(Object node);
+    Stream<?> elementStream(Object node);
 
     // --- String operations ---
 
@@ -255,7 +289,7 @@ public interface NodeAdapter {
      * @param node the node to convert
      * @return iterable of elements
      */
-    Iterable<? extends Object> asIterable(Object node);
+    Iterable<?> asIterable(Object node);
 
     /**
      * Returns the node as a stream.
@@ -263,7 +297,7 @@ public interface NodeAdapter {
      * @param node the node to convert
      * @return stream of elements
      */
-    Stream<? extends Object> asStream(Object node);
+    Stream<?> asStream(Object node);
 
     /**
      * Returns the string representation of the node, converting other types as
@@ -273,4 +307,12 @@ public interface NodeAdapter {
      * @return string representation
      */
     String asString(Object node);
+
+    /**
+     * Converts the given node to a {@link BigDecimal}, if possible.
+     *
+     * @param node the node to convert
+     * @return BigDecimal representation of the node
+     */
+    BigDecimal asDecimal(Object node);
 }

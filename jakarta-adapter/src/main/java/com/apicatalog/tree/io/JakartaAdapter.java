@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -43,6 +45,11 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
+    public Set<NodeType> keyTypes() {
+        return KEYS;
+    }
+
+    @Override
     public Set<NodeType> nodeTypes() {
         return VALUES;
     }
@@ -71,14 +78,9 @@ public class JakartaAdapter implements NodeAdapter {
             return NodeType.COLLECTION;
         case OBJECT:
             return NodeType.MAP;
+        default:
+            throw new IllegalArgumentException();
         }
-
-        throw new IllegalArgumentException();
-    }
-
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
     }
 
     @Override
@@ -87,17 +89,29 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Object property(Object property, Object node) {
+    public JsonValue property(Object property, Object node) {
         return ((JsonObject) node).get(property);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Collection<? extends Object> iterable(Object node) {
+    public Iterable<Entry<?, ?>> entries(Object node) {
+        return (Iterable) ((JsonObject) node).entrySet();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<Entry<?, ?>> entryStream(Object node) {
+        return (Stream) ((JsonObject) node).entrySet().stream();
+    }
+
+    @Override
+    public Iterable<JsonValue> elements(Object node) {
         return (JsonArray) node;
     }
 
     @Override
-    public Stream<? extends Object> stream(Object node) {
+    public Stream<JsonValue> elementStream(Object node) {
         return ((JsonArray) node).stream();
     }
 
@@ -107,6 +121,7 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof String) {
             return (String) node;
         }
+        // values
         return ((JsonString) node).getString();
     }
 
@@ -141,52 +156,62 @@ public class JakartaAdapter implements NodeAdapter {
     }
 
     @Override
-    public Collection<? extends Object> asIterable(Object node) {
+    public Collection<JsonValue> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
 
-        if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
+        if (node instanceof JsonArray) {
             return ((JsonArray) node);
         }
-        return Collections.singletonList(node);
+        return Collections.singletonList((JsonValue) node);
     }
 
     @Override
-    public Stream<? extends Object> asStream(Object node) {
+    public Stream<JsonValue> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
 
-        if (JsonValue.ValueType.ARRAY.equals(((JsonValue) node).getValueType())) {
+        if (node instanceof JsonArray) {
             return ((JsonArray) node).stream();
         }
-        return Stream.of(node);
+        return Stream.of((JsonValue) node);
     }
 
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || ((node instanceof JsonValue)
+                || (node instanceof JsonValue
                         && ValueType.NULL.equals(((JsonValue) node).getValueType()));
     }
 
     @Override
     public boolean isBoolean(Object node) {
         return node != null
-                && (node instanceof JsonValue)
+                && node instanceof JsonValue
                 && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
                         || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
     }
 
     @Override
     public boolean isMap(Object node) {
-        return node != null && (node instanceof JsonObject);
+        return node != null && node instanceof JsonObject;
     }
 
     @Override
     public boolean isCollection(Object node) {
-        return node != null && (node instanceof JsonArray);
+        return node != null && node instanceof JsonArray;
+    }
+
+    @Override
+    public boolean isSet(Object node) {
+        return false;
+    }
+
+    @Override
+    public boolean isList(Object node) {
+        return node != null && node instanceof JsonArray;
     }
 
     @Override
@@ -239,6 +264,14 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof JsonString) {
             return ((JsonString) node).getString();
         }
-        return node.toString();
+        return Objects.toString(node);
+    }
+
+    @Override
+    public BigDecimal asDecimal(Object node) {
+        if (node instanceof JsonNumber) {
+            return ((JsonNumber) node).bigDecimalValue();
+        }
+        throw new IllegalArgumentException();
     }
 }
