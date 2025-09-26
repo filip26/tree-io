@@ -1,0 +1,10 @@
+{
+  "on": true,
+  "off": false,
+  "truthy": [
+    true,
+    true,
+    false,
+    true
+  ]
+}

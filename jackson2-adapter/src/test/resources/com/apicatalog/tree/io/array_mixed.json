@@ -1,0 +1,13 @@
+[
+  "alpha",
+  123,
+  false,
+  null,
+  {
+    "nested": "object"
+  },
+  [
+    "inner",
+    "array"
+  ]
+]
