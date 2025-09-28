@@ -159,7 +159,7 @@ public class NodeModel {
         return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 
-    public static Comparator<?> comparingStringKeys(NodeAdapter adapter) {
+    public static Comparator<Entry<?, ?>> comparingStringKeys(NodeAdapter adapter) {
         return comparingEntry(e -> adapter.asString(e.getKey()));
     }
 }

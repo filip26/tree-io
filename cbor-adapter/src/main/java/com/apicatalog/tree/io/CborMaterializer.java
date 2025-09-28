@@ -146,7 +146,7 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
     }
 
     public void cbor(DataItem node) {
-        switch (nodeContext) {
+        switch (currentNodeContext) {
         case PROPERTY_KEY:
             builders.push(node);
             return;

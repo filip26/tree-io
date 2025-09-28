@@ -58,7 +58,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
 
     @Override
     public void stringValue(String node) throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
+        if (currentNodeContext == Context.PROPERTY_KEY) {
             builders.push(node);
             return;
         }
@@ -129,7 +129,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
     }
 
     public void json(final JsonValue value) {
-        switch (nodeContext) {
+        switch (currentNodeContext) {
         case PROPERTY_VALUE:
             String key = (String) builders.pop();
             ((JsonObjectBuilder) builders.peek()).add(key, value);

@@ -40,8 +40,8 @@ public class JakartaWriter extends NodeVisitor implements NodeGenerator {
 
     @Override
     public void stringValue(String node) throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            writer.writeKey(adapter.asString(node));
+        if (currentNodeContext == Context.PROPERTY_KEY) {
+            writer.writeKey(nodeAdapter.asString(node));
             return;
         }
         writer.write(node);

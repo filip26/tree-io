@@ -8,311 +8,372 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * Provides a uniform abstraction for reading tree-like data structures.
+ * Provides a uniform, read-only abstraction for navigating tree-like data
+ * structures. This interface acts as a "wrapper" or "view" over an existing,
+ * underlying tree model, decoupling processing logic from any specific data
+ * format or library.
+ * 
  * <p>
- * Implementations can support any tree representation (JSON, YAML, CBOR, etc.)
- * and any underlying library (Jackson, Gson, Jakarta, etc.).
+ * It is the conceptual counterpart to {@link NodeGenerator}. Where
+ * {@code NodeGenerator} offers a "write-only" API for <em>constructing</em> a
+ * tree, {@code NodeAdapter} provides a "read-only" API for <em>inspecting</em>
+ * one.
+ * </p>
+ * <h3>Core Use Cases</h3>
+ * <ol>
+ * <li><b>Standalone Processing:</b> Use an adapter to traverse and extract data
+ * from a native tree representation (e.g., an in-memory JSON object model)
+ * using a consistent API. This keeps application logic independent of the
+ * underlying data-binding library.</li>
+ * <li><b>Data Transformation:</b> Serve as the input for a {@link NodeVisitor},
+ * which walks the tree exposed by this adapter and drives a
+ * {@link NodeGenerator}. This powerful pattern is the foundation for converting
+ * between different data formats (e.g., from a YAML document to a binary CBOR
+ * representation).</li>
+ * </ol>
  * <p>
- * Each adapter may support only a subset of nodes from a representation.
- * Methods may throw {@link IllegalArgumentException},
- * {@link ClassCastException}, {@link NullPointerException}, or
- * {@link IllegalStateException} if a node cannot be processed or an operation
- * fails.
+ * Implementations are responsible for interpreting the native node objects of a
+ * specific format. Methods are expected to throw runtime exceptions such as
+ * {@link ClassCastException} or {@link UnsupportedOperationException} if a node
+ * is of an unexpected type or an operation is not supported for a given node.
+ * </p>
+ *
+ * @see NodeGenerator
+ * @see NodeVisitor
+ * @see NodeType
  */
 public interface NodeAdapter {
 
-    // --- Features ---
+    // --- Adapter Capabilities & Node Introspection ---
 
     /**
-     * Checks whether the given object can be processed by this adapter.
-     * <p>
-     * Returns true if the adapter is capable of handling the node type; false
-     * otherwise.
+     * Checks if the given object is a native node that this adapter can process.
+     * This method is the primary entry point for determining if the adapter is
+     * suitable for a given piece of data.
      *
-     * @param node the object to check
-     * @return true if the node can be adapted by this adapter, false otherwise
+     * @param node the object to check, which may be {@code null}.
+     * @return {@code true} if the adapter can handle the object's type,
+     *         {@code false} otherwise.
      */
     boolean isNode(Object node);
 
     /**
-     * Returns the set of node types supported by this adapter.
+     * Returns the complete set of node types that this adapter is capable of
+     * representing.
      *
-     * @return a set of supported node types
+     * @return an immutable set of supported {@link NodeType}s.
      */
     Set<NodeType> nodeTypes();
 
     /**
-     * Returns the set of node types that are supported as keys in map nodes for
-     * this adapter.
+     * Returns the set of scalar types that are supported as keys in map nodes. For
+     * example, a JSON-based adapter would return only {@link NodeType#STRING},
+     * whereas a CBOR-based adapter might return multiple scalar types.
      *
-     * @return a set of supported key node types
+     * @return an immutable set of supported key {@link NodeType}s.
      */
     Set<NodeType> keyTypes();
 
     /**
-     * Returns the type of the given node.
+     * Determines the {@link NodeType} of the given native node.
      *
-     * @param node the node to inspect
-     * @return the {@link NodeType} of the node
+     * @param node the node to inspect, which must be a valid node for this adapter.
+     * @return the {@link NodeType} corresponding to the node.
+     * @throws IllegalArgumentException if the object is not a node this adapter can
+     *                                  process.
      */
     NodeType type(Object node);
 
     /**
-     * Checks whether the node represents a null value.
+     * Checks if the adapted node represents a null value.
      *
-     * @param node the node to check
-     * @return true if the node is null, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a null value, {@code false}
+     *         otherwise.
      */
     boolean isNull(Object node);
 
     /**
-     * Checks whether the node represents a boolean value.
+     * Checks if the adapted node represents a boolean value.
      *
-     * @param node the node to check
-     * @return true if the node is a boolean, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a boolean value, {@code false}
+     *         otherwise.
      */
     boolean isBoolean(Object node);
 
     /**
-     * Checks whether the node contains binary data.
+     * Checks if the adapted node contains binary data.
      *
-     * @param node the node to check
-     * @return true if the node is binary, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents binary data, {@code false}
+     *         otherwise.
      */
     boolean isBinary(Object node);
 
-    // --- Structure operations ---
+    // --- Common Structure Operations ---
 
     /**
-     * Returns the number of entries in a map node or items in a collection node.
-     * <p>
-     * Intended for nodes of type {@link NodeType#MAP} or
-     * {@link NodeType#COLLECTION}.
+     * Returns the number of entries in a map or elements in a collection. This
+     * method is intended for nodes where {@link #isMap(Object)} or
+     * {@link #isCollection(Object)} returns {@code true}.
      *
-     * @param node the node to inspect
-     * @return number of entries (for map) or items (for collection)
+     * @param node the structure node to inspect.
+     * @return the number of entries (for a map) or elements (for a collection).
+     * @throws UnsupportedOperationException if the node is not a map or collection.
      */
     int size(Object node);
 
     /**
-     * Checks whether a map node has no entries or a collection node has no items.
-     * <p>
-     * This method is intended for nodes of type {@link NodeType#MAP} or
-     * {@link NodeType#COLLECTION}.
+     * Checks if a map or collection node is empty.
      *
-     * @param node the node to inspect
-     * @return true if the map has no entries or the collection has no items, false
-     *         otherwise
+     * @param node the structure node to inspect.
+     * @return {@code true} if the node contains no entries or elements,
+     *         {@code false} otherwise.
+     * @throws UnsupportedOperationException if the node is not a map or collection.
      */
     boolean isEmpty(Object node);
 
-    // --- Map operations ---
+    // --- Map Operations ---
 
     /**
-     * Checks whether the node represents a map (object) structure.
+     * Checks if the adapted node represents a map (an object with key-value pairs).
      *
-     * @param node the node to check
-     * @return true if the node is a map, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a map, {@code false} otherwise.
      */
     boolean isMap(Object node);
 
     /**
-     * Returns the collection of property key nodes for a map node.
+     * Returns a collection of the native key objects from a map node. The types of
+     * the keys depend on the underlying format (e.g., Strings for JSON, various
+     * scalars for CBOR).
      *
-     * @param node the map node
-     * @return collection of property key nodes
+     * @param node the map node to inspect.
+     * @return a collection containing the map's native key objects.
+     * @throws UnsupportedOperationException if the node is not a map.
      */
     Collection<?> keys(Object node);
 
     /**
-     * Returns the property value associated with the specified key node in a map
+     * Retrieves the value associated with a given native key object from a map
      * node.
      *
-     * @param key  the property key node
-     * @param node the map node containing the property
-     * @return the property value node corresponding to the property key
+     * @param key  the native key object used for the lookup.
+     * @param node the map node to query.
+     * @return the native value node, or {@code null} if the key is not found.
+     * @throws UnsupportedOperationException if the node is not a map.
      */
     Object property(Object key, Object node);
 
     /**
-     * Returns all key-value pairs of the given map node as an {@link Iterable}.
+     * Returns all key-value pairs of a map node as an {@link Iterable}. The entries
+     * contain the native key and value objects.
      *
-     * @param node the map node
-     * @return iterable of key-value entries
+     * @param node the map node to inspect.
+     * @return an {@link Iterable} of its entries.
+     * @throws UnsupportedOperationException if the node is not a map.
      */
     Iterable<Entry<?, ?>> entries(Object node);
 
     /**
-     * Returns all key-value pairs of the given map node as a {@link Stream}.
+     * Returns all key-value pairs of a map node as a {@link Stream}. This is a
+     * convenience method for processing map entries using the Stream API.
      *
-     * @param node the map node
-     * @return stream of key-value entries
+     * @param node the map node to inspect.
+     * @return a {@link Stream} of its entries.
+     * @throws UnsupportedOperationException if the node is not a map.
      */
     Stream<Entry<?, ?>> entryStream(Object node);
 
-    // --- Collection operations ---
+    // --- Collection Operations ---
 
     /**
-     * Checks whether the node represents a collection.
+     * Checks if the adapted node represents a collection of elements (e.g., an
+     * array or list).
      *
-     * @param node the node to check
-     * @return true if the node is a collection, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a collection, {@code false}
+     *         otherwise.
      */
     boolean isCollection(Object node);
 
     /**
-     * Preserves insertion order and can contain duplicates.
-     * 
-     * @param node
-     * @return
+     * Checks if the adapted collection node is a list (an ordered collection that
+     * allows duplicates).
+     *
+     * @param node the collection node to check.
+     * @return {@code true} if the node is a list, {@code false} otherwise.
      */
     boolean isList(Object node);
 
     /**
-     * Contains only unique elements. Is unordered.
-     * 
-     * @param node
-     * @return
+     * Checks if the adapted collection node is a set (typically an unordered
+     * collection of unique elements).
+     *
+     * @param node the collection node to check.
+     * @return {@code true} if the node is a set, {@code false} otherwise.
      */
     boolean isSet(Object node);
 
     /**
-     * Returns the child nodes of a collection node as an {@link Iterable}.
+     * Returns the elements of a collection node as an {@link Iterable}.
      *
-     * @param node the collection node
-     * @return iterable of child nodes
+     * @param node the collection node to inspect.
+     * @return an {@link Iterable} of its native element objects.
+     * @throws UnsupportedOperationException if the node is not a collection.
      */
     Iterable<?> elements(Object node);
 
     /**
-     * Returns the child nodes of a collection node as a {@link Stream}.
+     * Returns the elements of a collection node as a {@link Stream}.
      *
-     * @param node the collection node
-     * @return stream of child nodes
+     * @param node the collection node to inspect.
+     * @return a {@link Stream} of its native element objects.
+     * @throws UnsupportedOperationException if the node is not a collection.
      */
     Stream<?> elementStream(Object node);
 
-    // --- String operations ---
+    // --- Scalar Value Accessors ---
 
     /**
-     * Checks whether the node represents a string value.
+     * Checks if the adapted node represents a string value.
      *
-     * @param node the node to check
-     * @return true if the node is a string, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a string, {@code false}
+     *         otherwise.
      */
     boolean isString(Object node);
 
     /**
-     * Returns the string value of the node.
+     * Extracts the string value from a string node.
      *
-     * @param node the string node
-     * @return string representation
+     * @param node the string node.
+     * @return the string value.
+     * @throws ClassCastException if the node is not a string.
      */
     String stringValue(Object node);
 
-    // --- Number operations ---
-
     /**
-     * Checks whether the node represents a numeric value.
+     * Checks if the adapted node represents any numeric value (integral or
+     * floating-point).
      *
-     * @param node the node to check
-     * @return true if the node is numeric, false otherwise
+     * @param node the node to check.
+     * @return {@code true} if the node represents a number, {@code false}
+     *         otherwise.
      */
     boolean isNumber(Object node);
 
     /**
-     * Checks whether a number node represents an integral value.
-     * <p>
-     * Returns false for floating-point or {@link BigDecimal} nodes.
+     * Checks if a number node represents an integral value (e.g., an integer or
+     * long) as opposed to a floating-point value.
      *
-     * @param node the number node
-     * @return true if the node is integral, false otherwise
+     * @param node the number node to check.
+     * @return {@code true} if the node's value is integral, {@code false}
+     *         otherwise.
+     * @throws ClassCastException if the node is not a number.
      */
     boolean isIntegral(Object node);
 
     /**
-     * Returns the integer value of a number node.
+     * Extracts the {@code int} value from a numeric node. This may involve a
+     * narrowing primitive conversion.
      *
-     * @param node the number node
-     * @return integer value
+     * @param node the numeric node.
+     * @return the value as an {@code int}.
+     * @throws ClassCastException if the node is not a number.
      */
     int intValue(Object node);
 
     /**
-     * Returns the long value of a number node.
+     * Extracts the {@code long} value from a numeric node. This may involve a
+     * narrowing primitive conversion.
      *
-     * @param node the number node
-     * @return long value
+     * @param node the numeric node.
+     * @return the value as a {@code long}.
+     * @throws ClassCastException if the node is not a number.
      */
     long longValue(Object node);
 
     /**
-     * Returns the {@link BigInteger} value of a number node.
+     * Extracts the {@link BigInteger} value from a numeric node.
      *
-     * @param node the number node
-     * @return BigInteger value
+     * @param node the numeric node.
+     * @return the value as a {@link BigInteger}.
+     * @throws ClassCastException if the node is not a number.
      */
     BigInteger bigIntegerValue(Object node);
 
     /**
-     * Returns the double value of a number node.
+     * Extracts the {@code double} value from a numeric node.
      *
-     * @param node the number node
-     * @return double value
+     * @param node the numeric node.
+     * @return the value as a {@code double}.
+     * @throws ClassCastException if the node is not a number.
      */
     double doubleValue(Object node);
 
     /**
-     * Returns the {@link BigDecimal} value of a number node.
+     * Extracts the {@link BigDecimal} value from a numeric node.
      *
-     * @param node the number node
-     * @return BigDecimal value
+     * @param node the numeric node.
+     * @return the value as a {@link BigDecimal}.
+     * @throws ClassCastException if the node is not a number.
      */
     BigDecimal decimalValue(Object node);
 
-    // --- Binary operations ---
-
     /**
-     * Returns the binary value of the node as a byte array.
+     * Extracts the binary data from a binary node.
      *
-     * @param node the binary node
-     * @return byte array representation
+     * @param node the binary node.
+     * @return the data as a byte array.
+     * @throws ClassCastException if the node is not binary.
      */
     byte[] binaryValue(Object node);
 
+    // --- Convenience & Type Coercion Methods ---
+
     /**
-     * Returns the node as an iterable.
-     * <p>
-     * If the node is null, returns an empty iterable. If it is a single element,
-     * wraps it as a singleton iterable. Useful for iterating without type checks.
+     * Returns the node's contents as a universal {@link Iterable}. This is a
+     * convenience method that enables uniform iteration logic.
+     * <ul>
+     * <li>If the node is a collection, returns its elements.</li>
+     * <li>If the node is not a collection, wraps it in a single-element
+     * iterable.</li>
+     * <li>If the node is {@code null}, returns an empty iterable.</li>
+     * </ul>
      *
-     * @param node the node to convert
-     * @return iterable of elements
+     * @param node the node to convert.
+     * @return a non-null {@link Iterable} representing the node's contents.
      */
     Iterable<?> asIterable(Object node);
 
     /**
-     * Returns the node as a stream.
+     * Returns the node's contents as a universal {@link Stream}.
      *
-     * @param node the node to convert
-     * @return stream of elements
+     * @param node the node to convert.
+     * @return a non-null {@link Stream} representing the node's contents.
      */
     Stream<?> asStream(Object node);
 
     /**
-     * Returns the string representation of the node, converting other types as
-     * needed.
+     * Returns a string representation of the node, coercing non-string scalar types
+     * where applicable.
      *
-     * @param node the node to convert
-     * @return string representation
+     * @param node the node to convert.
+     * @return a string representation of the node's value.
      */
     String asString(Object node);
 
     /**
-     * Converts the given node to a {@link BigDecimal}, if possible.
+     * Converts a given node to a {@link BigDecimal}, if possible. This method can
+     * be used to treat both numeric and string nodes as decimal values.
      *
-     * @param node the node to convert
-     * @return BigDecimal representation of the node
+     * @param node the node to convert.
+     * @return the {@link BigDecimal} representation.
+     * @throws NumberFormatException if a string node cannot be parsed into a
+     *                               BigDecimal.
+     * @throws ClassCastException    if the node is neither a number nor a string.
      */
     BigDecimal asDecimal(Object node);
 }

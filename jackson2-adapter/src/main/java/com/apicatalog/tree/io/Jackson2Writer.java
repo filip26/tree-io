@@ -33,11 +33,11 @@ public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
 
     @Override
     public void end() throws IOException {
-        if (NodeType.MAP == nodeType) {
+        if (NodeType.MAP == currentNodeType) {
             writer.writeEndObject();
             return;
         }
-        if (NodeType.COLLECTION == nodeType) {
+        if (NodeType.COLLECTION == currentNodeType) {
             writer.writeEndArray();
             return;
         }
@@ -56,7 +56,7 @@ public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
 
     @Override
     public void stringValue(String value) throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
+        if (currentNodeContext == Context.PROPERTY_KEY) {
             writer.writeFieldName(value);
             return;
         }
