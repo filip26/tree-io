@@ -28,7 +28,7 @@
 ## Examples 
 
 ### High-Level Transformation
-The most common use case is a full transformation from a source to a destination. The writer classes are designed to handle this with a single method call.
+The most common use case is a full transformation from a source to a destination.
 
 ```javascript
 // Have a source object (e.g., a Map) and a destination (e.g., a JsonGenerator)
@@ -45,7 +45,7 @@ writer.node(source, adapter);
 
 ### Direct Node Inspection using NodeAdapter
 
-Use a NodeAdapter directly when you need to read, inspect, or extract specific values from a tree structure without traversing the entire thing.
+Use a NodeAdapter directly when you need to read, inspect, or extract specific values from a tree structure without traversing the entire tree.
 
 ```javascript
 // Given any 'node' object and a suitable 'adapter'...
