@@ -175,7 +175,7 @@ public final class JakartaWriter extends NodeVisitor implements NodeGenerator {
     /**
      * {@inheritDoc}
      * <p>
-     * Writes a JSON start-object token ({@code '{'}).
+     * Writes a JSON start-object token (<code>{</code>).
      * </p>
      */
     @Override
@@ -197,7 +197,7 @@ public final class JakartaWriter extends NodeVisitor implements NodeGenerator {
     /**
      * {@inheritDoc}
      * <p>
-     * Writes a JSON end token ({@code '}'} or {@code ']'}) to close the current
+     * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the current
      * object or array context.
      * </p>
      */
