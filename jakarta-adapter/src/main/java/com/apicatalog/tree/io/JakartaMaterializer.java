@@ -26,7 +26,7 @@ import jakarta.json.spi.JsonProvider;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public final class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
+public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
 
     protected final JsonProvider provider;
     protected final Deque<Object> builders;

@@ -37,7 +37,7 @@ import jakarta.json.JsonValue.ValueType;
  * {@link #instance()} method.
  * </p>
  */
-public final class JakartaAdapter implements NodeAdapter {
+public class JakartaAdapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -61,8 +61,7 @@ public final class JakartaAdapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    private JakartaAdapter() {
-        // - only one instance is allowed
+    protected JakartaAdapter() {
     }
 
     /**

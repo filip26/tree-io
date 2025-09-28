@@ -42,7 +42,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reports support for non-string keys in map structures.
  * </p>
  */
-public final class CborAdapter implements NodeAdapter {
+public class CborAdapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -72,8 +72,7 @@ public final class CborAdapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    private CborAdapter() {
-        // - only one instance is allowed
+    protected CborAdapter() {
     }
 
     /**
