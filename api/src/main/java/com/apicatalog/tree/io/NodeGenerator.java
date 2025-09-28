@@ -22,6 +22,7 @@ import java.math.BigInteger;
  * <p>
  * Implementations can use this sequence of construction events for two main
  * purposes:
+ * </p>
  * <ol>
  * <li><b>Serialization:</b> Writing the structure directly to an output stream
  * in a specific format (e.g., text-based JSON, XML, YAML, or binary formats
@@ -29,6 +30,7 @@ import java.math.BigInteger;
  * <li><b>Materialization:</b> Building a concrete, in-memory object model or
  * document tree.</li>
  * </ol>
+ * <p>
  * This approach is analogous to streaming parsers like SAX or StAX, but for
  * generation rather than parsing. The generator is stateful and forward-only,
  * expecting methods to be called in a valid sequence.

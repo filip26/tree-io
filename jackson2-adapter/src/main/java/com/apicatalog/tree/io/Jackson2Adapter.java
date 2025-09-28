@@ -19,28 +19,20 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * {@code Jackson2Adapter} is a {@link NodeAdapter} implementation that bridges
- * between a generic tree model and the Jackson 2 {@link JsonNode} API.
+ * A {@link NodeAdapter} implementation that bridges the generic tree processing
+ * framework with the Jackson 2 {@link JsonNode} object model.
  * <p>
- * It provides type inspection, value extraction, and traversal utilities for
- * working with JSON content represented as Jackson nodes. Keys are represented
- * as {@link String} values, while values may be any supported {@link JsonNode}
- * subtype. Supported node types include:
- * <ul>
- * <li>{@link NodeType#STRING}</li>
- * <li>{@link NodeType#NUMBER}</li>
- * <li>{@link NodeType#TRUE}</li>
- * <li>{@link NodeType#FALSE}</li>
- * <li>{@link NodeType#NULL}</li>
- * <li>{@link NodeType#COLLECTION} (arrays)</li>
- * <li>{@link NodeType#MAP} (objects)</li>
- * <li>{@link NodeType#BINARY}</li>
- * </ul>
+ * This adapter allows for the traversal and inspection of JSON structures that
+ * have been parsed into Jackson's native tree representation. It correctly
+ * identifies JSON objects as maps (with {@link String} keys) and JSON arrays as
+ * collections.
+ * </p>
  * <p>
- * This adapter is implemented as a stateless singleton; use {@link #instance()}
- * to obtain the shared instance.
+ * The class is implemented as a stateless singleton, accessible via the
+ * {@link #instance()} method.
+ * </p>
  */
-public class Jackson2Adapter implements NodeAdapter {
+public final class Jackson2Adapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -55,27 +47,55 @@ public class Jackson2Adapter implements NodeAdapter {
 
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 
-    public static final Jackson2Adapter instance() {
+    /**
+     * Provides the singleton instance of the {@code Jackson2Adapter}.
+     * 
+     * @return the singleton instance
+     */
+    public static Jackson2Adapter instance() {
         return INSTANCE;
     }
 
-    @Override
-    public boolean isNode(Object node) {
-        return node != null && (node instanceof JsonNode // values
-                || node instanceof String // keys
-        );
+    private Jackson2Adapter() {
+        // - only one instance is allowed
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation returns {@code true} for instances of {@link JsonNode}
+     * (representing values) and {@link String} (representing map keys).
+     * </p>
+     */
+    @Override
+    public boolean isNode(Object node) {
+        return node != null && (node instanceof JsonNode || node instanceof String);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<NodeType> keyTypes() {
         return KEYS;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<NodeType> nodeTypes() {
         return VALUES;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For {@link String} objects, this method returns {@link NodeType#STRING}, as
+     * they are treated as map keys. Otherwise, it determines the type from the
+     * {@link JsonNode}'s internal node type.
+     * </p>
+     */
     @Override
     public NodeType type(Object node) {
         // property keys are strings
@@ -101,77 +121,118 @@ public class Jackson2Adapter implements NodeAdapter {
         case BINARY:
             return NodeType.BINARY;
         default:
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Unsupported JsonNode type.");
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> keys(Object node) {
         return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonNode property(Object key, Object node) {
         return ((ObjectNode) node).get((String) key);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Entry<?, ?>> entries(Object node) {
         return (Iterable) ((ObjectNode) node).properties();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
         return (Stream) ((ObjectNode) node).propertyStream();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Collection<JsonNode> elements(Object node) {
         return ((ArrayNode) node).valueStream().collect(Collectors.toList());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<JsonNode> elementStream(Object node) {
         return ((ArrayNode) node).valueStream();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String stringValue(Object node) {
-        // keys
         if (node instanceof String) {
             return (String) node;
         }
-        // values
         return ((JsonNode) node).textValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int intValue(Object node) {
         return ((JsonNode) node).intValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long longValue(Object node) {
         return ((JsonNode) node).longValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigInteger bigIntegerValue(Object node) {
         return ((JsonNode) node).bigIntegerValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double doubleValue(Object node) {
         return ((JsonNode) node).doubleValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigDecimal decimalValue(Object node) {
         return ((JsonNode) node).decimalValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation wraps the potential {@link IOException} from Jackson in
+     * an {@link IllegalStateException}.
+     * </p>
+     */
     @Override
     public byte[] binaryValue(Object node) {
         try {
@@ -181,14 +242,17 @@ public class Jackson2Adapter implements NodeAdapter {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings({ "unchecked" })
     @Override
     public Collection<JsonNode> asIterable(Object node) {
         if (node == null) {
             return Collections.emptySet();
         }
         if (node instanceof Collection) {
-            return (Collection) node;
+            return (Collection<JsonNode>) node;
         }
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream().collect(Collectors.toList());
@@ -199,17 +263,20 @@ public class Jackson2Adapter implements NodeAdapter {
         return Collections.singleton((JsonNode) node);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings({ "unchecked" })
     @Override
     public Stream<JsonNode> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
         if (node instanceof Collection) {
-            return ((Collection) node).stream();
+            return ((Collection<JsonNode>) node).stream();
         }
         if (node instanceof Stream) {
-            return (Stream) node;
+            return (Stream<JsonNode>) node;
         }
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).valueStream();
@@ -217,6 +284,12 @@ public class Jackson2Adapter implements NodeAdapter {
         return Stream.of((JsonNode) node);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Treats both {@code null} nodes and Jackson's {@code missingNode} as null.
+     * </p>
+     */
     @Override
     public boolean isNull(Object node) {
         return node == null
@@ -225,6 +298,9 @@ public class Jackson2Adapter implements NodeAdapter {
                                 || ((JsonNode) node).isMissingNode()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isBoolean(Object node) {
         return node != null
@@ -232,6 +308,9 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isBoolean();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMap(Object node) {
         return node != null
@@ -239,6 +318,9 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isObject();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isCollection(Object node) {
         return node != null
@@ -246,16 +328,29 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isArray();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Always returns {@code false} as JSON arrays do not enforce element
+     * uniqueness.
+     * </p>
+     */
     @Override
     public boolean isSet(Object node) {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isList(Object node) {
         return isCollection(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isString(Object node) {
         return node != null
@@ -264,6 +359,9 @@ public class Jackson2Adapter implements NodeAdapter {
                                 && ((JsonNode) node).isTextual()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isNumber(Object node) {
         return node != null
@@ -271,6 +369,9 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIntegral(Object node) {
         return node != null
@@ -278,6 +379,9 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isIntegralNumber();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isBinary(Object node) {
         return node != null
@@ -285,6 +389,9 @@ public class Jackson2Adapter implements NodeAdapter {
                 && ((JsonNode) node).isBinary();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEmpty(Object node) {
         Objects.requireNonNull(node);
@@ -295,9 +402,12 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).isEmpty();
         }
-        throw new ClassCastException();
+        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int size(Object node) {
         Objects.requireNonNull(node);
@@ -308,9 +418,12 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).size();
         }
-        throw new ClassCastException();
+        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String asString(Object node) {
         if (node instanceof String) {
@@ -322,6 +435,9 @@ public class Jackson2Adapter implements NodeAdapter {
         return Objects.toString(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigDecimal asDecimal(Object node) {
         return ((JsonNode) node).decimalValue();

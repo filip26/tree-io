@@ -4,7 +4,7 @@
  * any specific data format (e.g., JSON, YAML, CBOR) or underlying
  * implementation library.
  *
- * <h3>Core Design</h3> The framework is built upon three primary abstractions
+ * <h2>Core Design</h2> The framework is built upon three primary abstractions
  * that work in concert to enable data transformation workflows:
  * 
  * <ol>
@@ -22,7 +22,7 @@
  * connects a source to a destination.</li>
  * </ol>
  *
- * <h3>Key Features</h3>
+ * <h2>Key Features</h2>
  * <ul>
  * <li><b>Format-Agnostic:</b> Write processing logic once and apply it to any
  * data format for which a {@code NodeAdapter} exists.</li>

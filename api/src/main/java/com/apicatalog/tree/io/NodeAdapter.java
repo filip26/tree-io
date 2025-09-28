@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * tree, {@code NodeAdapter} provides a "read-only" API for <em>inspecting</em>
  * one.
  * </p>
- * <h3>Core Use Cases</h3>
+ * <h2>Core Use Cases</h2>
  * <ol>
  * <li><b>Standalone Processing:</b> Use an adapter to traverse and extract data
  * from a native tree representation (e.g., an in-memory JSON object model)
