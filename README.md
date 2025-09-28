@@ -37,11 +37,14 @@ Map<String, Object> source = Map.of("hello", "world");
 JsonGenerator destination = ... ;
 
 // Create an adapter for the source and a writer for the destination
-NodeAdapter adapter = new NativeAdapter();
-Jackson2Writer writer = new Jackson2Writer(destination);
+var adapter = new NativeAdapter();
+var jsonWriter = new Jackson2Writer(destination);
+var cborWriter = new CborWriter(destination);
 
 // Run the transformation with a single call
-writer.node(source, adapter);
+jsonWriter.node(source, adapter);
+// or/and
+cborWriter.node(source, adapter);
 ```
 
 ### Direct Node Inspection using NodeAdapter
