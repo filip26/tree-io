@@ -25,7 +25,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public final class JakartaWriter extends NodeVisitor implements NodeGenerator {
+public class JakartaWriter extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;

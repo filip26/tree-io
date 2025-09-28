@@ -31,7 +31,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public final class CborMaterializer extends NodeVisitor implements NodeGenerator {
+public class CborMaterializer extends NodeVisitor implements NodeGenerator {
 
     protected DataItem cbor;
     protected final Deque<Object> builders;

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * {@link #instance()} method.
  * </p>
  */
-public final class Jackson2Adapter implements NodeAdapter {
+public class Jackson2Adapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -56,8 +56,7 @@ public final class Jackson2Adapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    private Jackson2Adapter() {
-        // - only one instance is allowed
+    protected Jackson2Adapter() {
     }
 
     /**

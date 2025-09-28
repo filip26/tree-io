@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public final class Jackson2Writer extends NodeVisitor implements NodeGenerator {
+public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
 
