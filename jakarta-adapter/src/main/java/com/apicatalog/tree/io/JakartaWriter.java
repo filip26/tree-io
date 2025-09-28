@@ -1,80 +1,92 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.function.Function;
 
 import jakarta.json.stream.JsonGenerator;
 
-public class JakartaWriter extends NodeGenerator {
+public class JakartaWriter extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
+    protected final Function<byte[], String> encoder;
 
     public JakartaWriter(JsonGenerator writer) {
-        this(writer, new ArrayDeque<>());
+        this(writer, null);
     }
 
-    protected JakartaWriter(JsonGenerator writer, Deque<Object> stack) {
-        super(stack, PropertyKeyPolicy.StringOnly);
+    public JakartaWriter(JsonGenerator writer, Function<byte[], String> encoder) {
+        super(new ArrayDeque<>(), null);
         this.writer = writer;
+        this.encoder = encoder;
+    }
+
+    public JsonGenerator node(Object node, NodeAdapter adapter) throws IOException {
+        root(node, adapter).traverse(this);
+        return writer;
     }
 
     @Override
-    protected void scalar(Object node) throws IOException {
+    public void nullValue() throws IOException {
+        writer.writeNull();        
+    }
+
+    @Override
+    public void booleanValue(boolean node) throws IOException {
+        writer.write(node);        
+    }
+
+    @Override
+    public void stringValue(String node) throws IOException {
         if (nodeContext == Context.PROPERTY_KEY) {
             writer.writeKey(adapter.asString(node));
             return;
         }
-
-        switch (adapter.type(node)) {
-        case FALSE:
-            writer.write(false);
-            return;
-
-        case TRUE:
-            writer.write(true);
-            return;
-
-        case NULL:
-            writer.writeNull();
-            return;
-
-        case STRING:
-            writer.write(adapter.asString(node));
-            return;
-
-        case NUMBER:
-            if (adapter.isIntegral(node)) {
-                writer.write(adapter.bigIntegerValue(node));
-            } else {
-                writer.write(adapter.decimalValue(node));
-            }
-            return;
-
-        default:
-            throw new IllegalStateException();
-        }
+        writer.write(node);
     }
 
     @Override
-    protected void beginMap() throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            throw new IllegalStateException();
-        }
-        writer.writeStartObject();
+    public void numericValue(long node) throws IOException {
+        writer.write(node);
     }
 
     @Override
-    protected void beginCollection() throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            throw new IllegalStateException();
-        }
-        writer.writeStartArray();
+    public void numericValue(BigInteger node) throws IOException {
+        writer.write(node);
     }
 
     @Override
-    protected void end() throws IOException {
-        writer.writeEnd();
+    public void numericValue(double node) throws IOException {
+        writer.write(node);        
     }
 
+    @Override
+    public void numericValue(BigDecimal node) throws IOException {
+        writer.write(node);
+    }
+
+    @Override
+    public void binaryValue(byte[] node) throws IOException {
+        if (encoder == null) {
+            throw new UnsupportedOperationException();
+        }
+        writer.write(encoder.apply(node));
+    }
+
+    @Override
+    public void beginMap() throws IOException {
+        writer.writeStartObject();        
+    }
+
+    @Override
+    public void beginCollection() throws IOException {
+        writer.writeStartArray();        
+    }
+
+    @Override
+    public void end() throws IOException {
+        writer.writeEnd();        
+    }
 }

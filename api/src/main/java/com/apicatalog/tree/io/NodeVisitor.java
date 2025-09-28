@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
@@ -97,13 +98,13 @@ public class NodeVisitor {
      * @param stack   the stack to use for traversal state
      * @param adapter the adapter providing node access
      */
-    protected NodeVisitor(final Deque<Object> stack, final NodeAdapter adapter) {
-        this(stack, adapter, null);
+    protected NodeVisitor(final Deque<Object> stack) {
+        this(stack, null);
     }
 
-    protected NodeVisitor(final Deque<Object> stack, final NodeAdapter adapter, Comparator<Entry<?, ?>> entryComparator) {
+    protected NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
-        this.adapter = adapter;
+        this.adapter = null;
         this.visited = 0;
         this.depth = 0;
         this.entryComparator = entryComparator;
@@ -144,11 +145,59 @@ public class NodeVisitor {
     public static NodeVisitor of(Object root, NodeAdapter adapter, Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
+        return new NodeVisitor(new ArrayDeque<>()).root(root, adapter);
+    }
 
-        Deque<Object> stack = new ArrayDeque<>();
-        stack.push(root);
+    public void traverse(final NodeGenerator generator) throws IOException {
+        while (step()) {
 
-        return new NodeVisitor(stack, adapter);
+            if (Context.END == nodeContext) {
+                generator.end();
+                continue;
+            }
+
+            switch (nodeType) {
+            case MAP:
+                generator.beginMap();
+                break;
+
+            case COLLECTION:
+                generator.beginCollection();
+                break;
+
+            case NULL:
+                generator.nullValue();
+                break;
+
+            case TRUE:
+                generator.booleanValue(true);
+                break;
+
+            case FALSE:
+                generator.booleanValue(false);
+                break;
+
+            case STRING:
+                generator.stringValue(adapter.stringValue(node));
+                break;
+
+            case BINARY:
+                generator.binaryValue(adapter.binaryValue(node));
+                break;
+
+            case NUMBER:
+                if (adapter.isIntegral(node)) {
+                    generator.numericValue(adapter.bigIntegerValue(node));
+                } else {
+                    generator.numericValue(adapter.asDecimal(node));
+                }
+                break;
+            }
+        }
+
+        if (depth > 0) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -262,23 +311,29 @@ public class NodeVisitor {
         return true;
     }
 
-    /** Returns the number of nodes visited. */
-    public long visited() {
-        return visited;
-    }
-
     /**
      * Resets the traversal with a new root node and adapter.
      *
      * @param node    the new root node
      * @param adapter the adapter providing access to node types
+     * @return the instance
      */
-    public void reset(Object node, NodeAdapter adapter) {
-        this.adapter = adapter;
+    public NodeVisitor reset() {
         this.stack.clear();
-        this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
+        return this;
+    }
+
+    public NodeVisitor root(Object node, NodeAdapter adapter) {
+        this.adapter = adapter;
+        this.stack.push(node);
+        return this;
+    }
+
+    /** Returns the number of nodes visited. */
+    public long visited() {
+        return visited;
     }
 
     /**

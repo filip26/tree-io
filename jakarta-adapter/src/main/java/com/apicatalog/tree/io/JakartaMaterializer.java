@@ -1,106 +1,109 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.json.spi.JsonProvider;
 
-public class JakartaMaterializer extends NodeGenerator {
+public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
 
-    protected JsonValue json;
+    protected final JsonProvider provider;
     protected final Deque<Object> builders;
 
+    protected JsonValue json;
+
     public JakartaMaterializer() {
-        super(new ArrayDeque<>(), PropertyKeyPolicy.StringOnly);
-        this.json = null;
+        this(JsonProvider.provider());
+    }
+
+    public JakartaMaterializer(JsonProvider provider) {
+        super(new ArrayDeque<>(), null);
+
+        this.provider = provider;
         this.builders = new ArrayDeque<>();
-    }
-
-    public void node(Object node, NodeAdapter adapter) {
-        // reset
         this.json = null;
+    }
+
+    public JsonValue node(Object node, NodeAdapter adapter) throws IOException {
+        root(node, adapter).traverse(this);
+        return json;
+    }
+
+    public JsonValue json() {
+        return json;
+    }
+
+    @Override
+    public NodeVisitor reset() {
         this.builders.clear();
+        this.json = null;
+        return super.reset();
+    }
 
-        try {
-            super.node(node, adapter);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+    @Override
+    public void nullValue() throws IOException {
+        json(JsonValue.NULL);
+    }
+
+    @Override
+    public void booleanValue(boolean node) throws IOException {
+        json(node ? JsonValue.TRUE : JsonValue.FALSE);
+    }
+
+    @Override
+    public void stringValue(String node) throws IOException {
+        if (nodeContext == Context.PROPERTY_KEY) {
+            builders.push(node);
+            return;
         }
-
+        json(provider.createValue(node));
     }
 
     @Override
-    protected void scalar(Object node) {
-
-        switch (nodeContext) {
-        case PROPERTY_KEY:
-            builders.push(adapter.asString(node));
-            return;
-
-        case PROPERTY_VALUE:
-            String key = (String) builders.pop();
-            if (builders.peek() instanceof JsonObject) {
-                builders.pop();
-                builders.push(Json.createObjectBuilder());
-            }
-            ((JsonObjectBuilder) builders.peek()).add(key, toJsonValue(node));
-            return;
-
-        case COLLECTION_ELEMENT:
-            ((JsonArrayBuilder) builders.peek()).add(toJsonValue(node));
-            return;
-
-        case ROOT:
-            json = toJsonValue(node);
-            return;
-
-        default:
-            throw new IllegalStateException();
-        }
-    }
-
-    protected JsonValue toJsonValue(Object node) {
-        switch (adapter.type(node)) {
-        case STRING:
-            return Json.createValue(adapter.stringValue(node));
-
-        case NULL:
-            return JsonValue.NULL;
-
-        case TRUE:
-            return JsonValue.TRUE;
-
-        case FALSE:
-            return JsonValue.FALSE;
-
-        case NUMBER:
-            return adapter.isIntegral(node)
-                    ? Json.createValue(adapter.bigIntegerValue(node))
-                    : Json.createValue(adapter.decimalValue(node));
-
-        default:
-            throw new IllegalStateException();
-        }
+    public void numericValue(long node) throws IOException {
+        json(provider.createValue(node));
     }
 
     @Override
-    protected void beginMap() {
-        builders.push(JsonValue.EMPTY_JSON_OBJECT);
+    public void numericValue(BigInteger node) throws IOException {
+        json(provider.createValue(node));
     }
 
     @Override
-    protected void beginCollection() {
-        builders.push(Json.createArrayBuilder());
+    public void numericValue(double node) throws IOException {
+        json(provider.createValue(node));
     }
 
     @Override
-    protected void end() {
-        Object builder = builders.pop();
+    public void numericValue(BigDecimal node) throws IOException {
+        json(provider.createValue(node));
+    }
+
+    @Override
+    public void binaryValue(byte[] node) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void beginMap() throws IOException {
+        builders.push(provider.createObjectBuilder());
+    }
+
+    @Override
+    public void beginCollection() throws IOException {
+        builders.push(provider.createArrayBuilder());
+    }
+
+    @Override
+    public void end() throws IOException {
+
+        final Object builder = builders.pop();
 
         if (builder instanceof JsonArrayBuilder) {
             json = ((JsonArrayBuilder) builder).build();
@@ -118,10 +121,6 @@ public class JakartaMaterializer extends NodeGenerator {
         if (!builders.isEmpty()) {
             if (builders.peek() instanceof String) {
                 String key = (String) builders.pop();
-                if (builders.peek() instanceof JsonObject) {
-                    builders.pop();
-                    builders.push(Json.createObjectBuilder());
-                }
                 ((JsonObjectBuilder) builders.peek()).add(key, json);
             } else if (builders.peek() instanceof JsonArrayBuilder) {
                 ((JsonArrayBuilder) builders.peek()).add(json);
@@ -129,7 +128,23 @@ public class JakartaMaterializer extends NodeGenerator {
         }
     }
 
-    public JsonValue json() {
-        return json;
+    public void json(final JsonValue value) {
+        switch (nodeContext) {
+        case PROPERTY_VALUE:
+            String key = (String) builders.pop();
+            ((JsonObjectBuilder) builders.peek()).add(key, value);
+            return;
+
+        case COLLECTION_ELEMENT:
+            ((JsonArrayBuilder) builders.peek()).add(value);
+            return;
+
+        case ROOT:
+            json = value;
+            return;
+
+        default:
+            throw new IllegalStateException();
+        }
     }
 }

@@ -1,79 +1,38 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
-import java.util.Deque;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-public class Jackson2Writer extends NodeGenerator {
+public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
 
     public Jackson2Writer(JsonGenerator writer) {
-        this(writer, new ArrayDeque<>());
-    }
-
-    protected Jackson2Writer(JsonGenerator writer, Deque<Object> stack) {
-        super(stack, PropertyKeyPolicy.StringOnly);
+        super(new ArrayDeque<>(), null);
         this.writer = writer;
     }
 
-    @Override
-    protected void scalar(Object node) throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            writer.writeFieldName(adapter.asString(node));
-            return;
-        }
-
-        switch (adapter.type(node)) {
-        case FALSE:
-            writer.writeBoolean(false);
-            return;
-
-        case TRUE:
-            writer.writeBoolean(true);
-            return;
-
-        case NULL:
-            writer.writeNull();
-            return;
-
-        case STRING:
-            writer.writeString(adapter.asString(node));
-            return;
-
-        case NUMBER:
-            if (adapter.isIntegral(node)) {
-                writer.writeNumber(adapter.bigIntegerValue(node));
-            } else {
-                writer.writeNumber(adapter.decimalValue(node));
-            }
-            return;
-
-        default:
-            throw new IllegalStateException();
-        }
+    public JsonGenerator node(Object node, NodeAdapter adapter) throws IOException {
+        root(node, adapter).traverse(this);
+        return writer;
     }
 
     @Override
-    protected void beginMap() throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            throw new IllegalStateException();
-        }
+    public void beginMap() throws IOException {
         writer.writeStartObject();
     }
 
     @Override
-    protected void beginCollection() throws IOException {
-        if (nodeContext == Context.PROPERTY_KEY) {
-            throw new IllegalStateException();
-        }
+    public void beginCollection() throws IOException {
         writer.writeStartArray();
     }
 
     @Override
-    protected void end() throws IOException {
+    public void end() throws IOException {
         if (NodeType.MAP == nodeType) {
             writer.writeEndObject();
             return;
@@ -85,4 +44,48 @@ public class Jackson2Writer extends NodeGenerator {
         throw new IllegalStateException();
     }
 
+    @Override
+    public void nullValue() throws IOException {
+        writer.writeNull();
+    }
+
+    @Override
+    public void booleanValue(boolean value) throws IOException {
+        writer.writeBoolean(value);
+    }
+
+    @Override
+    public void stringValue(String value) throws IOException {
+        if (nodeContext == Context.PROPERTY_KEY) {
+            writer.writeFieldName(value);
+            return;
+        }
+        writer.writeString(value);
+    }
+
+    @Override
+    public void numericValue(long value) throws IOException {
+        writer.writeNumber(value);
+
+    }
+
+    @Override
+    public void numericValue(BigInteger value) throws IOException {
+        writer.writeNumber(value);
+    }
+
+    @Override
+    public void numericValue(double value) throws IOException {
+        writer.writeNumber(value);
+    }
+
+    @Override
+    public void numericValue(BigDecimal value) throws IOException {
+        writer.writeNumber(value);
+    }
+
+    @Override
+    public void binaryValue(byte[] value) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 }
