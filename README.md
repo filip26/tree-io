@@ -19,7 +19,7 @@
 
 ## 🔌 Implementations of Tree I/O API
 
- Artifact               | Version | Documentation
+ Artifact               | Version | Javadoc
 -----------------------|---------|---------------
 **Tree I/O API**           | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-api.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-api) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-api/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-api) 
  Jakarta JSON API      | [![Maven Central](https://img.shields.io/maven-central/v/com.apicatalog/tree-io-jakarta.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:com.apicatalog%20AND%20a:tree-io-jakarta) | [![javadoc](https://javadoc.io/badge2/com.apicatalog/tree-io-jakarta/javadoc.svg)](https://javadoc.io/doc/com.apicatalog/tree-io-jakarta) 
