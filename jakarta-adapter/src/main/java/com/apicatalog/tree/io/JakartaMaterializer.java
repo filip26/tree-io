@@ -1,106 +1,232 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
+import jakarta.json.spi.JsonProvider;
 
-public class JakartaMaterializer extends NodeGenerator {
+/**
+ * A specialized class that builds a {@code jakarta.json.JsonValue} object model
+ * from any tree-like source.
+ * <p>
+ * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * allowing it to act as a self-contained transformation engine. It traverses a
+ * source structure using its {@code NodeVisitor} capabilities and consumes its
+ * own traversal events via its {@code NodeGenerator} implementation to
+ * construct a {@link JsonValue} tree in memory.
+ * </p>
+ * <p>
+ * The class is stateful and designed for a single transformation. It can be
+ * reused by calling the {@link #reset()} method.
+ * </p>
+ */
+public final class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
 
-    protected JsonValue json;
+    protected final JsonProvider provider;
     protected final Deque<Object> builders;
 
+    protected JsonValue json;
+
+    /**
+     * Constructs a new materializer using the default {@link JsonProvider}.
+     */
     public JakartaMaterializer() {
-        super(new ArrayDeque<>(), PropertyKeyPolicy.StringOnly);
-        this.json = null;
+        this(JsonProvider.provider());
+    }
+
+    /**
+     * Constructs a new materializer using the specified {@link JsonProvider}.
+     *
+     * @param provider the JSON-P provider to use for creating JSON values and
+     *                 builders
+     */
+    public JakartaMaterializer(JsonProvider provider) {
+        super(new ArrayDeque<>(), null);
+
+        this.provider = provider;
         this.builders = new ArrayDeque<>();
-    }
-
-    public void node(Object node, NodeAdapter adapter) {
-        // reset
         this.json = null;
+    }
+
+    /**
+     * The primary entry point for materialization. Traverses the given source node
+     * and returns the resulting Jakarta {@link JsonValue}.
+     *
+     * @param node    the source root node to traverse
+     * @param adapter the adapter for interpreting the source node's structure
+     * @return the fully materialized {@link JsonValue}
+     * @throws IOException if an error occurs during generation
+     */
+    public JsonValue node(Object node, NodeAdapter adapter) throws IOException {
+        root(node, adapter).traverse(this);
+        return json;
+    }
+
+    /**
+     * Returns the fully materialized {@link JsonValue} after a successful
+     * traversal.
+     *
+     * @return the resulting {@link JsonValue}, or {@code null} if traversal has not
+     *         completed
+     */
+    public JsonValue json() {
+        return json;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Clears the partially built JSON structure and the internal builder stack,
+     * allowing the instance to be reused for a new materialization.
+     * </p>
+     */
+    @Override
+    public NodeVisitor reset() {
         this.builders.clear();
+        this.json = null;
+        return super.reset();
+    }
 
-        try {
-            super.node(node, adapter);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@link JsonValue#NULL}.
+     * </p>
+     */
+    @Override
+    public void nullValue() throws IOException {
+        json(JsonValue.NULL);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@link JsonValue#TRUE} or {@link JsonValue#FALSE}.
+     * </p>
+     */
+    @Override
+    public void booleanValue(boolean node) throws IOException {
+        json(node ? JsonValue.TRUE : JsonValue.FALSE);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If the current context is a {@code PROPERTY_KEY}, the string is pushed onto
+     * the builder stack to be used as a key. Otherwise, it creates a
+     * {@code JsonString} value.
+     * </p>
+     */
+    @Override
+    public void stringValue(String node) throws IOException {
+        if (currentNodeContext == Context.PROPERTY_KEY) {
+            builders.push(node);
+            return;
         }
-
+        json(provider.createValue(node));
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@code JsonNumber}.
+     * </p>
+     */
     @Override
-    protected void scalar(Object node) {
-
-        switch (nodeContext) {
-        case PROPERTY_KEY:
-            builders.push(adapter.asString(node));
-            return;
-
-        case PROPERTY_VALUE:
-            String key = (String) builders.pop();
-            if (builders.peek() instanceof JsonObject) {
-                builders.pop();
-                builders.push(Json.createObjectBuilder());
-            }
-            ((JsonObjectBuilder) builders.peek()).add(key, toJsonValue(node));
-            return;
-
-        case COLLECTION_ELEMENT:
-            ((JsonArrayBuilder) builders.peek()).add(toJsonValue(node));
-            return;
-
-        case ROOT:
-            json = toJsonValue(node);
-            return;
-
-        default:
-            throw new IllegalStateException();
-        }
+    public void numericValue(long node) throws IOException {
+        json(provider.createValue(node));
     }
 
-    protected JsonValue toJsonValue(Object node) {
-        switch (adapter.type(node)) {
-        case STRING:
-            return Json.createValue(adapter.stringValue(node));
-
-        case NULL:
-            return JsonValue.NULL;
-
-        case TRUE:
-            return JsonValue.TRUE;
-
-        case FALSE:
-            return JsonValue.FALSE;
-
-        case NUMBER:
-            return adapter.isIntegral(node)
-                    ? Json.createValue(adapter.bigIntegerValue(node))
-                    : Json.createValue(adapter.decimalValue(node));
-
-        default:
-            throw new IllegalStateException();
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@code JsonNumber}.
+     * </p>
+     */
     @Override
-    protected void beginMap() {
-        builders.push(JsonValue.EMPTY_JSON_OBJECT);
+    public void numericValue(BigInteger node) throws IOException {
+        json(provider.createValue(node));
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@code JsonNumber}.
+     * </p>
+     */
     @Override
-    protected void beginCollection() {
-        builders.push(Json.createArrayBuilder());
+    public void numericValue(double node) throws IOException {
+        json(provider.createValue(node));
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Creates a {@code JsonNumber}.
+     * </p>
+     */
     @Override
-    protected void end() {
-        Object builder = builders.pop();
+    public void numericValue(BigDecimal node) throws IOException {
+        json(provider.createValue(node));
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This operation is not supported, as the Jakarta JSON-P API does not provide a
+     * native binary type.
+     * </p>
+     * 
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public void binaryValue(byte[] node) throws IOException {
+        throw new UnsupportedOperationException("Jakarta JSON-P does not support a native binary type.");
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Starts a new {@link JsonObjectBuilder} and places it on the internal builder
+     * stack.
+     * </p>
+     */
+    @Override
+    public void beginMap() throws IOException {
+        builders.push(provider.createObjectBuilder());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Starts a new {@link JsonArrayBuilder} and places it on the internal builder
+     * stack.
+     * </p>
+     */
+    @Override
+    public void beginCollection() throws IOException {
+        builders.push(provider.createArrayBuilder());
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     * <p>
+     * Finalizes the current {@code JsonObjectBuilder} or {@code JsonArrayBuilder},
+     * pops it from the stack, builds the final {@link JsonValue}, and attaches it
+     * to its parent structure if one exists.
+     * </p>
+     */
+    @Override
+    public void end() throws IOException {
+
+        final Object builder = builders.pop();
 
         if (builder instanceof JsonArrayBuilder) {
             json = ((JsonArrayBuilder) builder).build();
@@ -112,16 +238,12 @@ public class JakartaMaterializer extends NodeGenerator {
             json = (JsonValue) builder;
 
         } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Internal builder stack is in an inconsistent state.");
         }
 
         if (!builders.isEmpty()) {
             if (builders.peek() instanceof String) {
                 String key = (String) builders.pop();
-                if (builders.peek() instanceof JsonObject) {
-                    builders.pop();
-                    builders.push(Json.createObjectBuilder());
-                }
                 ((JsonObjectBuilder) builders.peek()).add(key, json);
             } else if (builders.peek() instanceof JsonArrayBuilder) {
                 ((JsonArrayBuilder) builders.peek()).add(json);
@@ -129,7 +251,29 @@ public class JakartaMaterializer extends NodeGenerator {
         }
     }
 
-    public JsonValue json() {
-        return json;
+    /**
+     * Internal dispatcher that places a newly created {@link JsonValue} into the
+     * correct position within the JSON structure being built.
+     *
+     * @param value the {@link JsonValue} to place
+     */
+    protected void json(final JsonValue value) {
+        switch (currentNodeContext) {
+        case PROPERTY_VALUE:
+            String key = (String) builders.pop();
+            ((JsonObjectBuilder) builders.peek()).add(key, value);
+            return;
+
+        case COLLECTION_ELEMENT:
+            ((JsonArrayBuilder) builders.peek()).add(value);
+            return;
+
+        case ROOT:
+            json = value;
+            return;
+
+        default:
+            throw new IllegalStateException("Cannot add a JsonValue in the current context: " + currentNodeContext);
+        }
     }
 }

@@ -18,7 +18,26 @@ import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 
-public class JakartaAdapter implements NodeAdapter {
+/**
+ * A {@link NodeAdapter} implementation that bridges the generic tree processing
+ * framework with the Jakarta JSON-P {@link JsonValue} object model.
+ * <p>
+ * This adapter allows for the traversal and inspection of JSON structures that
+ * have been parsed into Jakarta's native tree representation. It correctly
+ * identifies JSON objects ({@link JsonObject}) as maps and JSON arrays
+ * ({@link JsonArray}) as collections. Map keys are always {@link String}s.
+ * </p>
+ * <p>
+ * Note that the standard Jakarta JSON-P API does not provide a native
+ * representation for binary data; therefore, this adapter does not support the
+ * {@code BINARY} node type.
+ * </p>
+ * <p>
+ * The class is implemented as a stateless singleton, accessible via the
+ * {@link #instance()} method.
+ * </p>
+ */
+public final class JakartaAdapter implements NodeAdapter {
 
     static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -33,30 +52,57 @@ public class JakartaAdapter implements NodeAdapter {
 
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
-    public static final JakartaAdapter instance() {
+    /**
+     * Provides the singleton instance of the {@code JakartaAdapter}.
+     * 
+     * @return the singleton instance
+     */
+    public static JakartaAdapter instance() {
         return INSTANCE;
     }
 
-    @Override
-    public boolean isNode(Object node) {
-        return node != null && (node instanceof JsonValue // values
-                || node instanceof String // keys
-        );
+    private JakartaAdapter() {
+        // - only one instance is allowed
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This implementation returns {@code true} for instances of {@link JsonValue}
+     * (representing values) and {@link String} (representing map keys).
+     * </p>
+     */
+    @Override
+    public boolean isNode(Object node) {
+        return node != null && (node instanceof JsonValue || node instanceof String);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<NodeType> keyTypes() {
         return KEYS;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<NodeType> nodeTypes() {
         return VALUES;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For {@link String} objects, this method returns {@link NodeType#STRING}, as
+     * they are treated as map keys. Otherwise, it determines the type from the
+     * {@link JsonValue}'s {@link ValueType}.
+     * </p>
+     */
     @Override
     public NodeType type(Object node) {
-
         // property keys are strings
         if (node instanceof String) {
             return NodeType.STRING;
@@ -79,106 +125,156 @@ public class JakartaAdapter implements NodeAdapter {
         case OBJECT:
             return NodeType.MAP;
         default:
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Unsupported JsonValue type.");
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<String> keys(Object node) {
         return ((JsonObject) node).keySet();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonValue property(Object property, Object node) {
-        return ((JsonObject) node).get(property);
+        return ((JsonObject) node).get((String) property);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Entry<?, ?>> entries(Object node) {
         return (Iterable) ((JsonObject) node).entrySet();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
         return (Stream) ((JsonObject) node).entrySet().stream();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterable<JsonValue> elements(Object node) {
         return (JsonArray) node;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<JsonValue> elementStream(Object node) {
         return ((JsonArray) node).stream();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String stringValue(Object node) {
-        // keys
         if (node instanceof String) {
             return (String) node;
         }
-        // values
         return ((JsonString) node).getString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int intValue(Object node) {
         return ((JsonNumber) node).intValueExact();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public long longValue(Object node) {
         return ((JsonNumber) node).longValueExact();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigInteger bigIntegerValue(Object node) {
         return ((JsonNumber) node).bigIntegerValueExact();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double doubleValue(Object node) {
         return ((JsonNumber) node).doubleValue();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigDecimal decimalValue(Object node) {
         return ((JsonNumber) node).bigDecimalValue();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This operation is not supported as the Jakarta JSON-P API does not provide a
+     * native binary type.
+     * </p>
+     * 
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public byte[] binaryValue(Object node) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Jakarta JSON-P does not support a native binary type.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Collection<JsonValue> asIterable(Object node) {
         if (node == null) {
             return Collections.emptyList();
         }
-
         if (node instanceof JsonArray) {
             return ((JsonArray) node);
         }
         return Collections.singletonList((JsonValue) node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Stream<JsonValue> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
-
         if (node instanceof JsonArray) {
             return ((JsonArray) node).stream();
         }
         return Stream.of((JsonValue) node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isNull(Object node) {
         return node == null
@@ -186,6 +282,9 @@ public class JakartaAdapter implements NodeAdapter {
                         && ValueType.NULL.equals(((JsonValue) node).getValueType()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isBoolean(Object node) {
         return node != null
@@ -194,46 +293,81 @@ public class JakartaAdapter implements NodeAdapter {
                         || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isMap(Object node) {
         return node != null && node instanceof JsonObject;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isCollection(Object node) {
         return node != null && node instanceof JsonArray;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Always returns {@code false} as {@link JsonArray} does not enforce element
+     * uniqueness.
+     * </p>
+     */
     @Override
     public boolean isSet(Object node) {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isList(Object node) {
         return node != null && node instanceof JsonArray;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isString(Object node) {
         return node != null && (node instanceof String || node instanceof JsonString);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isNumber(Object node) {
         return node != null && (node instanceof JsonNumber);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isIntegral(Object node) {
         return isNumber(node) && ((JsonNumber) node).isIntegral();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Always returns {@code false} as the Jakarta JSON-P API does not provide a
+     * native binary type.
+     * </p>
+     */
     @Override
     public boolean isBinary(Object node) {
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isEmpty(Object node) {
         if (node instanceof JsonObject) {
@@ -242,9 +376,12 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof JsonArray) {
             return ((JsonArray) node).isEmpty();
         }
-        throw new ClassCastException();
+        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int size(Object node) {
         if (node instanceof JsonObject) {
@@ -253,9 +390,12 @@ public class JakartaAdapter implements NodeAdapter {
         if (node instanceof JsonArray) {
             return ((JsonArray) node).size();
         }
-        throw new ClassCastException();
+        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String asString(Object node) {
         if (node instanceof String) {
@@ -267,11 +407,14 @@ public class JakartaAdapter implements NodeAdapter {
         return Objects.toString(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public BigDecimal asDecimal(Object node) {
         if (node instanceof JsonNumber) {
             return ((JsonNumber) node).bigDecimalValue();
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Node must be a JsonNumber.");
     }
 }

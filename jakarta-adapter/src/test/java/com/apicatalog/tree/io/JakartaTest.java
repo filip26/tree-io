@@ -40,8 +40,6 @@ class JakartaTest {
 
     final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(CONFIG);
 
-    final static JakartaMaterializer MATERIALIZER = new JakartaMaterializer();
-
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(0)
@@ -60,8 +58,9 @@ class JakartaTest {
     @MethodSource({ "resources" })
     @Order(1)
     void testMaterialize(String name) throws IOException {
-        MATERIALIZER.node(getJsonResource(name), JakartaAdapter.instance());
-        assertEquals(getJsonResource(name), MATERIALIZER.json());
+        JakartaMaterializer materializer = new JakartaMaterializer();
+        materializer.node(getJsonResource(name), JakartaAdapter.instance());
+        assertEquals(getJsonResource(name), materializer.json());
     }
 
     static final Stream<String> resources() throws IOException {
