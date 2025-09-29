@@ -122,6 +122,7 @@ public interface NodeAdapter {
      * @return the number of entries (for a map) or elements (for a collection).
      * @throws UnsupportedOperationException if the node is not a map or collection.
      */
+    @Deprecated
     int size(Object node);
 
     /**
