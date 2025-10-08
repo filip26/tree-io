@@ -35,11 +35,8 @@ public class PolyMorph {
      *                              {@code null}
      */
     public PolyMorph(Object node, NodeAdapter adapter) {
-        Objects.requireNonNull(node);
-        Objects.requireNonNull(adapter);
-
-        this.node = node;
-        this.adapter = adapter;
+        this.node = Objects.requireNonNull(node);
+        this.adapter = Objects.requireNonNull(adapter);
     }
 
     public NodeAdapter adapter() {

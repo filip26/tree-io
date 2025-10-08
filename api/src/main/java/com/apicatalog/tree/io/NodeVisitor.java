@@ -209,8 +209,8 @@ public class NodeVisitor {
      * <p>
      * Each call to this method processes exactly one node or structural marker.
      * After a successful call, the visitor's state is updated, and the details of
-     * the current item can be accessed via {@link #node()},
-     * {@link #nodeType()}, and {@link #nodeContext()}.
+     * the current item can be accessed via {@link #node()}, {@link #nodeType()},
+     * and {@link #nodeContext()}.
      * </p>
      *
      * @return {@code true} if the traversal advanced to a new item, or
@@ -219,6 +219,10 @@ public class NodeVisitor {
      *                               (e.g., maximum depth or node count).
      */
     public boolean step() {
+        return step(Context.ROOT);
+    }
+
+    protected boolean step(Context stepContext) {
 
         if (stack.isEmpty()) {
             return false;
@@ -231,12 +235,12 @@ public class NodeVisitor {
             throw new IllegalStateException("The maximum traversal depth has been reached.");
         }
 
-        final NodeAdapter nodeAdapter = adapters.peek();
-        
+        NodeAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
-        
+
         if (NodeType.MORPH.equals(item)) {
             adapters.pop();
+            nodeAdapter = adapters.peek();
             stack.pop();
             item = stack.peek();
         }
@@ -285,7 +289,7 @@ public class NodeVisitor {
 
         } else {
             // process root value
-            currentNodeContext = Context.ROOT;
+            currentNodeContext = stepContext;
             currentNode = item;
             stack.pop();
         }
@@ -295,9 +299,9 @@ public class NodeVisitor {
         switch (currentNodeType) {
         case MORPH:
             stack.push(NodeType.MORPH);
-            PolyMorph morph = (PolyMorph)currentNode;
+            final PolyMorph morph = (PolyMorph) currentNode;
             root(morph.node, morph.adapter);
-            return step();
+            return step(currentNodeContext);
 
         case COLLECTION:
             stack.push(NodeType.COLLECTION);
@@ -333,6 +337,7 @@ public class NodeVisitor {
      * @return this instance, for chaining.
      */
     public NodeVisitor reset() {
+        this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
         this.visited = 0;

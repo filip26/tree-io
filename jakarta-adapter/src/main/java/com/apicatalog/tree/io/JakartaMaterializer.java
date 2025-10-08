@@ -238,7 +238,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
             json = (JsonValue) builder;
 
         } else {
-            throw new IllegalStateException("Internal builder stack is in an inconsistent state.");
+            throw new IllegalStateException("Internal builder stack is in an inconsistent state [" + builder + "].");
         }
 
         if (!builders.isEmpty()) {
