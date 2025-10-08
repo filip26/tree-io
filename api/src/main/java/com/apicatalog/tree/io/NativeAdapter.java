@@ -55,7 +55,7 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Map
                 || node instanceof Collection
                 || node instanceof byte[]
-                || node instanceof NodeMorph;
+                || node instanceof PolyMorph;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class NativeAdapter implements NodeAdapter {
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
-        if (node instanceof NodeMorph) {
+        if (node instanceof PolyMorph) {
             return NodeType.MORPH;
         }
 

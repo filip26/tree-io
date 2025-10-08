@@ -16,12 +16,11 @@ import java.util.function.Function;
  * models.
  * </p>
  * <p>
- * Pass a NodeMorph from JSON, YAML, or CBOR into the tree, it adapts
- * automatically to the target structure.
+ * Pass a {@link PolyMorph} from JSON, YAML, or CBOR into the tree.
  * </p>
  *
  */
-public class NodeMorph {
+public class PolyMorph {
 
     protected final NodeAdapter adapter;
     protected final Object node;
@@ -35,7 +34,7 @@ public class NodeMorph {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public NodeMorph(Object node, NodeAdapter adapter) {
+    public PolyMorph(Object node, NodeAdapter adapter) {
         Objects.requireNonNull(node);
         Objects.requireNonNull(adapter);
 
@@ -97,11 +96,11 @@ public class NodeMorph {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(NodeMorph.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(PolyMorph.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(NodeMorph.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(PolyMorph.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {
