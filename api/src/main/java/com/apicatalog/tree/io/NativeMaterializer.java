@@ -1,0 +1,218 @@
+package com.apicatalog.tree.io;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * A specialized class that builds a native object model from any tree-like
+ * source.
+ * <p>
+ * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * allowing it to act as a self-contained transformation engine. It traverses a
+ * source structure using its {@code NodeVisitor} capabilities and consumes its
+ * own traversal events via its {@code NodeGenerator} implementation to
+ * construct a {@link Object} tree in memory.
+ * </p>
+ * <p>
+ * The class is stateful and designed for a single transformation. It can be
+ * reused by calling the {@link #reset()} method.
+ * </p>
+ */
+public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
+
+    protected final Deque<Object> structures;
+
+    protected Object object;
+
+    public NativeMaterializer() {
+        super(new ArrayDeque<>(), null);
+        this.structures = new ArrayDeque<>();
+        this.object = null;
+    }
+
+    /**
+     * The primary entry point for materialization. Traverses the given source node.
+     *
+     * @param node    the source root node to traverse
+     * @param adapter the adapter for interpreting the source node's structure
+     * @return the fully materialized object
+     * @throws IOException if an error occurs during generation
+     */
+    public Object node(Object node, NodeAdapter adapter) throws IOException {
+        root(node, adapter).traverse(this);
+        return object;
+    }
+
+    /**
+     * Returns the fully materialized {@link Object} after a successful traversal.
+     *
+     * @return the resulting {@link Object}, or {@code null} if traversal has not
+     *         completed
+     */
+    public Object object() {
+        return object;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Clears the partially built structure and the internal builder stack,
+     * allowing the instance to be reused for a new materialization.
+     * </p>
+     */
+    @Override
+    public NodeVisitor reset() {
+        this.structures.clear();
+        this.object = null;
+        return super.reset();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void nullValue() throws IOException {
+        value(null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void booleanValue(boolean node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * If the current context is a {@code PROPERTY_KEY}, the string is pushed onto
+     * the builder stack to be used as a key. Otherwise, it creates a {@code String}
+     * value.
+     * </p>
+     */
+    @Override
+    public void stringValue(String node) throws IOException {
+        if (currentNodeContext == Context.PROPERTY_KEY) {
+            structures.push(node);
+            return;
+        }
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void numericValue(long node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void numericValue(BigInteger node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void numericValue(double node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void numericValue(BigDecimal node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     * 
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public void binaryValue(byte[] node) throws IOException {
+        value(node);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginMap() throws IOException {
+        structures.push(new LinkedHashMap<>());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginCollection() throws IOException {
+        structures.push(new ArrayList<>());
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     * <p>
+     * Finalizes the current {@code Map} or {@code List}, pops it from the stack,
+     * builds the final {@link Object}, and attaches it to its parent structure if
+     * one exists.
+     * </p>
+     */
+    @Override
+    public void end() throws IOException {
+
+        object = structures.pop();
+
+        if (!structures.isEmpty()) {
+            if (structures.peek() instanceof String) {
+                String key = (String) structures.pop();
+                ((Map) structures.peek()).put(key, object);
+            } else if (structures.peek() instanceof List) {
+                ((List) structures.peek()).add(object);
+            }
+        }
+    }
+
+    /**
+     * Internal dispatcher that places a newly created {@link Object} into the
+     * correct position within the structure being built.
+     *
+     * @param value the {@link Object} to place
+     */
+    protected void value(final Object value) {
+
+        switch (currentNodeContext) {
+        case PROPERTY_VALUE:
+            String key = (String) structures.pop();
+            ((Map) structures.peek()).put(key, value);
+            return;
+
+        case COLLECTION_ELEMENT:
+            ((List) structures.peek()).add(value);
+            return;
+
+        case ROOT:
+            object = value;
+            return;
+
+        default:
+            throw new IllegalStateException("Cannot add a value in the current context: " + currentNodeContext + ", value: " + value);
+        }
+    }
+}

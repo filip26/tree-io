@@ -90,7 +90,7 @@ public class NativeAdapter implements NodeAdapter {
             return NodeType.BINARY;
         }
 
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");
     }
 
     @Override
