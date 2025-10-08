@@ -26,7 +26,8 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.BINARY,
             NodeType.FALSE,
             NodeType.TRUE,
-            NodeType.NULL));
+            NodeType.NULL,
+            NodeType.MORPH));
 
     static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -53,7 +54,8 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Float
                 || node instanceof Map
                 || node instanceof Collection
-                || node instanceof byte[];
+                || node instanceof byte[]
+                || node instanceof NodeMorph;
     }
 
     @Override
@@ -88,6 +90,9 @@ public class NativeAdapter implements NodeAdapter {
         }
         if (node instanceof byte[]) {
             return NodeType.BINARY;
+        }
+        if (node instanceof NodeMorph) {
+            return NodeType.MORPH;
         }
 
         throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");
@@ -398,7 +403,7 @@ public class NativeAdapter implements NodeAdapter {
             }
 
             return adapter.entryStream(value)
-                    .reduce(new LinkedHashMap<>(adapter.size(value)),
+                    .reduce(new LinkedHashMap<>(),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));
                                 return map;

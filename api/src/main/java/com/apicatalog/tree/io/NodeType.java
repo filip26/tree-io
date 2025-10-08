@@ -4,6 +4,7 @@ package com.apicatalog.tree.io;
  * Supported node types in a tree structure.
  */
 public enum NodeType {
+    MORPH(false),
     MAP(false),
     COLLECTION(false),
     STRING(true),

@@ -1,15 +1,18 @@
 # 🌳 Tree I/O
 
-**Uniform API to read/write tree data models — cross-format, cross-library.**
+**Uniform API to read/write heterogeneous tree data models — cross-format, cross-library.**
 
-**tree-io** provides a consistent abstraction for working with **tree-like data structures**.  It is **format-agnostic** (JSON, YAML, CBOR, …) and **library-agnostic** (Jackson, Gson, Jakarta, …),  allowing you to **read, manipulate, and write trees uniformly** without depending on a specific parser or serializer.
+**tree-io** provides a consistent and lightweight abstraction for working with **heterogeneous hierarchical data structures**.  It is **format-agnostic** (JSON, YAML, CBOR, …) and **library-agnostic** (Jackson, Gson, Jakarta, …),  allowing you to **read, manipulate, and write trees uniformly** without depending on a specific parser or serializer.
+
 
 ## ✨ Features
 
-- 🌐 Uniform, library-agnostic API for tree data processing
-- 🗂️ Supports multiple formats: JSON, YAML, CBOR
+- 🌳 Uniform Tree Processing - handle any hierarchical and heterogeneous data structure consistently across formats and libraries  
+- 🌐 Library-agnostic API for tree data processing
+- 🗂️ Multi-format support
 - 🔌 Works with Jackson, Gson, Jakarta, and other libraries
-- 🛠️ Extensible adapter model for adding new formats or libraries
+- 🛠️ Extensible model for adding new formats and libraries
+- ⚙️ Unified traversal and transformation - apply visitors, filters, or mappers across heterogeneous trees  
 
 ## 🏗️ Use Cases
 

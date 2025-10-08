@@ -15,9 +15,13 @@ import java.util.function.Function;
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
+ * <p>
+ * Pass a NodeMorph from JSON, YAML, or CBOR into the tree, it adapts
+ * automatically to the target structure.
+ * </p>
  *
  */
-public class NodeModel {
+public class NodeMorph {
 
     protected final NodeAdapter adapter;
     protected final Object node;
@@ -31,7 +35,7 @@ public class NodeModel {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public NodeModel(Object node, NodeAdapter adapter) {
+    public NodeMorph(Object node, NodeAdapter adapter) {
         Objects.requireNonNull(node);
         Objects.requireNonNull(adapter);
 
@@ -85,13 +89,6 @@ public class NodeModel {
                     rightAdapter.decimalValue(right));
 
         case COLLECTION:
-            final int leftSize = leftAdapter.size(left);
-            final int rightSize = rightAdapter.size(right);
-
-            if (leftSize != rightSize) {
-                return false;
-            }
-
             return deepEqualsCollection(
                     leftAdapter.elements(left),
                     leftAdapter,
@@ -100,11 +97,11 @@ public class NodeModel {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(NodeMorph.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(NodeMorph.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {
