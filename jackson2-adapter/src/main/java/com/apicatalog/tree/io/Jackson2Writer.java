@@ -70,10 +70,19 @@ public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         writer.writeStartArray();
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    
     /**
      * {@inheritDoc}
      * <p>

@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -161,10 +162,18 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         structures.push(new ArrayList<>());
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        structures.push(new LinkedHashSet<>());
+    }
+    
     /**
      * 
      * {@inheritDoc}

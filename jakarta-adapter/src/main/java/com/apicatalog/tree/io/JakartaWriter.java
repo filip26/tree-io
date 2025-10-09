@@ -190,15 +190,23 @@ public class JakartaWriter extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         writer.writeStartArray();
     }
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>
-     * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the current
-     * object or array context.
+     * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the
+     * current object or array context.
      * </p>
      */
     @Override

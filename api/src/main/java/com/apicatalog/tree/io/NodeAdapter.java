@@ -209,7 +209,7 @@ public interface NodeAdapter {
     boolean isList(Object node);
 
     /**
-     * Checks if the adapted collection node is a set (typically an unordered
+     * Checks if the adapted collection node is a set (an unordered
      * collection of unique elements).
      *
      * @param node the collection node to check.

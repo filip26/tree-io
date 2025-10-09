@@ -210,8 +210,16 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         builders.push(provider.createArrayBuilder());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     /**

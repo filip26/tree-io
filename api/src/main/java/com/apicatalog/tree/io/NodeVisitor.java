@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * It can be used in two primary ways:
  * </p>
  * <ol>
- * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #step()} method
+ * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
  * in a loop, you can process each node individually, allowing for complex logic
  * like searching, validation, or conditional processing.</li>
  * <li><b>Automated Transformation:</b> The {@link #traverse(NodeGenerator)}
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * iteration order.</li>
  * </ul>
  */
-public class NodeVisitor {
+public class NodeVisitor implements NodeProcessor {
 
     /**
      * Identifies the role of the current node within the tree structure during
@@ -143,7 +143,7 @@ public class NodeVisitor {
      * A high-level utility method that fully traverses the tree and drives the
      * provided {@link NodeGenerator}. This is the primary method for tree
      * transformation, serialization, or deep cloning. It iterates through every
-     * node using {@link #step()} and emits a corresponding event to the generator.
+     * node using {@link #next()} and emits a corresponding event to the generator.
      *
      * @param generator the generator that will receive construction events.
      * @throws IOException           if the generator encounters an I/O error.
@@ -151,7 +151,7 @@ public class NodeVisitor {
      *                               structures).
      */
     public void traverse(final NodeGenerator generator) throws IOException {
-        while (step()) {
+        while (next()) {
 
             if (Context.END == currentNodeContext) {
                 generator.end();
@@ -164,7 +164,7 @@ public class NodeVisitor {
                 break;
 
             case COLLECTION:
-                generator.beginCollection();
+                generator.beginList();
                 break;
 
             case NULL:
@@ -218,11 +218,11 @@ public class NodeVisitor {
      * @throws IllegalStateException if the traversal exceeds configured limits
      *                               (e.g., maximum depth or node count).
      */
-    public boolean step() {
-        return step(Context.ROOT);
+    public boolean next() {
+        return next(Context.ROOT);
     }
 
-    protected boolean step(Context stepContext) {
+    protected boolean next(Context stepContext) {
 
         if (stack.isEmpty()) {
             return false;
@@ -301,7 +301,7 @@ public class NodeVisitor {
             stack.push(NodeType.MORPH);
             final PolyMorph morph = (PolyMorph) currentNode;
             root(morph.node, morph.adapter);
-            return step(currentNodeContext);
+            return next(currentNodeContext);
 
         case COLLECTION:
             stack.push(NodeType.COLLECTION);

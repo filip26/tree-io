@@ -91,8 +91,16 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() {
+    public void beginList() {
         builders.push(new Array());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     /**
