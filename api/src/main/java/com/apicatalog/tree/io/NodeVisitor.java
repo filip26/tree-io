@@ -87,11 +87,15 @@ public class NodeVisitor implements NodeProcessor {
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    protected NodeVisitor(final Deque<Object> stack) {
+    public NodeVisitor() {
+        this(new ArrayDeque<>(), null);
+    }
+    
+    public NodeVisitor(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    protected NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -114,6 +118,7 @@ public class NodeVisitor implements NodeProcessor {
      *                {@code null}.
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
+    @Deprecated
     public static NodeVisitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, null);
     }
@@ -130,6 +135,7 @@ public class NodeVisitor implements NodeProcessor {
      *                           if {@code null}, natural iteration order is used.
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
+    @Deprecated
     public static NodeVisitor of(
             final Object root,
             final NodeAdapter adapter,
