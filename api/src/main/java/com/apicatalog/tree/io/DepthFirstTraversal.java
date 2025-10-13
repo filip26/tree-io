@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * iteration order.</li>
  * </ul>
  */
-public class NodeVisitor implements NodeProcessor {
+public class DepthFirstTraversal {
 
     /**
      * Identifies the role of the current node within the tree structure during
@@ -87,15 +87,15 @@ public class NodeVisitor implements NodeProcessor {
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    public NodeVisitor() {
+    public DepthFirstTraversal() {
         this(new ArrayDeque<>(), null);
     }
-    
-    public NodeVisitor(final Deque<Object> stack) {
+
+    public DepthFirstTraversal(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    public NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public DepthFirstTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -119,7 +119,7 @@ public class NodeVisitor implements NodeProcessor {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static NodeVisitor of(Object root, NodeAdapter adapter) {
+    public static DepthFirstTraversal of(Object root, NodeAdapter adapter) {
         return of(root, adapter, null);
     }
 
@@ -136,13 +136,13 @@ public class NodeVisitor implements NodeProcessor {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static NodeVisitor of(
+    public static DepthFirstTraversal of(
             final Object root,
             final NodeAdapter adapter,
             final Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
-        return new NodeVisitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
+        return new DepthFirstTraversal(new ArrayDeque<>(), propertyComparator).root(root, adapter);
     }
 
     /**
@@ -342,7 +342,7 @@ public class NodeVisitor implements NodeProcessor {
      *
      * @return this instance, for chaining.
      */
-    public NodeVisitor reset() {
+    public DepthFirstTraversal reset() {
         this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
@@ -360,7 +360,7 @@ public class NodeVisitor implements NodeProcessor {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public NodeVisitor root(Object node, NodeAdapter adapter) {
+    public DepthFirstTraversal root(Object node, NodeAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;

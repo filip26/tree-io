@@ -15,18 +15,19 @@ import java.util.Map;
  * A specialized class that builds a native object model from any tree-like
  * source.
  * <p>
- * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
- * allowing it to act as a self-contained transformation engine. It traverses a
- * source structure using its {@code NodeVisitor} capabilities and consumes its
- * own traversal events via its {@code NodeGenerator} implementation to
- * construct a {@link Object} tree in memory.
+ * This class implements both {@link DepthFirstTraversal} and
+ * {@link NodeGenerator}, allowing it to act as a self-contained transformation
+ * engine. It traverses a source structure using its {@code NodeVisitor}
+ * capabilities and consumes its own traversal events via its
+ * {@code NodeGenerator} implementation to construct a {@link Object} tree in
+ * memory.
  * </p>
  * <p>
  * The class is stateful and designed for a single transformation. It can be
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
+public class NativeMaterializer extends DepthFirstTraversal implements NodeGenerator {
 
     protected final Deque<Object> structures;
 
@@ -64,15 +65,16 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
     /**
      * {@inheritDoc}
      * <p>
-     * Clears the partially built structure and the internal builder stack,
-     * allowing the instance to be reused for a new materialization.
+     * Clears the partially built structure and the internal builder stack, allowing
+     * the instance to be reused for a new materialization.
      * </p>
      */
     @Override
-    public NodeVisitor reset() {
+    public NativeMaterializer reset() {
         this.structures.clear();
         this.object = null;
-        return super.reset();
+        super.reset();
+        return this;
     }
 
     /**
@@ -173,7 +175,7 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
     public void beginSet() throws IOException {
         structures.push(new LinkedHashSet<>());
     }
-    
+
     /**
      * 
      * {@inheritDoc}

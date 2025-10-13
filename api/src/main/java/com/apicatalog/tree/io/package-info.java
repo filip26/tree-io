@@ -16,7 +16,7 @@
  * Provides a write-only, streaming API for building a new tree structure. It
  * abstracts the destination, which could be anything from a file on disk to an
  * in-memory object model.</li>
- * <li><b>{@link com.apicatalog.tree.io.NodeVisitor}: The Engine</b><br>
+ * <li><b>{@link com.apicatalog.tree.io.DepthFirstTraversal}: The Engine</b><br>
  * A stateful, non-recursive iterator that traverses the structure exposed by a
  * {@code NodeAdapter} and drives a {@code NodeGenerator}. It is the engine that
  * connects a source to a destination.</li>

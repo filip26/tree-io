@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * from a native tree representation (e.g., an in-memory JSON object model)
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
- * <li><b>Data Transformation:</b> Serve as the input for a {@link NodeVisitor},
+ * <li><b>Data Transformation:</b> Serve as the input for a {@link DepthFirstTraversal},
  * which walks the tree exposed by this adapter and drives a
  * {@link NodeGenerator}. This powerful pattern is the foundation for converting
  * between different data formats (e.g., from a YAML document to a binary CBOR
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  * </p>
  *
  * @see NodeGenerator
- * @see NodeVisitor
+ * @see DepthFirstTraversal
  * @see NodeType
  */
 public interface NodeAdapter {

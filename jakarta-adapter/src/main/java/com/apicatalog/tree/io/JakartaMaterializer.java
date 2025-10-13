@@ -15,7 +15,7 @@ import jakarta.json.spi.JsonProvider;
  * A specialized class that builds a {@code jakarta.json.JsonValue} object model
  * from any tree-like source.
  * <p>
- * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * This class implements both {@link DepthFirstTraversal} and {@link NodeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -26,7 +26,7 @@ import jakarta.json.spi.JsonProvider;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
+public class JakartaMaterializer extends DepthFirstTraversal implements NodeGenerator {
 
     protected final JsonProvider provider;
     protected final Deque<Object> builders;
@@ -87,7 +87,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public NodeVisitor reset() {
+    public DepthFirstTraversal reset() {
         this.builders.clear();
         this.json = null;
         return super.reset();
