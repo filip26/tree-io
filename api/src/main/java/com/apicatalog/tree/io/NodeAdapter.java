@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -133,7 +134,10 @@ public interface NodeAdapter {
      *         {@code false} otherwise.
      * @throws UnsupportedOperationException if the node is not a map or collection.
      */
-    boolean isEmpty(Object node);
+    default boolean isEmpty(Object node) {
+        return isCollection(node) && !elements(node).iterator().hasNext()
+                || isMap(node) && !entries(node).iterator().hasNext();
+    }
 
     // --- Map Operations ---
 
@@ -187,6 +191,21 @@ public interface NodeAdapter {
      */
     Stream<Entry<?, ?>> entryStream(Object node);
 
+    default boolean isSingleEntry(Object node) {
+        if (isMap(node)) {
+            final Iterator<?> it = entries(node).iterator();
+            if (it.hasNext()) {
+                it.next();
+                return !it.hasNext();
+            }
+        }
+        return false;
+    }
+
+    default Entry<?, ?> singleEntry(Object node) {
+        return entries(node).iterator().next();
+    }
+
     // --- Collection Operations ---
 
     /**
@@ -209,8 +228,8 @@ public interface NodeAdapter {
     boolean isList(Object node);
 
     /**
-     * Checks if the adapted collection node is a set (an unordered
-     * collection of unique elements).
+     * Checks if the adapted collection node is a set (an unordered collection of
+     * unique elements).
      *
      * @param node the collection node to check.
      * @return {@code true} if the node is a set, {@code false} otherwise.
@@ -234,6 +253,21 @@ public interface NodeAdapter {
      * @throws UnsupportedOperationException if the node is not a collection.
      */
     Stream<?> elementStream(Object node);
+
+    default boolean isSingleElement(Object node) {
+        if (isCollection(node)) {
+            final Iterator<?> it = elements(node).iterator();
+            if (it.hasNext()) {
+                it.next();
+                return !it.hasNext();
+            }
+        }
+        return false;
+    }
+
+    default Object singleElement(Object node) {
+        return elements(node).iterator().next();
+    }
 
     // --- Scalar Value Accessors ---
 
