@@ -92,7 +92,9 @@ public interface NodeAdapter {
      * @return {@code true} if the node represents a null value, {@code false}
      *         otherwise.
      */
-    boolean isNull(Object node);
+    default boolean isNull(Object node) {
+        return node == null;
+    }
 
     /**
      * Checks if the adapted node represents a boolean value.

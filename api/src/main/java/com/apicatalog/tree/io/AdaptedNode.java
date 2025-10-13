@@ -8,19 +8,19 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Immutable representation of a tree structure accessed through a
+ * Immutable representation of a tree node accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@code NodeModel} instance binds a node with its adapter, providing a
+ * A {@link AdaptedNode} instance binds a node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
  * <p>
- * Pass a {@link PolyMorph} from JSON, YAML, or CBOR into the tree.
+ * Pass a {@link AdaptedNode} from JSON, YAML, or CBOR into the tree.
  * </p>
  *
  */
-public class PolyMorph {
+public class AdaptedNode {
 
     protected final NodeAdapter adapter;
     protected final Object node;
@@ -34,7 +34,7 @@ public class PolyMorph {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public PolyMorph(Object node, NodeAdapter adapter) {
+    public AdaptedNode(Object node, NodeAdapter adapter) {
         this.node = Objects.requireNonNull(node);
         this.adapter = Objects.requireNonNull(adapter);
     }
@@ -45,6 +45,10 @@ public class PolyMorph {
 
     public Object node() {
         return node;
+    }
+
+    static final boolean deepEquals(AdaptedNode left, AdaptedNode right) {
+        return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
     static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
@@ -93,11 +97,11 @@ public class PolyMorph {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(PolyMorph.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(AdaptedNode.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(PolyMorph.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(AdaptedNode.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {

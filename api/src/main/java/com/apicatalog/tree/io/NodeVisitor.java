@@ -305,7 +305,7 @@ public class NodeVisitor implements NodeProcessor {
         switch (currentNodeType) {
         case MORPH:
             stack.push(NodeType.MORPH);
-            final PolyMorph morph = (PolyMorph) currentNode;
+            final AdaptedNode morph = (AdaptedNode) currentNode;
             root(morph.node, morph.adapter);
             return next(currentNodeContext);
 

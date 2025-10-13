@@ -15,7 +15,7 @@ package com.apicatalog.tree.io;
  * </p>
  *
  * @see NodeAdapter
- * @see com.apicatalog.tree.io.PolyMorph
+ * @see com.apicatalog.tree.io.AdaptedNode
  */
 public enum NodeType {
 
