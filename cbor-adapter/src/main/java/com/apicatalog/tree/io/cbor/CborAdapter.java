@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.cbor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,6 +13,10 @@ import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeType;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;

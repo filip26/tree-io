@@ -1,38 +1,47 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakarta;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeType;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
 
 /**
  * A {@link NodeAdapter} implementation that bridges the generic tree processing
- * framework with the Jackson 2 {@link JsonNode} object model.
+ * framework with the Jakarta JSON-P {@link JsonValue} object model.
  * <p>
  * This adapter allows for the traversal and inspection of JSON structures that
- * have been parsed into Jackson's native tree representation. It correctly
- * identifies JSON objects as maps (with {@link String} keys) and JSON arrays as
- * collections.
+ * have been parsed into Jakarta's native tree representation. It correctly
+ * identifies JSON objects ({@link JsonObject}) as maps and JSON arrays
+ * ({@link JsonArray}) as collections. Map keys are always {@link String}s.
+ * </p>
+ * <p>
+ * Note that the standard Jakarta JSON-P API does not provide a native
+ * representation for binary data; therefore, this adapter does not support the
+ * {@code BINARY} node type.
  * </p>
  * <p>
  * The class is implemented as a stateless singleton, accessible via the
  * {@link #instance()} method.
  * </p>
  */
-public class Jackson2Adapter implements NodeAdapter {
+public class JakartaAdapter implements NodeAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -46,15 +55,15 @@ public class Jackson2Adapter implements NodeAdapter {
     static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
 
     static final Features FEATURES = new Features(NODES, KEYS);
-    
-    static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
+
+    static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
     /**
-     * Provides the singleton instance of the {@code Jackson2Adapter}.
+     * Provides the singleton instance of the {@code JakartaAdapter}.
      * 
      * @return the singleton instance
      */
-    public static Jackson2Adapter instance() {
+    public static JakartaAdapter instance() {
         return INSTANCE;
     }
 
@@ -66,13 +75,13 @@ public class Jackson2Adapter implements NodeAdapter {
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation returns {@code true} for instances of {@link JsonNode}
+     * This implementation returns {@code true} for instances of {@link JsonValue}
      * (representing values) and {@link String} (representing map keys).
      * </p>
      */
     @Override
     public boolean isNode(Object node) {
-        return node != null && (node instanceof JsonNode || node instanceof String);
+        return node != null && (node instanceof JsonValue || node instanceof String);
     }
 
     /**
@@ -80,7 +89,7 @@ public class Jackson2Adapter implements NodeAdapter {
      * <p>
      * For {@link String} objects, this method returns {@link NodeType#STRING}, as
      * they are treated as map keys. Otherwise, it determines the type from the
-     * {@link JsonNode}'s internal node type.
+     * {@link JsonValue}'s {@link ValueType}.
      * </p>
      */
     @Override
@@ -91,12 +100,13 @@ public class Jackson2Adapter implements NodeAdapter {
         }
 
         // all other values
-        switch (((JsonNode) node).getNodeType()) {
+        switch (((JsonValue) node).getValueType()) {
         case NULL:
-        case MISSING:
             return NodeType.NULL;
-        case BOOLEAN:
-            return ((JsonNode) node).asBoolean() ? NodeType.TRUE : NodeType.FALSE;
+        case TRUE:
+            return NodeType.TRUE;
+        case FALSE:
+            return NodeType.FALSE;
         case STRING:
             return NodeType.STRING;
         case NUMBER:
@@ -105,10 +115,8 @@ public class Jackson2Adapter implements NodeAdapter {
             return NodeType.COLLECTION;
         case OBJECT:
             return NodeType.MAP;
-        case BINARY:
-            return NodeType.BINARY;
         default:
-            throw new IllegalArgumentException("Unsupported JsonNode type.");
+            throw new IllegalArgumentException("Unsupported JsonValue type.");
         }
     }
 
@@ -117,15 +125,15 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public Set<String> keys(Object node) {
-        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());
+        return ((JsonObject) node).keySet();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public JsonNode property(Object key, Object node) {
-        return ((ObjectNode) node).get((String) key);
+    public JsonValue property(Object property, Object node) {
+        return ((JsonObject) node).get((String) property);
     }
 
     /**
@@ -134,7 +142,7 @@ public class Jackson2Adapter implements NodeAdapter {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Entry<?, ?>> entries(Object node) {
-        return (Iterable) ((ObjectNode) node).properties();
+        return (Iterable) ((JsonObject) node).entrySet();
     }
 
     /**
@@ -143,23 +151,23 @@ public class Jackson2Adapter implements NodeAdapter {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
-        return (Stream) ((ObjectNode) node).propertyStream();
+        return (Stream) ((JsonObject) node).entrySet().stream();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Collection<JsonNode> elements(Object node) {
-        return ((ArrayNode) node).valueStream().collect(Collectors.toList());
+    public Iterable<JsonValue> elements(Object node) {
+        return (JsonArray) node;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Stream<JsonNode> elementStream(Object node) {
-        return ((ArrayNode) node).valueStream();
+    public Stream<JsonValue> elementStream(Object node) {
+        return ((JsonArray) node).stream();
     }
 
     /**
@@ -170,7 +178,7 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof String) {
             return (String) node;
         }
-        return ((JsonNode) node).textValue();
+        return ((JsonString) node).getString();
     }
 
     /**
@@ -178,7 +186,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public int intValue(Object node) {
-        return ((JsonNode) node).intValue();
+        return ((JsonNumber) node).intValueExact();
     }
 
     /**
@@ -186,7 +194,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public long longValue(Object node) {
-        return ((JsonNode) node).longValue();
+        return ((JsonNumber) node).longValueExact();
     }
 
     /**
@@ -194,7 +202,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public BigInteger bigIntegerValue(Object node) {
-        return ((JsonNode) node).bigIntegerValue();
+        return ((JsonNumber) node).bigIntegerValueExact();
     }
 
     /**
@@ -202,7 +210,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public double doubleValue(Object node) {
-        return ((JsonNode) node).doubleValue();
+        return ((JsonNumber) node).doubleValue();
     }
 
     /**
@@ -210,79 +218,59 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public BigDecimal decimalValue(Object node) {
-        return ((JsonNode) node).decimalValue();
+        return ((JsonNumber) node).bigDecimalValue();
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation wraps the potential {@link IOException} from Jackson in
-     * an {@link IllegalStateException}.
+     * This operation is not supported as the Jakarta JSON-P API does not provide a
+     * native binary type.
      * </p>
+     * 
+     * @throws UnsupportedOperationException always
      */
     @Override
     public byte[] binaryValue(Object node) {
-        try {
-            return ((JsonNode) node).binaryValue();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
+        throw new UnsupportedOperationException("Jakarta JSON-P does not support a native binary type.");
     }
 
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings({ "unchecked" })
     @Override
-    public Collection<JsonNode> asIterable(Object node) {
+    public Collection<JsonValue> asIterable(Object node) {
         if (node == null) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
-        if (node instanceof Collection) {
-            return (Collection<JsonNode>) node;
+        if (node instanceof JsonArray) {
+            return ((JsonArray) node);
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).valueStream().collect(Collectors.toList());
-        }
-        if (node instanceof Stream) {
-            return ((Stream<JsonNode>) node).collect(Collectors.toList());
-        }
-        return Collections.singleton((JsonNode) node);
+        return Collections.singletonList((JsonValue) node);
     }
 
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings({ "unchecked" })
     @Override
-    public Stream<JsonNode> asStream(Object node) {
+    public Stream<JsonValue> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
-        if (node instanceof Collection) {
-            return ((Collection<JsonNode>) node).stream();
+        if (node instanceof JsonArray) {
+            return ((JsonArray) node).stream();
         }
-        if (node instanceof Stream) {
-            return (Stream<JsonNode>) node;
-        }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).valueStream();
-        }
-        return Stream.of((JsonNode) node);
+        return Stream.of((JsonValue) node);
     }
 
     /**
      * {@inheritDoc}
-     * <p>
-     * Treats both {@code null} nodes and Jackson's {@code missingNode} as null.
-     * </p>
      */
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || (node instanceof JsonNode
-                        && (((JsonNode) node).isNull()
-                                || ((JsonNode) node).isMissingNode()));
+                || (node instanceof JsonValue
+                        && ValueType.NULL.equals(((JsonValue) node).getValueType()));
     }
 
     /**
@@ -291,8 +279,9 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public boolean isBoolean(Object node) {
         return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isBoolean();
+                && node instanceof JsonValue
+                && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
+                        || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
     }
 
     /**
@@ -300,9 +289,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isMap(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isObject();
+        return node != null && node instanceof JsonObject;
     }
 
     /**
@@ -310,15 +297,13 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isCollection(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isArray();
+        return node != null && node instanceof JsonArray;
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Always returns {@code false} as JSON arrays do not enforce element
+     * Always returns {@code false} as {@link JsonArray} does not enforce element
      * uniqueness.
      * </p>
      */
@@ -332,7 +317,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isList(Object node) {
-        return isCollection(node);
+        return node != null && node instanceof JsonArray;
     }
 
     /**
@@ -340,10 +325,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isString(Object node) {
-        return node != null
-                && (node instanceof String
-                        || (node instanceof JsonNode
-                                && ((JsonNode) node).isTextual()));
+        return node != null && (node instanceof String || node instanceof JsonString);
     }
 
     /**
@@ -351,9 +333,7 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isNumber(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isNumber();
+        return node != null && (node instanceof JsonNumber);
     }
 
     /**
@@ -361,19 +341,19 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isIntegral(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isIntegralNumber();
+        return isNumber(node) && ((JsonNumber) node).isIntegral();
     }
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Always returns {@code false} as the Jakarta JSON-P API does not provide a
+     * native binary type.
+     * </p>
      */
     @Override
     public boolean isBinary(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isBinary();
+        return false;
     }
 
     /**
@@ -381,15 +361,13 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public boolean isEmpty(Object node) {
-        Objects.requireNonNull(node);
-
-        if (node instanceof ObjectNode) {
-            return ((ObjectNode) node).isEmpty();
+        if (node instanceof JsonObject) {
+            return ((JsonObject) node).isEmpty();
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).isEmpty();
+        if (node instanceof JsonArray) {
+            return ((JsonArray) node).isEmpty();
         }
-        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
+        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
     }
 
     /**
@@ -397,15 +375,13 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public int size(Object node) {
-        Objects.requireNonNull(node);
-
-        if (node instanceof ObjectNode) {
-            return ((ObjectNode) node).size();
+        if (node instanceof JsonObject) {
+            return ((JsonObject) node).size();
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).size();
+        if (node instanceof JsonArray) {
+            return ((JsonArray) node).size();
         }
-        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
+        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
     }
 
     /**
@@ -416,8 +392,8 @@ public class Jackson2Adapter implements NodeAdapter {
         if (node instanceof String) {
             return (String) node;
         }
-        if (node instanceof JsonNode) {
-            return ((JsonNode) node).asText();
+        if (node instanceof JsonString) {
+            return ((JsonString) node).getString();
         }
         return Objects.toString(node);
     }
@@ -427,6 +403,9 @@ public class Jackson2Adapter implements NodeAdapter {
      */
     @Override
     public BigDecimal asDecimal(Object node) {
-        return ((JsonNode) node).decimalValue();
+        if (node instanceof JsonNumber) {
+            return ((JsonNumber) node).bigDecimalValue();
+        }
+        throw new IllegalArgumentException("Node must be a JsonNumber.");
     }
 }

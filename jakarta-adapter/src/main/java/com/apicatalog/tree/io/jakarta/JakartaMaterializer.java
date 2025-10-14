@@ -1,10 +1,15 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakarta;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.NodeVisitor;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
