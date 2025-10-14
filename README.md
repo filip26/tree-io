@@ -16,9 +16,9 @@
 
 ## 🏗️ Use Cases
 
-- Uniform processing of tree-structured data
+- Uniform processing of heterogeneous tree models
 - Building library-agnostic processors and pipelines
-- Manipulating hierarchical data in a consistent way
+- Manipulating heterogeneous hierarchical data in a consistent way
 
 ## 🔌 Implementations of Tree I/O API
 
