@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jackson 2 streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link DepthFirstTraversal} and {@link NodeGenerator},
+ * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Writer extends DepthFirstTraversal implements NodeGenerator {
+public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
 
@@ -37,6 +37,11 @@ public class Jackson2Writer extends DepthFirstTraversal implements NodeGenerator
         this.writer = writer;
     }
 
+    @Override
+    public Features features() {
+        return Jackson2Adapter.FEATURES;
+    }
+    
     /**
      * The primary entry point for serialization. Traverses the given source node
      * and writes the corresponding JSON structure to the underlying

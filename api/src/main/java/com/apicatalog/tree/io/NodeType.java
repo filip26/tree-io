@@ -9,7 +9,7 @@ package com.apicatalog.tree.io;
  * containers (e.g. map, collection, or polymorphic wrapper).
  * </p>
  * <p>
- * {@link #MORPH} represents an ad-hoc, heterogeneous wrapper node that can
+ * {@link #ADAPTED} represents an ad-hoc, heterogeneous wrapper node that can
  * encapsulate another node originating from a different data model or library.
  * This enables uniform traversal and comparison of mixed-format trees.
  * </p>
@@ -22,11 +22,11 @@ public enum NodeType {
     /**
      * Polymorphic wrapper node enabling heterogeneous access across formats.
      * <p>
-     * A {@code MORPH} node acts as an adapter-level bridge between different
+     * An adapted node acts as an adapter-level bridge between different
      * underlying object models, allowing a mixed tree to be processed uniformly.
      * </p>
      */
-    MORPH(false),
+    ADAPTED(false),
 
     /**
      * Mapping structure of key-value pairs, such as a JSON object or

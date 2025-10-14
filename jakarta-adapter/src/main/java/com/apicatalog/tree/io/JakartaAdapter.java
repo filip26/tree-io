@@ -39,7 +39,7 @@ import jakarta.json.JsonValue.ValueType;
  */
 public class JakartaAdapter implements NodeAdapter {
 
-    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -49,6 +49,8 @@ public class JakartaAdapter implements NodeAdapter {
             NodeType.NULL));
 
     static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
+
+    static final Features FEATURES = new Features(NODES, KEYS);
 
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
@@ -61,7 +63,9 @@ public class JakartaAdapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    protected JakartaAdapter() {
+    @Override
+    public Features features() {
+        return FEATURES;
     }
 
     /**
@@ -74,22 +78,6 @@ public class JakartaAdapter implements NodeAdapter {
     @Override
     public boolean isNode(Object node) {
         return node != null && (node instanceof JsonValue || node instanceof String);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> nodeTypes() {
-        return VALUES;
     }
 
     /**

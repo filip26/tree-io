@@ -14,7 +14,7 @@ import java.math.BigInteger;
  * </p>
  * <p>
  * While this interface can be implemented and driven manually, it is often used
- * as a target for a {@link DepthFirstTraversal}. The visitor traverses a source tree
+ * as a target for a {@link NodeVisitor}. The visitor traverses a source tree
  * (read via a {@link NodeAdapter}) and calls the appropriate methods on this
  * generator, effectively enabling powerful tree transformation and conversion
  * workflows.
@@ -38,6 +38,8 @@ import java.math.BigInteger;
  */
 public interface NodeGenerator {
 
+    Features features();
+    
     // --- scalars ---
 
     /**

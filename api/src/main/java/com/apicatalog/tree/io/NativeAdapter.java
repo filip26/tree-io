@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 public class NativeAdapter implements NodeAdapter {
 
-    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -27,7 +27,7 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.FALSE,
             NodeType.TRUE,
             NodeType.NULL,
-            NodeType.MORPH));
+            NodeType.ADAPTED));
 
     static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -35,10 +35,17 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.NUMBER,
             NodeType.STRING));
 
+    static final Features FEATURES = new Features(NODES, KEYS);
+    
     static final NativeAdapter INSTANCE = new NativeAdapter();
 
     public static final NativeAdapter instance() {
         return INSTANCE;
+    }
+    
+    @Override
+    public Features features() {
+        return FEATURES;
     }
 
     @Override
@@ -56,11 +63,6 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Collection
                 || node instanceof byte[]
                 || node instanceof AdaptedNode;
-    }
-
-    @Override
-    public Set<NodeType> nodeTypes() {
-        return VALUES;
     }
 
     @Override
@@ -92,15 +94,10 @@ public class NativeAdapter implements NodeAdapter {
             return NodeType.BINARY;
         }
         if (node instanceof AdaptedNode) {
-            return NodeType.MORPH;
+            return NodeType.ADAPTED;
         }
 
         throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");
-    }
-
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

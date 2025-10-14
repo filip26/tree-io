@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * from a native tree representation (e.g., an in-memory JSON object model)
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
- * <li><b>Data Transformation:</b> Serve as the input for a {@link DepthFirstTraversal},
+ * <li><b>Data Transformation:</b> Serve as the input for a {@link NodeVisitor},
  * which walks the tree exposed by this adapter and drives a
  * {@link NodeGenerator}. This powerful pattern is the foundation for converting
  * between different data formats (e.g., from a YAML document to a binary CBOR
@@ -40,13 +40,15 @@ import java.util.stream.Stream;
  * </p>
  *
  * @see NodeGenerator
- * @see DepthFirstTraversal
+ * @see NodeVisitor
  * @see NodeType
  */
 public interface NodeAdapter {
 
     // --- Adapter Capabilities & Node Introspection ---
 
+    Features features();
+    
     /**
      * Checks if the given object is a native node that this adapter can process.
      * This method is the primary entry point for determining if the adapter is
@@ -57,23 +59,6 @@ public interface NodeAdapter {
      *         {@code false} otherwise.
      */
     boolean isNode(Object node);
-
-    /**
-     * Returns the complete set of node types that this adapter is capable of
-     * representing.
-     *
-     * @return an immutable set of supported {@link NodeType}s.
-     */
-    Set<NodeType> nodeTypes();
-
-    /**
-     * Returns the set of scalar types that are supported as keys in map nodes. For
-     * example, a JSON-based adapter would return only {@link NodeType#STRING},
-     * whereas a CBOR-based adapter might return multiple scalar types.
-     *
-     * @return an immutable set of supported key {@link NodeType}s.
-     */
-    Set<NodeType> keyTypes();
 
     /**
      * Determines the {@link NodeType} of the given native node.

@@ -20,7 +20,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link DepthFirstTraversal} and {@link NodeGenerator},
+ * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -31,7 +31,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class CborMaterializer extends DepthFirstTraversal implements NodeGenerator {
+public class CborMaterializer extends NodeVisitor implements NodeGenerator {
 
     protected DataItem cbor;
     protected final Deque<Object> builders;
@@ -45,6 +45,11 @@ public class CborMaterializer extends DepthFirstTraversal implements NodeGenerat
         this.cbor = null;
     }
 
+    @Override
+    public Features features() {
+        return CborAdapter.FEATURES;
+    }
+    
     /**
      * The primary entry point for materialization. Traverses the given source node
      * and returns the resulting CBOR {@link DataItem}.
@@ -67,7 +72,7 @@ public class CborMaterializer extends DepthFirstTraversal implements NodeGenerat
      * </p>
      */
     @Override
-    public DepthFirstTraversal reset() {
+    public NodeVisitor reset() {
         this.cbor = null;
         this.builders.clear();
         return super.reset();

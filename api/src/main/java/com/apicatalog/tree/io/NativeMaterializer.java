@@ -15,7 +15,7 @@ import java.util.Map;
  * A specialized class that builds a native object model from any tree-like
  * source.
  * <p>
- * This class implements both {@link DepthFirstTraversal} and
+ * This class implements both {@link NodeVisitor} and
  * {@link NodeGenerator}, allowing it to act as a self-contained transformation
  * engine. It traverses a source structure using its {@code NodeVisitor}
  * capabilities and consumes its own traversal events via its
@@ -27,7 +27,7 @@ import java.util.Map;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends DepthFirstTraversal implements NodeGenerator {
+public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
 
     protected final Deque<Object> structures;
 
@@ -39,6 +39,12 @@ public class NativeMaterializer extends DepthFirstTraversal implements NodeGener
         this.object = null;
     }
 
+    @Override
+    public Features features() {
+        return NativeAdapter.FEATURES;
+    }
+
+    
     /**
      * The primary entry point for materialization. Traverses the given source node.
      *

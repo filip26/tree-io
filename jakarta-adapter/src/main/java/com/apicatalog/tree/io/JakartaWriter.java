@@ -12,7 +12,7 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link DepthFirstTraversal} and {@link NodeGenerator},
+ * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -25,7 +25,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaWriter extends DepthFirstTraversal implements NodeGenerator {
+public class JakartaWriter extends NodeVisitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -39,6 +39,11 @@ public class JakartaWriter extends DepthFirstTraversal implements NodeGenerator 
      */
     public JakartaWriter(JsonGenerator writer) {
         this(writer, null);
+    }
+
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
     }
 
     /**

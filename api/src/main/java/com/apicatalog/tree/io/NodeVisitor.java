@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * iteration order.</li>
  * </ul>
  */
-public class DepthFirstTraversal {
+public class NodeVisitor {
 
     /**
      * Identifies the role of the current node within the tree structure during
@@ -87,15 +87,15 @@ public class DepthFirstTraversal {
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    public DepthFirstTraversal() {
+    public NodeVisitor() {
         this(new ArrayDeque<>(), null);
     }
 
-    public DepthFirstTraversal(final Deque<Object> stack) {
+    public NodeVisitor(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    public DepthFirstTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -119,7 +119,7 @@ public class DepthFirstTraversal {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static DepthFirstTraversal of(Object root, NodeAdapter adapter) {
+    public static NodeVisitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, null);
     }
 
@@ -136,13 +136,13 @@ public class DepthFirstTraversal {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static DepthFirstTraversal of(
+    public static NodeVisitor of(
             final Object root,
             final NodeAdapter adapter,
             final Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
-        return new DepthFirstTraversal(new ArrayDeque<>(), propertyComparator).root(root, adapter);
+        return new NodeVisitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
     }
 
     /**
@@ -200,6 +200,7 @@ public class DepthFirstTraversal {
                     generator.numericValue(adapter().asDecimal(currentNode));
                 }
                 break;
+                
             default:
                 throw new IllegalStateException("Unexpected node type: " + currentNodeType);
             }
@@ -235,16 +236,16 @@ public class DepthFirstTraversal {
         }
 
         if (maxVisited > 0 && maxVisited <= visited) {
-            throw new IllegalStateException("The maximum number of visited nodes has been reached.");
+            throw new IllegalStateException("The maximum number [" + maxVisited + "] of visited nodes has been reached.");
         }
         if (maxDepth > 0 && maxDepth < depth) {
-            throw new IllegalStateException("The maximum traversal depth has been reached.");
+            throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
         }
 
         NodeAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
 
-        if (NodeType.MORPH.equals(item)) {
+        if (NodeType.ADAPTED.equals(item)) {
             adapters.pop();
             nodeAdapter = adapters.peek();
             stack.pop();
@@ -303,10 +304,10 @@ public class DepthFirstTraversal {
         currentNodeType = nodeAdapter.type(currentNode);
 
         switch (currentNodeType) {
-        case MORPH:
-            stack.push(NodeType.MORPH);
-            final AdaptedNode morph = (AdaptedNode) currentNode;
-            root(morph.node, morph.adapter);
+        case ADAPTED:
+            stack.push(NodeType.ADAPTED);
+            final AdaptedNode adaptedNode = (AdaptedNode) currentNode;
+            root(adaptedNode.node, adaptedNode.adapter);
             return next(currentNodeContext);
 
         case COLLECTION:
@@ -342,7 +343,7 @@ public class DepthFirstTraversal {
      *
      * @return this instance, for chaining.
      */
-    public DepthFirstTraversal reset() {
+    public NodeVisitor reset() {
         this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
@@ -360,7 +361,7 @@ public class DepthFirstTraversal {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public DepthFirstTraversal root(Object node, NodeAdapter adapter) {
+    public NodeVisitor root(Object node, NodeAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;
