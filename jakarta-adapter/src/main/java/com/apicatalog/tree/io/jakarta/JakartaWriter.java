@@ -1,10 +1,15 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakarta;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.function.Function;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.NodeVisitor;
 
 import jakarta.json.stream.JsonGenerator;
 
@@ -39,6 +44,11 @@ public class JakartaWriter extends NodeVisitor implements NodeGenerator {
      */
     public JakartaWriter(JsonGenerator writer) {
         this(writer, null);
+    }
+
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
     }
 
     /**
@@ -104,7 +114,7 @@ public class JakartaWriter extends NodeVisitor implements NodeGenerator {
     @Override
     public void stringValue(String node) throws IOException {
         if (currentNodeContext == Context.PROPERTY_KEY) {
-            writer.writeKey(nodeAdapter.asString(node));
+            writer.writeKey(adapter().asString(node));
             return;
         }
         writer.write(node);
@@ -190,15 +200,23 @@ public class JakartaWriter extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         writer.writeStartArray();
     }
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>
-     * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the current
-     * object or array context.
+     * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the
+     * current object or array context.
      * </p>
      */
     @Override

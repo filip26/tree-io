@@ -38,6 +38,8 @@ import java.math.BigInteger;
  */
 public interface NodeGenerator {
 
+    Features features();
+    
     // --- scalars ---
 
     /**
@@ -126,17 +128,28 @@ public interface NodeGenerator {
     void beginMap() throws IOException;
 
     /**
-     * Begins a new collection (or array) structure. After this call, subsequent
-     * calls are expected to be the elements of the collection. Every call to this
-     * method must be matched by a corresponding call to {@link #end()}.
+     * Begins a new list (or array) structure. An ordered collection that allows
+     * duplicates. After this call, subsequent calls are expected to be the elements
+     * of the list. Every call to this method must be matched by a corresponding
+     * call to {@link #end()}.
      *
      * @throws IOException if an I/O error occurs during construction.
      */
-    void beginCollection() throws IOException;
+    void beginList() throws IOException;
+
+    /**
+     * Begins a new set structure. An unordered collection of unique elements. After
+     * this call, subsequent calls are expected to be the elements of the set. Every
+     * call to this method must be matched by a corresponding call to
+     * {@link #end()}.
+     *
+     * @throws IOException if an I/O error occurs during construction.
+     */
+    void beginSet() throws IOException;
 
     /**
      * Ends the current map or collection structure. This call must match a
-     * preceding {@link #beginMap()} or {@link #beginCollection()}.
+     * preceding {@link #beginMap()} or {@link #beginList()}.
      *
      * @throws IOException if an I/O error occurs during construction.
      */

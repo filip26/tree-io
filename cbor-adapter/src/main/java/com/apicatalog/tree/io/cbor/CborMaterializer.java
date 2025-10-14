@@ -1,10 +1,15 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.cbor;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.NodeVisitor;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -45,6 +50,11 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
         this.cbor = null;
     }
 
+    @Override
+    public Features features() {
+        return CborAdapter.FEATURES;
+    }
+    
     /**
      * The primary entry point for materialization. Traverses the given source node
      * and returns the resulting CBOR {@link DataItem}.
@@ -91,8 +101,16 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() {
+    public void beginList() {
         builders.push(new Array());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     /**

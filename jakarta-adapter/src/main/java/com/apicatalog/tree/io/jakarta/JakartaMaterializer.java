@@ -1,10 +1,15 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakarta;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.NodeVisitor;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -38,6 +43,11 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
      */
     public JakartaMaterializer() {
         this(JsonProvider.provider());
+    }
+
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
     }
 
     /**
@@ -210,8 +220,16 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginCollection() throws IOException {
+    public void beginList() throws IOException {
         builders.push(provider.createArrayBuilder());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginSet() throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -238,7 +256,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
             json = (JsonValue) builder;
 
         } else {
-            throw new IllegalStateException("Internal builder stack is in an inconsistent state.");
+            throw new IllegalStateException("Internal builder stack is in an inconsistent state [" + builder + "].");
         }
 
         if (!builders.isEmpty()) {

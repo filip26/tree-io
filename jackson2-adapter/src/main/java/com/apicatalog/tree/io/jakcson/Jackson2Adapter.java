@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakcson;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -14,6 +14,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,7 +37,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class Jackson2Adapter implements NodeAdapter {
 
-    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -45,6 +48,8 @@ public class Jackson2Adapter implements NodeAdapter {
 
     static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
 
+    static final Features FEATURES = new Features(NODES, KEYS);
+    
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 
     /**
@@ -56,7 +61,9 @@ public class Jackson2Adapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    protected Jackson2Adapter() {
+    @Override
+    public Features features() {
+        return FEATURES;
     }
 
     /**
@@ -69,22 +76,6 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public boolean isNode(Object node) {
         return node != null && (node instanceof JsonNode || node instanceof String);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> nodeTypes() {
-        return VALUES;
     }
 
     /**

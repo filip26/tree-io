@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 public class NativeAdapter implements NodeAdapter {
 
-    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -26,7 +26,8 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.BINARY,
             NodeType.FALSE,
             NodeType.TRUE,
-            NodeType.NULL));
+            NodeType.NULL,
+            NodeType.ADAPTED));
 
     static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -34,10 +35,17 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.NUMBER,
             NodeType.STRING));
 
+    static final Features FEATURES = new Features(NODES, KEYS);
+    
     static final NativeAdapter INSTANCE = new NativeAdapter();
 
     public static final NativeAdapter instance() {
         return INSTANCE;
+    }
+    
+    @Override
+    public Features features() {
+        return FEATURES;
     }
 
     @Override
@@ -53,12 +61,8 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Float
                 || node instanceof Map
                 || node instanceof Collection
-                || node instanceof byte[];
-    }
-
-    @Override
-    public Set<NodeType> nodeTypes() {
-        return VALUES;
+                || node instanceof byte[]
+                || node instanceof AdaptedNode;
     }
 
     @Override
@@ -89,13 +93,11 @@ public class NativeAdapter implements NodeAdapter {
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
+        if (node instanceof AdaptedNode) {
+            return NodeType.ADAPTED;
+        }
 
-        throw new IllegalArgumentException();
-    }
-
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
+        throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -398,7 +400,7 @@ public class NativeAdapter implements NodeAdapter {
             }
 
             return adapter.entryStream(value)
-                    .reduce(new LinkedHashMap<>(adapter.size(value)),
+                    .reduce(new LinkedHashMap<>(),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));
                                 return map;

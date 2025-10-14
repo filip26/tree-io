@@ -22,6 +22,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.apicatalog.tree.io.jakarta.JakartaAdapter;
+import com.apicatalog.tree.io.jakarta.JakartaMaterializer;
+import com.apicatalog.tree.io.jakarta.JakartaWriter;
+
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;

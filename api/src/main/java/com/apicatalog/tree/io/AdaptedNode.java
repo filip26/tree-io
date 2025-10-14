@@ -8,16 +8,19 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Immutable representation of a tree structure accessed through a
+ * Immutable representation of a tree node accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@code NodeModel} instance binds a node with its adapter, providing a
+ * A {@link AdaptedNode} instance binds a node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
+ * <p>
+ * Pass a {@link AdaptedNode} from JSON, YAML, or CBOR into the tree.
+ * </p>
  *
  */
-public class NodeModel {
+public class AdaptedNode {
 
     protected final NodeAdapter adapter;
     protected final Object node;
@@ -31,12 +34,9 @@ public class NodeModel {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public NodeModel(Object node, NodeAdapter adapter) {
-        Objects.requireNonNull(node);
-        Objects.requireNonNull(adapter);
-
-        this.node = node;
-        this.adapter = adapter;
+    public AdaptedNode(Object node, NodeAdapter adapter) {
+        this.node = Objects.requireNonNull(node);
+        this.adapter = Objects.requireNonNull(adapter);
     }
 
     public NodeAdapter adapter() {
@@ -45,6 +45,10 @@ public class NodeModel {
 
     public Object node() {
         return node;
+    }
+
+    static final boolean deepEquals(AdaptedNode left, AdaptedNode right) {
+        return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
     static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
@@ -85,13 +89,6 @@ public class NodeModel {
                     rightAdapter.decimalValue(right));
 
         case COLLECTION:
-            final int leftSize = leftAdapter.size(left);
-            final int rightSize = rightAdapter.size(right);
-
-            if (leftSize != rightSize) {
-                return false;
-            }
-
             return deepEqualsCollection(
                     leftAdapter.elements(left),
                     leftAdapter,
@@ -100,11 +97,11 @@ public class NodeModel {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(NodeModel.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(AdaptedNode.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(NodeModel.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(AdaptedNode.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {

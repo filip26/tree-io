@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.cbor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,6 +13,10 @@ import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeType;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -44,7 +48,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  */
 public class CborAdapter implements NodeAdapter {
 
-    static final Set<NodeType> VALUES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -61,6 +65,8 @@ public class CborAdapter implements NodeAdapter {
             NodeType.STRING,
             NodeType.BINARY));
 
+    static final Features FEATURES = new Features(NODES, KEYS);
+
     static final CborAdapter INSTANCE = new CborAdapter();
 
     /**
@@ -72,7 +78,9 @@ public class CborAdapter implements NodeAdapter {
         return INSTANCE;
     }
 
-    protected CborAdapter() {
+    @Override
+    public Features features() {
+        return FEATURES;
     }
 
     /**
@@ -84,22 +92,6 @@ public class CborAdapter implements NodeAdapter {
     @Override
     public boolean isNode(Object node) {
         return node != null && node instanceof DataItem;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> keyTypes() {
-        return KEYS;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<NodeType> nodeTypes() {
-        return VALUES;
     }
 
     /**

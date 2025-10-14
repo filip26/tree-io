@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -46,6 +47,8 @@ public interface NodeAdapter {
 
     // --- Adapter Capabilities & Node Introspection ---
 
+    Features features();
+    
     /**
      * Checks if the given object is a native node that this adapter can process.
      * This method is the primary entry point for determining if the adapter is
@@ -56,23 +59,6 @@ public interface NodeAdapter {
      *         {@code false} otherwise.
      */
     boolean isNode(Object node);
-
-    /**
-     * Returns the complete set of node types that this adapter is capable of
-     * representing.
-     *
-     * @return an immutable set of supported {@link NodeType}s.
-     */
-    Set<NodeType> nodeTypes();
-
-    /**
-     * Returns the set of scalar types that are supported as keys in map nodes. For
-     * example, a JSON-based adapter would return only {@link NodeType#STRING},
-     * whereas a CBOR-based adapter might return multiple scalar types.
-     *
-     * @return an immutable set of supported key {@link NodeType}s.
-     */
-    Set<NodeType> keyTypes();
 
     /**
      * Determines the {@link NodeType} of the given native node.
@@ -91,7 +77,9 @@ public interface NodeAdapter {
      * @return {@code true} if the node represents a null value, {@code false}
      *         otherwise.
      */
-    boolean isNull(Object node);
+    default boolean isNull(Object node) {
+        return node == null;
+    }
 
     /**
      * Checks if the adapted node represents a boolean value.
@@ -122,6 +110,7 @@ public interface NodeAdapter {
      * @return the number of entries (for a map) or elements (for a collection).
      * @throws UnsupportedOperationException if the node is not a map or collection.
      */
+    @Deprecated
     int size(Object node);
 
     /**
@@ -132,7 +121,10 @@ public interface NodeAdapter {
      *         {@code false} otherwise.
      * @throws UnsupportedOperationException if the node is not a map or collection.
      */
-    boolean isEmpty(Object node);
+    default boolean isEmpty(Object node) {
+        return isCollection(node) && !elements(node).iterator().hasNext()
+                || isMap(node) && !entries(node).iterator().hasNext();
+    }
 
     // --- Map Operations ---
 
@@ -186,6 +178,21 @@ public interface NodeAdapter {
      */
     Stream<Entry<?, ?>> entryStream(Object node);
 
+    default boolean isSingleEntry(Object node) {
+        if (isMap(node)) {
+            final Iterator<?> it = entries(node).iterator();
+            if (it.hasNext()) {
+                it.next();
+                return !it.hasNext();
+            }
+        }
+        return false;
+    }
+
+    default Entry<?, ?> singleEntry(Object node) {
+        return entries(node).iterator().next();
+    }
+
     // --- Collection Operations ---
 
     /**
@@ -208,8 +215,8 @@ public interface NodeAdapter {
     boolean isList(Object node);
 
     /**
-     * Checks if the adapted collection node is a set (typically an unordered
-     * collection of unique elements).
+     * Checks if the adapted collection node is a set (an unordered collection of
+     * unique elements).
      *
      * @param node the collection node to check.
      * @return {@code true} if the node is a set, {@code false} otherwise.
@@ -233,6 +240,21 @@ public interface NodeAdapter {
      * @throws UnsupportedOperationException if the node is not a collection.
      */
     Stream<?> elementStream(Object node);
+
+    default boolean isSingleElement(Object node) {
+        if (isCollection(node)) {
+            final Iterator<?> it = elements(node).iterator();
+            if (it.hasNext()) {
+                it.next();
+                return !it.hasNext();
+            }
+        }
+        return false;
+    }
+
+    default Object singleElement(Object node) {
+        return elements(node).iterator().next();
+    }
 
     // --- Scalar Value Accessors ---
 

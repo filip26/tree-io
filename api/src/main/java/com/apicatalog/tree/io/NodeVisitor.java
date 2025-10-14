@@ -11,33 +11,37 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * Provides a stateful, non-recursive, depth-first iterator for arbitrary tree-like structures.
- * This class decouples the traversal algorithm from the concrete representation of the tree
- * by operating on the {@link NodeAdapter} abstraction.
+ * Provides a stateful, non-recursive, depth-first iterator for arbitrary
+ * tree-like structures. This class decouples the traversal algorithm from the
+ * concrete representation of the tree by operating on the {@link NodeAdapter}
+ * abstraction.
  * <p>
  * It can be used in two primary ways:
  * </p>
  * <ol>
- * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #step()} method in a loop,
- * you can process each node individually, allowing for complex logic like searching,
- * validation, or conditional processing.</li>
- * <li><b>Automated Transformation:</b> The {@link #traverse(NodeGenerator)} method provides a
- * high-level utility to walk the entire tree and drive a {@link NodeGenerator}, effectively
- * translating or transforming one tree representation into another.</li>
+ * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
+ * in a loop, you can process each node individually, allowing for complex logic
+ * like searching, validation, or conditional processing.</li>
+ * <li><b>Automated Transformation:</b> The {@link #traverse(NodeGenerator)}
+ * method provides a high-level utility to walk the entire tree and drive a
+ * {@link NodeGenerator}, effectively translating or transforming one tree
+ * representation into another.</li>
  * </ol>
  * <p>
  * <b>Traversal Rules:</b>
  * </p>
  * <ul>
- * <li>When visiting a map, keys are visited before their corresponding values. The order
- * of keys can be controlled with a custom {@link Comparator}.</li>
- * <li>When visiting a collection, elements are visited in their natural iteration order.</li>
+ * <li>When visiting a map, keys are visited before their corresponding values.
+ * The order of keys can be controlled with a custom {@link Comparator}.</li>
+ * <li>When visiting a collection, elements are visited in their natural
+ * iteration order.</li>
  * </ul>
  */
 public class NodeVisitor {
 
     /**
-     * Identifies the role of the current node within the tree structure during traversal.
+     * Identifies the role of the current node within the tree structure during
+     * traversal.
      */
     public enum Context {
 
@@ -53,34 +57,47 @@ public class NodeVisitor {
         /** The current node is an element within a collection structure. */
         COLLECTION_ELEMENT,
 
-        /** A synthetic marker indicating the end of a map or collection has been reached. */
+        /**
+         * A synthetic marker indicating the end of a map or collection has been
+         * reached.
+         */
         END,
     }
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
 
-    /** A sentinel value indicating that the number of visited nodes is not limited. */
+    /**
+     * A sentinel value indicating that the number of visited nodes is not limited.
+     */
     public static final int UNLIMITED_NODES = -1;
+
+    protected final Deque<NodeAdapter> adapters;
+    protected final Deque<Object> stack;
+
+    protected Comparator<Entry<?, ?>> entryComparator;
 
     protected int maxVisited;
     protected int maxDepth;
-    protected final Deque<Object> stack;
-    protected Comparator<Entry<?, ?>> entryComparator;
-    protected NodeAdapter nodeAdapter;
-    protected long depth;
-    protected long visited;
+
+    protected int depth;
+    protected int visited;
+
     protected Object currentNode;
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    protected NodeVisitor(final Deque<Object> stack) {
+    public NodeVisitor() {
+        this(new ArrayDeque<>(), null);
+    }
+
+    public NodeVisitor(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    protected NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
-        this.nodeAdapter = null;
+        this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
         this.maxDepth = UNLIMITED_DEPTH;
@@ -92,26 +109,33 @@ public class NodeVisitor {
     }
 
     /**
-     * Creates a new {@code NodeVisitor} for a given tree structure.
-     * Map properties will be visited in their natural iteration order.
+     * Creates a new {@code NodeVisitor} for a given tree structure. Map properties
+     * will be visited in their natural iteration order.
      *
-     * @param root    the root node to start traversal from, must not be {@code null}.
-     * @param adapter the adapter used to interpret the tree structure, must not be {@code null}.
+     * @param root    the root node to start traversal from, must not be
+     *                {@code null}.
+     * @param adapter the adapter used to interpret the tree structure, must not be
+     *                {@code null}.
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
+    @Deprecated
     public static NodeVisitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, null);
     }
 
     /**
-     * Creates a new {@code NodeVisitor} for a given tree structure with custom ordering for map properties.
+     * Creates a new {@code NodeVisitor} for a given tree structure with custom
+     * ordering for map properties.
      *
-     * @param root               the root node to start traversal from, must not be {@code null}.
-     * @param adapter            the adapter used to interpret the tree structure, must not be {@code null}.
+     * @param root               the root node to start traversal from, must not be
+     *                           {@code null}.
+     * @param adapter            the adapter used to interpret the tree structure,
+     *                           must not be {@code null}.
      * @param propertyComparator a comparator to sort map entries during traversal;
-     * if {@code null}, natural iteration order is used.
+     *                           if {@code null}, natural iteration order is used.
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
+    @Deprecated
     public static NodeVisitor of(
             final Object root,
             final NodeAdapter adapter,
@@ -122,17 +146,18 @@ public class NodeVisitor {
     }
 
     /**
-     * A high-level utility method that fully traverses the tree and drives the provided
-     * {@link NodeGenerator}. This is the primary method for tree transformation, serialization,
-     * or deep cloning. It iterates through every node using {@link #step()} and emits a
-     * corresponding event to the generator.
+     * A high-level utility method that fully traverses the tree and drives the
+     * provided {@link NodeGenerator}. This is the primary method for tree
+     * transformation, serialization, or deep cloning. It iterates through every
+     * node using {@link #next()} and emits a corresponding event to the generator.
      *
      * @param generator the generator that will receive construction events.
-     * @throws IOException if the generator encounters an I/O error.
-     * @throws IllegalStateException if the source tree is malformed (e.g., unclosed structures).
+     * @throws IOException           if the generator encounters an I/O error.
+     * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
+     *                               structures).
      */
     public void traverse(final NodeGenerator generator) throws IOException {
-        while (step()) {
+        while (next()) {
 
             if (Context.END == currentNodeContext) {
                 generator.end();
@@ -145,7 +170,7 @@ public class NodeVisitor {
                 break;
 
             case COLLECTION:
-                generator.beginCollection();
+                generator.beginList();
                 break;
 
             case NULL:
@@ -161,20 +186,23 @@ public class NodeVisitor {
                 break;
 
             case STRING:
-                generator.stringValue(nodeAdapter.stringValue(currentNode));
+                generator.stringValue(adapter().stringValue(currentNode));
                 break;
 
             case BINARY:
-                generator.binaryValue(nodeAdapter.binaryValue(currentNode));
+                generator.binaryValue(adapter().binaryValue(currentNode));
                 break;
 
             case NUMBER:
-                if (nodeAdapter.isIntegral(currentNode)) {
-                    generator.numericValue(nodeAdapter.bigIntegerValue(currentNode));
+                if (adapter().isIntegral(currentNode)) {
+                    generator.numericValue(adapter().bigIntegerValue(currentNode));
                 } else {
-                    generator.numericValue(nodeAdapter.asDecimal(currentNode));
+                    generator.numericValue(adapter().asDecimal(currentNode));
                 }
                 break;
+                
+            default:
+                throw new IllegalStateException("Unexpected node type: " + currentNodeType);
             }
         }
 
@@ -187,29 +215,42 @@ public class NodeVisitor {
      * Advances the traversal to the next node in the depth-first sequence.
      * <p>
      * Each call to this method processes exactly one node or structural marker.
-     * After a successful call, the visitor's state is updated, and the details
-     * of the current item can be accessed via {@link #currentNode()},
-     * {@link #currentNodeType()}, and {@link #currentNodeContext()}.
+     * After a successful call, the visitor's state is updated, and the details of
+     * the current item can be accessed via {@link #node()}, {@link #nodeType()},
+     * and {@link #nodeContext()}.
      * </p>
      *
-     * @return {@code true} if the traversal advanced to a new item, or {@code false} if the traversal is complete.
+     * @return {@code true} if the traversal advanced to a new item, or
+     *         {@code false} if the traversal is complete.
      * @throws IllegalStateException if the traversal exceeds configured limits
-     * (e.g., maximum depth or node count).
+     *                               (e.g., maximum depth or node count).
      */
-    public boolean step() {
+    public boolean next() {
+        return next(Context.ROOT);
+    }
+
+    protected boolean next(Context stepContext) {
 
         if (stack.isEmpty()) {
             return false;
         }
 
         if (maxVisited > 0 && maxVisited <= visited) {
-            throw new IllegalStateException("The maximum number of visited nodes has been reached.");
+            throw new IllegalStateException("The maximum number [" + maxVisited + "] of visited nodes has been reached.");
         }
         if (maxDepth > 0 && maxDepth < depth) {
-            throw new IllegalStateException("The maximum traversal depth has been reached.");
+            throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
         }
 
+        NodeAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
+
+        if (NodeType.ADAPTED.equals(item)) {
+            adapters.pop();
+            nodeAdapter = adapters.peek();
+            stack.pop();
+            item = stack.peek();
+        }
 
         // map or collection
         if (item instanceof Iterator) {
@@ -255,7 +296,7 @@ public class NodeVisitor {
 
         } else {
             // process root value
-            currentNodeContext = Context.ROOT;
+            currentNodeContext = stepContext;
             currentNode = item;
             stack.pop();
         }
@@ -263,6 +304,12 @@ public class NodeVisitor {
         currentNodeType = nodeAdapter.type(currentNode);
 
         switch (currentNodeType) {
+        case ADAPTED:
+            stack.push(NodeType.ADAPTED);
+            final AdaptedNode adaptedNode = (AdaptedNode) currentNode;
+            root(adaptedNode.node, adaptedNode.adapter);
+            return next(currentNodeContext);
+
         case COLLECTION:
             stack.push(NodeType.COLLECTION);
             stack.push(currentNode);
@@ -290,13 +337,14 @@ public class NodeVisitor {
     }
 
     /**
-     * Resets the visitor's internal state, clearing the traversal stack and counters.
-     * The visitor can be reused after calling this method, but a new root node must
-     * be set using {@link #root(Object, NodeAdapter)}.
+     * Resets the visitor's internal state, clearing the traversal stack and
+     * counters. The visitor can be reused after calling this method, but a new root
+     * node must be set using {@link #root(Object, NodeAdapter)}.
      *
      * @return this instance, for chaining.
      */
     public NodeVisitor reset() {
+        this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
         this.visited = 0;
@@ -314,7 +362,7 @@ public class NodeVisitor {
      * @return this instance, for chaining.
      */
     public NodeVisitor root(Object node, NodeAdapter adapter) {
-        this.nodeAdapter = adapter;
+        this.adapters.push(adapter);
         this.stack.push(node);
         return this;
     }
@@ -325,8 +373,8 @@ public class NodeVisitor {
     }
 
     /**
-     * Sets the maximum traversal depth.
-     * If the traversal reaches this depth, it will not process the children of nodes at that depth.
+     * Sets the maximum traversal depth. If the traversal reaches this depth, it
+     * will not process the children of nodes at that depth.
      *
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      */
@@ -344,10 +392,11 @@ public class NodeVisitor {
     }
 
     /**
-     * Sets the maximum number of nodes to visit.
-     * The traversal will throw an {@link IllegalStateException} if this limit is exceeded.
+     * Sets the maximum number of nodes to visit. The traversal will throw an
+     * {@link IllegalStateException} if this limit is exceeded.
      *
-     * @param maxVisitedNodes the maximum number of nodes, or {@link #UNLIMITED_NODES} for no limit.
+     * @param maxVisitedNodes the maximum number of nodes, or
+     *                        {@link #UNLIMITED_NODES} for no limit.
      */
     public void maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
@@ -356,24 +405,30 @@ public class NodeVisitor {
     /**
      * Gets the configured maximum number of nodes to visit.
      *
-     * @return the maximum node count, or {@link #UNLIMITED_NODES} if no limit is set.
+     * @return the maximum node count, or {@link #UNLIMITED_NODES} if no limit is
+     *         set.
      */
     public int maxVisited() {
         return maxVisited;
     }
-    
+
+    /** Gets the adapter to process the {@code #currentNode()}. */
+    public NodeAdapter adapter() {
+        return adapters.peek();
+    }
+
     /** Gets the current node being processed. */
-    public Object currentNode() {
+    public Object node() {
         return currentNode;
     }
-    
+
     /** Gets the type of the current node. */
-    public NodeType currentNodeType() {
+    public NodeType nodeType() {
         return currentNodeType;
     }
-    
+
     /** Gets the context of the current node. */
-    public Context currentNodeContext() {
+    public Context nodeContext() {
         return currentNodeContext;
     }
 }
