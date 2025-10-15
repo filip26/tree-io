@@ -447,4 +447,12 @@ public interface NodeAdapter {
         return decimalValue(node);
     }
 
+    default boolean isEmptyMap(Object node) {
+        return isMap(node) && keys(node).isEmpty();
+    }
+
+    default boolean isEmptyCollection(Object node) {
+        return isCollection(node) && !elements(node).iterator().hasNext();
+    }
+
 }
