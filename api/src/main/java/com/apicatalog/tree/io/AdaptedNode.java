@@ -47,11 +47,17 @@ public class AdaptedNode {
         return node;
     }
 
-    static final boolean deepEquals(AdaptedNode left, AdaptedNode right) {
+    public static final boolean deepEquals(AdaptedNode left, AdaptedNode right) {
+        if (left == null) {
+            return right == null;
+
+        } else if (right == null) {
+            return false;
+        }
         return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
-    static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
+    public static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
 
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
@@ -159,4 +165,10 @@ public class AdaptedNode {
     public static Comparator<Entry<?, ?>> comparingStringKeys(NodeAdapter adapter) {
         return comparingEntry(e -> adapter.asString(e.getKey()));
     }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Comparator<Object> comparingElement(Function<Object, Comparable> keyExtractor) {
+        return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    }
+
 }

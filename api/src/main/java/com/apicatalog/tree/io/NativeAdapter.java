@@ -228,7 +228,7 @@ public class NativeAdapter implements NodeAdapter {
         if (node instanceof Stream) {
             return ((Stream<Object>) node).collect(Collectors.toList());
         }
-        throw new IllegalArgumentException();
+        return Collections.singleton(node);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -243,7 +243,7 @@ public class NativeAdapter implements NodeAdapter {
         if (node instanceof Collection) {
             return ((Collection) node).stream();
         }
-        throw new IllegalArgumentException();
+        return Stream.of(node);
     }
 
     @SuppressWarnings("rawtypes")

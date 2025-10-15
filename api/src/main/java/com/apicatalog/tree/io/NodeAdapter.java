@@ -3,9 +3,9 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -48,7 +48,7 @@ public interface NodeAdapter {
     // --- Adapter Capabilities & Node Introspection ---
 
     Features features();
-    
+
     /**
      * Checks if the given object is a native node that this adapter can process.
      * This method is the primary entry point for determining if the adapter is
@@ -146,6 +146,10 @@ public interface NodeAdapter {
      * @throws UnsupportedOperationException if the node is not a map.
      */
     Collection<?> keys(Object node);
+
+    default Stream<?> keyStream(Object node, Comparator<Object> comparator) {
+        return keys(node).stream().sorted(comparator);
+    }
 
     /**
      * Retrieves the value associated with a given native key object from a map
@@ -398,4 +402,49 @@ public interface NodeAdapter {
      * @throws ClassCastException    if the node is neither a number nor a string.
      */
     BigDecimal asDecimal(Object node);
+
+    default boolean isTrue(Object node) {
+        return node != null
+                && type(node) == NodeType.TRUE;
+    }
+
+    default boolean isFalse(Object node) {
+        return node != null
+                && type(node) == NodeType.FALSE;
+    }
+
+    default Object asScalar(Object node) {
+        if (node == null) {
+            return null;
+        }
+
+        switch (type(node)) {
+        case NULL:
+            return null;
+
+        case FALSE:
+            return false;
+
+        case TRUE:
+            return true;
+
+        case NUMBER:
+            return numericValue(node);
+
+        case STRING:
+            return stringValue(node);
+
+        default:
+            throw new IllegalStateException();
+        }
+
+    }
+
+    default Number numericValue(Object node) {
+        if (isIntegral(node)) {
+            return bigIntegerValue(node);
+        }
+        return decimalValue(node);
+    }
+
 }
