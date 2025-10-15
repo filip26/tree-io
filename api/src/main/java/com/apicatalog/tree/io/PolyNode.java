@@ -11,16 +11,16 @@ import java.util.function.Function;
  * Immutable representation of a tree node accessed through a
  * {@link NodeAdapter}.
  * <p>
- * A {@link AdaptedNode} instance binds a node with its adapter, providing a
+ * A {@link PolyNode} instance binds a node with its adapter, providing a
  * uniform way to traverse or compare trees of arbitrary underlying object
  * models.
  * </p>
  * <p>
- * Pass a {@link AdaptedNode} from JSON, YAML, or CBOR into the tree.
+ * Pass a {@link PolyNode} from JSON, YAML, or CBOR into the tree.
  * </p>
  *
  */
-public class AdaptedNode {
+public class PolyNode {
 
     protected final NodeAdapter adapter;
     protected final Object node;
@@ -34,7 +34,7 @@ public class AdaptedNode {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public AdaptedNode(Object node, NodeAdapter adapter) {
+    public PolyNode(Object node, NodeAdapter adapter) {
         this.node = Objects.requireNonNull(node);
         this.adapter = Objects.requireNonNull(adapter);
     }
@@ -47,7 +47,7 @@ public class AdaptedNode {
         return node;
     }
 
-    public static final boolean deepEquals(AdaptedNode left, AdaptedNode right) {
+    public static final boolean deepEquals(PolyNode left, PolyNode right) {
         if (left == null) {
             return right == null;
 
@@ -103,11 +103,11 @@ public class AdaptedNode {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(AdaptedNode.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(PolyNode.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(AdaptedNode.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(PolyNode.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {

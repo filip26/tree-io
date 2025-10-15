@@ -306,7 +306,7 @@ public class NodeVisitor {
         switch (currentNodeType) {
         case ADAPTED:
             stack.push(NodeType.ADAPTED);
-            final AdaptedNode adaptedNode = (AdaptedNode) currentNode;
+            final PolyNode adaptedNode = (PolyNode) currentNode;
             root(adaptedNode.node, adaptedNode.adapter);
             return next(currentNodeContext);
 
