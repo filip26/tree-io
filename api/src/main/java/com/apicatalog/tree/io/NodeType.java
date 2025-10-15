@@ -9,7 +9,7 @@ package com.apicatalog.tree.io;
  * containers (e.g. map, collection, or polymorphic wrapper).
  * </p>
  * <p>
- * {@link #ADAPTED} represents an ad-hoc, heterogeneous wrapper node that can
+ * {@link #POLY} represents an ad-hoc, heterogeneous wrapper node that can
  * encapsulate another node originating from a different data model or library.
  * This enables uniform traversal and comparison of mixed-format trees.
  * </p>
@@ -26,7 +26,7 @@ public enum NodeType {
      * underlying object models, allowing a mixed tree to be processed uniformly.
      * </p>
      */
-    ADAPTED(false),
+    POLY(false),
 
     /**
      * Mapping structure of key-value pairs, such as a JSON object or

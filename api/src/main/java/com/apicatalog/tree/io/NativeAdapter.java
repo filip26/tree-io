@@ -27,7 +27,7 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.FALSE,
             NodeType.TRUE,
             NodeType.NULL,
-            NodeType.ADAPTED));
+            NodeType.POLY));
 
     static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -94,7 +94,7 @@ public class NativeAdapter implements NodeAdapter {
             return NodeType.BINARY;
         }
         if (node instanceof PolyNode) {
-            return NodeType.ADAPTED;
+            return NodeType.POLY;
         }
 
         throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");

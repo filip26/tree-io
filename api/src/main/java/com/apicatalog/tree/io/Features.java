@@ -12,7 +12,7 @@ public class Features {
         this.keys = keys;
     }
 
-    public boolean isCompatibleWith(Features features) {
+    public boolean contains(Features features) {
         return keys.containsAll(features.keys)
                 && nodes.containsAll(features.nodes);
     }

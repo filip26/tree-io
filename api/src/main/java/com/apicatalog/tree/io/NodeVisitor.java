@@ -245,7 +245,7 @@ public class NodeVisitor {
         NodeAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
 
-        if (NodeType.ADAPTED.equals(item)) {
+        if (NodeType.POLY.equals(item)) {
             adapters.pop();
             nodeAdapter = adapters.peek();
             stack.pop();
@@ -304,8 +304,8 @@ public class NodeVisitor {
         currentNodeType = nodeAdapter.type(currentNode);
 
         switch (currentNodeType) {
-        case ADAPTED:
-            stack.push(NodeType.ADAPTED);
+        case POLY:
+            stack.push(NodeType.POLY);
             final PolyNode adaptedNode = (PolyNode) currentNode;
             root(adaptedNode.node, adaptedNode.adapter);
             return next(currentNodeContext);
