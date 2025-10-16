@@ -404,13 +404,11 @@ public interface NodeAdapter {
     BigDecimal asDecimal(Object node);
 
     default boolean isTrue(Object node) {
-        return node != null
-                && type(node) == NodeType.TRUE;
+        return node != null && type(node) == NodeType.TRUE;
     }
 
     default boolean isFalse(Object node) {
-        return node != null
-                && type(node) == NodeType.FALSE;
+        return node != null && type(node) == NodeType.FALSE;
     }
 
     default Object asScalar(Object node) {
@@ -435,9 +433,8 @@ public interface NodeAdapter {
             return stringValue(node);
 
         default:
-            throw new IllegalStateException();
+            return asString(node);
         }
-
     }
 
     default Number numericValue(Object node) {
@@ -448,11 +445,10 @@ public interface NodeAdapter {
     }
 
     default boolean isEmptyMap(Object node) {
-        return isMap(node) && keys(node).isEmpty();
+        return isMap(node) && !entries(node).iterator().hasNext();
     }
 
     default boolean isEmptyCollection(Object node) {
         return isCollection(node) && !elements(node).iterator().hasNext();
     }
-
 }

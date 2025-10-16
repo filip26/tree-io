@@ -278,8 +278,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isBoolean(Object node) {
-        return node != null
-                && node instanceof JsonValue
+        return node instanceof JsonValue
                 && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
                         || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
     }
@@ -289,7 +288,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isMap(Object node) {
-        return node != null && node instanceof JsonObject;
+        return node instanceof JsonObject;
     }
 
     /**
@@ -297,7 +296,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isCollection(Object node) {
-        return node != null && node instanceof JsonArray;
+        return node instanceof JsonArray;
     }
 
     /**
@@ -317,7 +316,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isList(Object node) {
-        return node != null && node instanceof JsonArray;
+        return node instanceof JsonArray;
     }
 
     /**
@@ -325,7 +324,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isString(Object node) {
-        return node != null && (node instanceof String || node instanceof JsonString);
+        return node instanceof String || node instanceof JsonString;
     }
 
     /**
@@ -333,7 +332,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isNumber(Object node) {
-        return node != null && (node instanceof JsonNumber);
+        return node instanceof JsonNumber;
     }
 
     /**
@@ -341,7 +340,7 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isIntegral(Object node) {
-        return isNumber(node) && ((JsonNumber) node).isIntegral();
+        return node instanceof JsonNumber && ((JsonNumber) node).isIntegral();
     }
 
     /**
@@ -361,13 +360,27 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public boolean isEmpty(Object node) {
-        if (node instanceof JsonObject) {
-            return ((JsonObject) node).isEmpty();
-        }
-        if (node instanceof JsonArray) {
-            return ((JsonArray) node).isEmpty();
-        }
-        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
+        return isEmptyCollection(node) || isEmptyMap(node);
+    }
+
+    @Override
+    public boolean isEmptyCollection(Object node) {
+        return node instanceof JsonArray && ((JsonArray) node).isEmpty();
+    }
+
+    @Override
+    public boolean isEmptyMap(Object node) {
+        return node instanceof JsonObject && ((JsonObject) node).isEmpty();
+    }
+
+    @Override
+    public boolean isTrue(Object node) {
+        return node instanceof JsonValue && ((JsonValue) node).getValueType() == ValueType.TRUE;
+    }
+
+    @Override
+    public boolean isFalse(Object node) {
+        return node instanceof JsonValue && ((JsonValue) node).getValueType() == ValueType.FALSE;
     }
 
     /**
