@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.java;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,6 +15,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.PolyNode;
 
 public class NativeAdapter implements NodeAdapter {
 
@@ -97,7 +102,7 @@ public class NativeAdapter implements NodeAdapter {
             return NodeType.POLY;
         }
 
-        throw new IllegalArgumentException("Unrecognized node type '" + node.getClass() + "'.");
+        throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

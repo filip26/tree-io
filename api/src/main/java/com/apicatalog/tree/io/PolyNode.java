@@ -46,7 +46,13 @@ public class PolyNode {
     public Object node() {
         return node;
     }
-
+//
+//    public static final PolyNode merge(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
+//        
+//        
+//        
+//    }
+//    
     public static final boolean deepEquals(PolyNode left, PolyNode right) {
         if (left == null) {
             return right == null;

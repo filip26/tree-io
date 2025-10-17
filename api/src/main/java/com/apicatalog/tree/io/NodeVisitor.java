@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -143,6 +144,12 @@ public class NodeVisitor {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
         return new NodeVisitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
+    }
+    
+    public void traverse(final Consumer<NodeVisitor> consumer) {
+        while (next()) {
+            consumer.accept(this);
+        }        
     }
 
     /**

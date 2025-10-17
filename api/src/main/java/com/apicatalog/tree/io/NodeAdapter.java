@@ -49,6 +49,10 @@ public interface NodeAdapter {
 
     Features features();
 
+    default boolean isCompatibleWith(NodeAdapter adapter) {
+        return adapter != null && this.getClass().equals(adapter.getClass());
+    }
+
     /**
      * Checks if the given object is a native node that this adapter can process.
      * This method is the primary entry point for determining if the adapter is
@@ -146,6 +150,10 @@ public interface NodeAdapter {
      * @throws UnsupportedOperationException if the node is not a map.
      */
     Collection<?> keys(Object node);
+
+    default Stream<?> keyStream(Object node) {
+        return keys(node).stream();
+    }
 
     default Stream<?> keyStream(Object node, Comparator<Object> comparator) {
         return keys(node).stream().sorted(comparator);
