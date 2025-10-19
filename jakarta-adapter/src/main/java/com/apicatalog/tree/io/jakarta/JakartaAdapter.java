@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -134,6 +134,14 @@ public class JakartaAdapter implements NodeAdapter {
     @Override
     public JsonValue property(Object property, Object node) {
         return ((JsonObject) node).get((String) property);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public JsonValue property(Object key, NodeAdapter keyAdapter, Object node) {
+        return property(keyAdapter.asString(key), node);
     }
 
     /**

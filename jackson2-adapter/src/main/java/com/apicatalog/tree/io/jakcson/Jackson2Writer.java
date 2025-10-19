@@ -9,14 +9,14 @@ import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
 import com.apicatalog.tree.io.NodeType;
-import com.apicatalog.tree.io.NodeVisitor;
+import com.apicatalog.tree.io.traverse.Visitor;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jackson 2 streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * This class implements both {@link Visitor} and {@link NodeGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Writer extends NodeVisitor implements NodeGenerator {
+public class Jackson2Writer extends Visitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
 

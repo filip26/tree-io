@@ -49,7 +49,7 @@ public class Jackson2Adapter implements NodeAdapter {
     static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
 
     static final Features FEATURES = new Features(NODES, KEYS);
-    
+
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 
     /**
@@ -129,6 +129,11 @@ public class Jackson2Adapter implements NodeAdapter {
     @Override
     public JsonNode property(Object key, Object node) {
         return ((ObjectNode) node).get((String) key);
+    }
+
+    @Override
+    public JsonNode property(Object key, NodeAdapter keyAdapter, Object node) {
+        return property(keyAdapter.asString(key), node);
     }
 
     /**

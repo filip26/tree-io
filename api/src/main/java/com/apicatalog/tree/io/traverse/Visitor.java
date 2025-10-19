@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.traverse;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -10,6 +10,11 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.PolyNode;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
@@ -38,7 +43,7 @@ import java.util.stream.Stream;
  * iteration order.</li>
  * </ul>
  */
-public class NodeVisitor {
+public class Visitor {
 
     /**
      * Identifies the role of the current node within the tree structure during
@@ -88,15 +93,15 @@ public class NodeVisitor {
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    public NodeVisitor() {
+    public Visitor() {
         this(new ArrayDeque<>(), null);
     }
 
-    public NodeVisitor(final Deque<Object> stack) {
+    public Visitor(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    public NodeVisitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public Visitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -120,7 +125,7 @@ public class NodeVisitor {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static NodeVisitor of(Object root, NodeAdapter adapter) {
+    public static Visitor of(Object root, NodeAdapter adapter) {
         return of(root, adapter, null);
     }
 
@@ -137,16 +142,16 @@ public class NodeVisitor {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static NodeVisitor of(
+    public static Visitor of(
             final Object root,
             final NodeAdapter adapter,
             final Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
-        return new NodeVisitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
+        return new Visitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
     }
     
-    public void traverse(final Consumer<NodeVisitor> consumer) {
+    public void traverse(final Consumer<Visitor> consumer) {
         while (next()) {
             consumer.accept(this);
         }        
@@ -314,7 +319,7 @@ public class NodeVisitor {
         case POLY:
             stack.push(NodeType.POLY);
             final PolyNode adaptedNode = (PolyNode) currentNode;
-            root(adaptedNode.node, adaptedNode.adapter);
+            root(adaptedNode.node(), adaptedNode.adapter());
             return next(currentNodeContext);
 
         case COLLECTION:
@@ -350,7 +355,7 @@ public class NodeVisitor {
      *
      * @return this instance, for chaining.
      */
-    public NodeVisitor reset() {
+    public Visitor reset() {
         this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
@@ -368,7 +373,7 @@ public class NodeVisitor {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public NodeVisitor root(Object node, NodeAdapter adapter) {
+    public Visitor root(Object node, NodeAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;

@@ -9,7 +9,7 @@ import java.util.Deque;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
-import com.apicatalog.tree.io.NodeVisitor;
+import com.apicatalog.tree.io.traverse.Visitor;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -25,7 +25,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * This class implements both {@link Visitor} and {@link NodeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -36,7 +36,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class CborMaterializer extends NodeVisitor implements NodeGenerator {
+public class CborMaterializer extends Visitor implements NodeGenerator {
 
     protected DataItem cbor;
     protected final Deque<Object> builders;
@@ -64,7 +64,7 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
      * @return the fully materialized {@link DataItem}
      * @throws IOException if an error occurs during generation
      */
-    public DataItem node(Object node, NodeAdapter adapter) throws IOException {
+    public DataItem structure(Object node, NodeAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return cbor;
     }
@@ -77,7 +77,7 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public NodeVisitor reset() {
+    public Visitor reset() {
         this.cbor = null;
         this.builders.clear();
         return super.reset();
@@ -260,5 +260,10 @@ public class CborMaterializer extends NodeVisitor implements NodeGenerator {
         default:
             throw new IllegalStateException("Cannot add a CBOR DataItem in the current context: " + currentNodeContext);
         }
+    }
+
+    public static DataItem node(Object key, NodeAdapter keyAdapter) throws IOException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

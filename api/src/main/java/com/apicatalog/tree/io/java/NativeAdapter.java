@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io.java;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -41,13 +42,13 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.STRING));
 
     static final Features FEATURES = new Features(NODES, KEYS);
-    
+
     static final NativeAdapter INSTANCE = new NativeAdapter();
 
     public static final NativeAdapter instance() {
         return INSTANCE;
     }
-    
+
     @Override
     public Features features() {
         return FEATURES;
@@ -116,13 +117,25 @@ public class NativeAdapter implements NodeAdapter {
     public Object property(Object property, Object node) {
         return ((Map) node).get(property);
     }
-    
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Object property(Object key, NodeAdapter keyAdapter, Object node) {
+        try {
+            return ((Map) node).get(NativeMaterializer3.node(key, keyAdapter));
+        } catch (IOException e) {
+            //TODO ?!?!?
+            e.printStackTrace();
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Iterable<Entry<?, ?>> entries(Object node) {
         return ((Map) node).entrySet();
     }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
@@ -276,12 +289,12 @@ public class NativeAdapter implements NodeAdapter {
     public boolean isList(Object node) {
         return node != null && node instanceof List;
     }
-    
+
     @Override
     public boolean isSet(Object node) {
         return node != null && node instanceof Collection;
     }
-    
+
     @Override
     public boolean isString(Object node) {
         return node != null && node instanceof String;
@@ -342,7 +355,7 @@ public class NativeAdapter implements NodeAdapter {
         }
         return Objects.toString(node);
     }
-    
+
     @Override
     public BigDecimal asDecimal(Object node) {
         if (node instanceof BigDecimal) {

@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io.cbor;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.java.NativeMaterializer3;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -161,6 +163,18 @@ public class CborAdapter implements NodeAdapter {
         return ((Map) node).get((DataItem) property);
     }
 
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Object property(Object key, NodeAdapter keyAdapter, Object node) {
+        try {
+            return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
+        } catch (IOException e) {
+            //TODO ?!?!?
+            e.printStackTrace();
+            throw new IllegalArgumentException(e);
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */

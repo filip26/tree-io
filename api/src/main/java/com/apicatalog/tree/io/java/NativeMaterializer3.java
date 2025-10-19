@@ -14,31 +14,31 @@ import java.util.Map;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
-import com.apicatalog.tree.io.NodeVisitor;
+import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
  * A specialized class that builds a native object model from any tree-like
  * source.
  * <p>
- * This class implements both {@link NodeVisitor} and
- * {@link NodeGenerator}, allowing it to act as a self-contained transformation
- * engine. It traverses a source structure using its {@code NodeVisitor}
- * capabilities and consumes its own traversal events via its
- * {@code NodeGenerator} implementation to construct a {@link Object} tree in
- * memory.
+ * This class implements both {@link Visitor} and {@link NodeGenerator},
+ * allowing it to act as a self-contained transformation engine. It traverses a
+ * source structure using its {@code NodeVisitor} capabilities and consumes its
+ * own traversal events via its {@code NodeGenerator} implementation to
+ * construct a {@link Object} tree in memory.
  * </p>
  * <p>
  * The class is stateful and designed for a single transformation. It can be
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
+public class NativeMaterializer3 extends Visitor implements NodeGenerator {
 
     protected final Deque<Object> structures;
 
     protected Object object;
 
-    public NativeMaterializer() {
+    public NativeMaterializer3() {
         super(new ArrayDeque<>(), null);
         this.structures = new ArrayDeque<>();
         this.object = null;
@@ -49,7 +49,44 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
         return NativeAdapter.FEATURES;
     }
 
-    
+    public static Object node(Object node, NodeAdapter adapter) throws IOException {
+
+        if (NativeAdapter.instance().isCompatibleWith(adapter)) {
+            return node;
+        }
+
+        final NodeType type = adapter.type(node);
+
+        if (type.isScalar()) {
+            return scalar(node, adapter);
+        }
+
+        return new NativeMaterializer3().structure(node, adapter);
+    }
+
+    public static Object scalar(Object node, NodeAdapter adapter) throws IOException {
+        final NodeType type = adapter.type(node);
+
+        switch (type) {
+        case NULL:
+            return null;
+        case TRUE:
+            return true;
+        case FALSE:
+            return false;
+        case BINARY:
+            return adapter.binaryValue(node);
+        case STRING:
+            return adapter.stringValue(node);
+        case NUMBER:
+            return adapter.isIntegral(node)
+                    ? adapter.bigIntegerValue(node)
+                    : adapter.decimalValue(node);
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+
     /**
      * The primary entry point for materialization. Traverses the given source node.
      *
@@ -58,7 +95,7 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
      * @return the fully materialized object
      * @throws IOException if an error occurs during generation
      */
-    public Object node(Object node, NodeAdapter adapter) throws IOException {
+    public Object structure(Object node, NodeAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return object;
     }
@@ -81,7 +118,7 @@ public class NativeMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public NativeMaterializer reset() {
+    public NativeMaterializer3 reset() {
         this.structures.clear();
         this.object = null;
         super.reset();

@@ -3,10 +3,11 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
  * Provides a uniform, read-only abstraction for navigating tree-like data
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
  * from a native tree representation (e.g., an in-memory JSON object model)
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
- * <li><b>Data Transformation:</b> Serve as the input for a {@link NodeVisitor},
+ * <li><b>Data Transformation:</b> Serve as the input for a {@link Visitor},
  * which walks the tree exposed by this adapter and drives a
  * {@link NodeGenerator}. This powerful pattern is the foundation for converting
  * between different data formats (e.g., from a YAML document to a binary CBOR
@@ -40,7 +41,7 @@ import java.util.stream.Stream;
  * </p>
  *
  * @see NodeGenerator
- * @see NodeVisitor
+ * @see Visitor
  * @see NodeType
  */
 public interface NodeAdapter {
@@ -155,10 +156,6 @@ public interface NodeAdapter {
         return keys(node).stream();
     }
 
-    default Stream<?> keyStream(Object node, Comparator<Object> comparator) {
-        return keys(node).stream().sorted(comparator);
-    }
-
     /**
      * Retrieves the value associated with a given native key object from a map
      * node.
@@ -169,6 +166,8 @@ public interface NodeAdapter {
      * @throws UnsupportedOperationException if the node is not a map.
      */
     Object property(Object key, Object node);
+    
+    Object property(Object key, NodeAdapter keyAdapter, Object node);
 
     /**
      * Returns all key-value pairs of a map node as an {@link Iterable}. The entries

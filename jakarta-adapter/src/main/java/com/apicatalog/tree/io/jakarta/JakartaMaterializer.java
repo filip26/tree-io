@@ -9,7 +9,7 @@ import java.util.Deque;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
-import com.apicatalog.tree.io.NodeVisitor;
+import com.apicatalog.tree.io.traverse.Visitor;
 
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
@@ -20,7 +20,7 @@ import jakarta.json.spi.JsonProvider;
  * A specialized class that builds a {@code jakarta.json.JsonValue} object model
  * from any tree-like source.
  * <p>
- * This class implements both {@link NodeVisitor} and {@link NodeGenerator},
+ * This class implements both {@link Visitor} and {@link NodeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -31,7 +31,7 @@ import jakarta.json.spi.JsonProvider;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
+public class JakartaMaterializer extends Visitor implements NodeGenerator {
 
     protected final JsonProvider provider;
     protected final Deque<Object> builders;
@@ -97,7 +97,7 @@ public class JakartaMaterializer extends NodeVisitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public NodeVisitor reset() {
+    public Visitor reset() {
         this.builders.clear();
         this.json = null;
         return super.reset();
