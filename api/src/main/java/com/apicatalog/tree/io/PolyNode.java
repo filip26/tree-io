@@ -46,6 +46,7 @@ public class PolyNode {
     public Object node() {
         return node;
     }
+
 //
 //    public static final PolyNode merge(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
 //        
@@ -175,6 +176,17 @@ public class PolyNode {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static Comparator<Object> comparingElement(Function<Object, Comparable> keyExtractor) {
         return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    }
+
+    public boolean isEmptyOrNull() {
+        return isEmptyOrNull(this);
+    }
+
+    public static final boolean isEmptyOrNull(PolyNode node) {
+        return node == null
+                || node.node == null
+                || node.adapter.isNull(node.node)
+                || node.adapter.isEmpty(node.node);
     }
 
 }

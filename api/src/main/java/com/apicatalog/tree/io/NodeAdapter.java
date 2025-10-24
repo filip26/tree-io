@@ -74,7 +74,7 @@ public interface NodeAdapter {
      *                                  process.
      */
     NodeType type(Object node);
-
+    
     /**
      * Checks if the adapted node represents a null value.
      *

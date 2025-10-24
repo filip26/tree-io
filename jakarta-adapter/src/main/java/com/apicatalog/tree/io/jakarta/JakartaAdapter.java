@@ -94,6 +94,11 @@ public class JakartaAdapter implements NodeAdapter {
      */
     @Override
     public NodeType type(Object node) {
+        // null values are allowed
+        if (node == null) {
+            return NodeType.NULL;
+        }
+        
         // property keys are strings
         if (node instanceof String) {
             return NodeType.STRING;

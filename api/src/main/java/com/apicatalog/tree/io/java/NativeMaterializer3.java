@@ -15,6 +15,7 @@ import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.PolyNode;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
@@ -49,6 +50,10 @@ public class NativeMaterializer3 extends Visitor implements NodeGenerator {
         return NativeAdapter.FEATURES;
     }
 
+    public static Object node(PolyNode node) throws IOException {
+        return node(node.node(), node.adapter());
+    }
+    
     public static Object node(Object node, NodeAdapter adapter) throws IOException {
 
         if (NativeAdapter.instance().isCompatibleWith(adapter)) {

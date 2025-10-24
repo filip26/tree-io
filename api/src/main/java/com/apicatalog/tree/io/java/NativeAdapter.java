@@ -124,7 +124,7 @@ public class NativeAdapter implements NodeAdapter {
         try {
             return ((Map) node).get(NativeMaterializer3.node(key, keyAdapter));
         } catch (IOException e) {
-            //TODO ?!?!?
+            // TODO ?!?!?
             e.printStackTrace();
             throw new IllegalArgumentException(e);
         }
@@ -439,5 +439,13 @@ public class NativeAdapter implements NodeAdapter {
         }
 
         throw new IllegalStateException("An unsupported data type '" + dataType + "'.");
+    }
+
+    public static Collection<?> asCollection(Object node) {
+        return node instanceof Collection
+                ? (Collection<?>) node
+                : node != null
+                        ? Collections.singleton(node)
+                        : Collections.emptyList();
     }
 }

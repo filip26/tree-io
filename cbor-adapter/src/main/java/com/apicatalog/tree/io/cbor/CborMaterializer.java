@@ -54,6 +54,12 @@ public class CborMaterializer extends Visitor implements NodeGenerator {
     public Features features() {
         return CborAdapter.FEATURES;
     }
+
+
+    public static DataItem node(Object key, NodeAdapter keyAdapter) throws IOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
     
     /**
      * The primary entry point for materialization. Traverses the given source node
@@ -262,8 +268,4 @@ public class CborMaterializer extends Visitor implements NodeGenerator {
         }
     }
 
-    public static DataItem node(Object key, NodeAdapter keyAdapter) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
 }
