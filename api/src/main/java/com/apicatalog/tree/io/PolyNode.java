@@ -189,4 +189,37 @@ public class PolyNode {
                 || node.adapter.isEmpty(node.node);
     }
 
+    public boolean isMap() {
+        return isMap(this);
+    }
+
+    public static final boolean isMap(PolyNode node) {
+        return node != null && node.adapter().isMap(node.node);
+    }
+
+    public Object property(String key) {
+        return property(key, this);
+    }
+
+    public static final Object property(Object key, PolyNode node) {
+        return node != null
+                ? node.adapter().property(key, node.node)
+                : null;
+    }
+
+    public boolean isCollection() {
+        return isCollection(this);
+    }
+
+    public static final boolean isCollection(PolyNode node) {
+        return node != null && node.adapter().isCollection(node.node);
+    }
+
+    public NodeType type() {
+        return type(this);
+    }
+
+    public static final NodeType type(PolyNode node) {
+        return node.adapter().type(node.node);
+    }
 }
