@@ -9,6 +9,7 @@ import java.util.Deque;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.PolyNode;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 import jakarta.json.JsonArrayBuilder;
@@ -64,6 +65,10 @@ public class JakartaMaterializer extends Visitor implements NodeGenerator {
         this.json = null;
     }
 
+    public JsonValue node(PolyNode node) throws IOException {
+        return node(node.node(), node.adapter());
+    }
+    
     /**
      * The primary entry point for materialization. Traverses the given source node
      * and returns the resulting Jakarta {@link JsonValue}.

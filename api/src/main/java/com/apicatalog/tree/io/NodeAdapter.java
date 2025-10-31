@@ -418,6 +418,7 @@ public interface NodeAdapter {
         return node != null && type(node) == NodeType.FALSE;
     }
 
+    @Deprecated
     default Object asScalar(Object node) {
         if (node == null) {
             return null;
