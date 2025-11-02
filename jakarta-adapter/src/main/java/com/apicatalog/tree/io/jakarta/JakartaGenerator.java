@@ -30,7 +30,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaWriter extends Visitor implements NodeGenerator {
+public class JakartaGenerator extends Visitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -42,7 +42,7 @@ public class JakartaWriter extends Visitor implements NodeGenerator {
      * @param writer the Jakarta JSON generator to write to, must not be
      *               {@code null}
      */
-    public JakartaWriter(JsonGenerator writer) {
+    public JakartaGenerator(JsonGenerator writer) {
         this(writer, null);
     }
 
@@ -61,7 +61,7 @@ public class JakartaWriter extends Visitor implements NodeGenerator {
      *                representation (e.g., Base64); if {@code null}, binary data is
      *                not supported
      */
-    public JakartaWriter(JsonGenerator writer, Function<byte[], String> encoder) {
+    public JakartaGenerator(JsonGenerator writer, Function<byte[], String> encoder) {
         super(new ArrayDeque<>(), null);
         this.writer = writer;
         this.encoder = encoder;

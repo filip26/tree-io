@@ -5,22 +5,22 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
 
-import com.apicatalog.tree.io.NodeReader;
+import com.apicatalog.tree.io.NodeParser;
 import com.apicatalog.tree.io.PolyNode;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonReaderFactory;
 
-public class JakartaReader implements NodeReader {
+public class JakartaParser implements NodeParser {
 
     protected final JsonReaderFactory factory;
 
-    public JakartaReader() {
+    public JakartaParser() {
         this(Json.createReaderFactory(Collections.emptyMap()));
     }
     
-    public JakartaReader(JsonReaderFactory factory) {
+    public JakartaParser(JsonReaderFactory factory) {
         this.factory = factory;
     }
 

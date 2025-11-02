@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Writer extends Visitor implements NodeGenerator {
+public class Jackson2Generator extends Visitor implements NodeGenerator {
 
     protected final JsonGenerator writer;
 
@@ -37,7 +37,7 @@ public class Jackson2Writer extends Visitor implements NodeGenerator {
      * @param writer the Jackson JSON generator to write to, must not be
      *               {@code null}
      */
-    public Jackson2Writer(JsonGenerator writer) {
+    public Jackson2Generator(JsonGenerator writer) {
         super(new ArrayDeque<>(), null);
         this.writer = writer;
     }

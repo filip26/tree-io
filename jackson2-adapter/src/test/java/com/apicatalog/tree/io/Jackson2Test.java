@@ -21,7 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.apicatalog.tree.io.jakcson.Jackson2Adapter;
-import com.apicatalog.tree.io.jakcson.Jackson2Writer;
+import com.apicatalog.tree.io.jakcson.Jackson2Generator;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,7 +41,7 @@ class Jackson2Test {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
-            Jackson2Writer writer = new Jackson2Writer(generator);
+            Jackson2Generator writer = new Jackson2Generator(generator);
             writer.node(getJsonResource(name), Jackson2Adapter.instance());
         }
         assertEquals(getJsonResource(name), getJson(bos.toString()));

@@ -24,7 +24,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.apicatalog.tree.io.jakarta.JakartaAdapter;
 import com.apicatalog.tree.io.jakarta.JakartaMaterializer;
-import com.apicatalog.tree.io.jakarta.JakartaWriter;
+import com.apicatalog.tree.io.jakarta.JakartaGenerator;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -52,7 +52,7 @@ class JakartaTest {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
-            JakartaWriter writer = new JakartaWriter(generator);
+            JakartaGenerator writer = new JakartaGenerator(generator);
             writer.node(getJsonResource(name), JakartaAdapter.instance());
         }
         assertEquals(getJsonResource(name), getJson(bos.toString()));
