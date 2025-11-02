@@ -122,7 +122,8 @@ public class NativeAdapter implements NodeAdapter {
     @Override
     public Object property(Object key, NodeAdapter keyAdapter, Object node) {
         try {
-            return ((Map) node).get(NativeMaterializer3.node(key, keyAdapter));
+            return ((Map) node).get(NativeMaterializer.node(key, keyAdapter));
+            
         } catch (IOException e) {
             // TODO ?!?!?
             e.printStackTrace();

@@ -25,7 +25,7 @@ public class JakartaParser implements NodeParser {
     }
 
     @Override
-    public PolyNode read(InputStream is) throws IOException {
+    public PolyNode parse(InputStream is) throws IOException {
         try (final JsonReader reader = factory.createReader(is, Charset.defaultCharset())) {
             return new PolyNode(reader.readValue(), JakartaAdapter.instance());
         }

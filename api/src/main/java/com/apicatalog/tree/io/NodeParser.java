@@ -5,6 +5,6 @@ import java.io.InputStream;
 
 public interface NodeParser {
 
-    PolyNode read(InputStream is) throws IOException;
+    PolyNode parse(InputStream is) throws IOException;
         
 }

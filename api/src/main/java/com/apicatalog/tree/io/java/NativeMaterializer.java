@@ -33,13 +33,13 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer3 extends Visitor implements NodeGenerator {
+public class NativeMaterializer extends Visitor implements NodeGenerator {
 
     protected final Deque<Object> structures;
 
     protected Object object;
 
-    public NativeMaterializer3() {
+    public NativeMaterializer() {
         super(new ArrayDeque<>(), null);
         this.structures = new ArrayDeque<>();
         this.object = null;
@@ -66,7 +66,7 @@ public class NativeMaterializer3 extends Visitor implements NodeGenerator {
             return scalar(node, adapter);
         }
 
-        return new NativeMaterializer3().structure(node, adapter);
+        return new NativeMaterializer().structure(node, adapter);
     }
 
     public static Object scalar(Object node, NodeAdapter adapter) throws IOException {
@@ -123,7 +123,7 @@ public class NativeMaterializer3 extends Visitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public NativeMaterializer3 reset() {
+    public NativeMaterializer reset() {
         this.structures.clear();
         this.object = null;
         super.reset();

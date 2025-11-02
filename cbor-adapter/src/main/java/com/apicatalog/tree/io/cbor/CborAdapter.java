@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeType;
-import com.apicatalog.tree.io.java.NativeMaterializer3;
+import com.apicatalog.tree.io.java.NativeMaterializer;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;

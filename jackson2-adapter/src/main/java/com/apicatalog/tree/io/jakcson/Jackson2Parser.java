@@ -17,7 +17,7 @@ public final class Jackson2Parser implements NodeParser {
     }
 
     @Override
-    public PolyNode read(InputStream is) throws IOException {
+    public PolyNode parse(InputStream is) throws IOException {
 
         final JsonNode tree = mapper.readTree(is);
 

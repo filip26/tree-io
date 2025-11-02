@@ -1,12 +1,6 @@
 package com.apicatalog.tree.io.traverse;
 
-import java.io.IOException;
-import java.util.Deque;
-
-import com.apicatalog.tree.io.NodeAdapter;
 import com.apicatalog.tree.io.NodeGenerator;
-import com.apicatalog.tree.io.NodeFactory;
-import com.apicatalog.tree.io.traverse.Visitor.Context;
 
 /**
  * A specialized class that builds a native object model from any tree-like
