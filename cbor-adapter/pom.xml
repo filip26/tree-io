@@ -24,7 +24,7 @@
         <cbor.version>0.9</cbor.version>
     
         <!--  test resources -->
-        <junit.version>5.14.0</junit.version>
+        <junit.version>5.14.1</junit.version>
     </properties>
 
     <name>Tree I/O - CBOR Adapter</name>
