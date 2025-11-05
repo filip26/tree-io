@@ -53,7 +53,7 @@ public class NativeMaterializer extends Visitor implements NodeGenerator {
     public static Object node(PolyNode node) throws IOException {
         return node(node.node(), node.adapter());
     }
-    
+
     public static Object node(Object node, NodeAdapter adapter) throws IOException {
 
         if (NativeAdapter.instance().isCompatibleWith(adapter)) {

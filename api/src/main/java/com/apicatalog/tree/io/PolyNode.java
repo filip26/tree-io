@@ -1,12 +1,12 @@
 package com.apicatalog.tree.io;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Immutable representation of a tree node accessed through a
@@ -223,4 +223,21 @@ public class PolyNode {
     public static final NodeType type(PolyNode node) {
         return node.adapter().type(node.node);
     }
+
+    public boolean isSingleElement() {
+        return isSingleElement(this);
+    }
+    
+    public boolean isSingleElement(PolyNode node) {
+        return node.adapter().isSingleElement(node.node);
+    }
+
+    public Object singleElement() {
+        return adapter.singleElement(node);
+    }
+
+    public Collection<?> keys() {
+        return adapter.keys(node);
+    }
+
 }
