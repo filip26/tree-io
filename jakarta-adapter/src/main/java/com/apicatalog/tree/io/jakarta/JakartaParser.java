@@ -5,21 +5,21 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
 
-import com.apicatalog.tree.io.TreeIOReader;
+import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeIO;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonReaderFactory;
 
-public class JakartaParser implements TreeIOReader {
+public final class JakartaParser implements TreeParser {
 
-    protected final JsonReaderFactory factory;
+    private final JsonReaderFactory factory;
 
     public JakartaParser() {
         this(Json.createReaderFactory(Collections.emptyMap()));
     }
-    
+
     public JakartaParser(JsonReaderFactory factory) {
         this.factory = factory;
     }
@@ -30,5 +30,4 @@ public class JakartaParser implements TreeIOReader {
             return new TreeIO(reader.readValue(), JakartaAdapter.instance());
         }
     }
-
 }

@@ -7,19 +7,18 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.TreeIOAdapter;
-import com.apicatalog.tree.io.TreeIOGenerator;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIO;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
- * concrete representation of the tree by operating on the {@link TreeIOAdapter}
+ * concrete representation of the tree by operating on the {@link TreeAdapter}
  * abstraction.
  * <p>
  * It can be used in two primary ways:
@@ -28,9 +27,9 @@ import com.apicatalog.tree.io.TreeIO;
  * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
  * in a loop, you can process each node individually, allowing for complex logic
  * like searching, validation, or conditional processing.</li>
- * <li><b>Automated Transformation:</b> The {@link #traverse(TreeIOGenerator)}
+ * <li><b>Automated Transformation:</b> The {@link #traverse(TreeGenerator)}
  * method provides a high-level utility to walk the entire tree and drive a
- * {@link TreeIOGenerator}, effectively translating or transforming one tree
+ * {@link TreeGenerator}, effectively translating or transforming one tree
  * representation into another.</li>
  * </ol>
  * <p>
@@ -78,7 +77,7 @@ public class Visitor {
      */
     public static final int UNLIMITED_NODES = -1;
 
-    protected final Deque<TreeIOAdapter> adapters;
+    protected final Deque<TreeAdapter> adapters;
     protected final Deque<Object> stack;
 
     protected Comparator<Entry<?, ?>> entryComparator;
@@ -113,43 +112,6 @@ public class Visitor {
         this.currentNodeContext = null;
         this.currentNodeType = null;
     }
-
-    /**
-     * Creates a new {@code NodeVisitor} for a given tree structure. Map properties
-     * will be visited in their natural iteration order.
-     *
-     * @param root    the root node to start traversal from, must not be
-     *                {@code null}.
-     * @param adapter the adapter used to interpret the tree structure, must not be
-     *                {@code null}.
-     * @return a new {@code NodeVisitor} instance positioned at the root.
-     */
-    @Deprecated
-    public static Visitor of(Object root, TreeIOAdapter adapter) {
-        return of(root, adapter, null);
-    }
-
-    /**
-     * Creates a new {@code NodeVisitor} for a given tree structure with custom
-     * ordering for map properties.
-     *
-     * @param root               the root node to start traversal from, must not be
-     *                           {@code null}.
-     * @param adapter            the adapter used to interpret the tree structure,
-     *                           must not be {@code null}.
-     * @param propertyComparator a comparator to sort map entries during traversal;
-     *                           if {@code null}, natural iteration order is used.
-     * @return a new {@code NodeVisitor} instance positioned at the root.
-     */
-    @Deprecated
-    public static Visitor of(
-            final Object root,
-            final TreeIOAdapter adapter,
-            final Comparator<Entry<?, ?>> propertyComparator) {
-        Objects.requireNonNull(root);
-        Objects.requireNonNull(adapter);
-        return new Visitor(new ArrayDeque<>(), propertyComparator).root(root, adapter);
-    }
     
     public void traverse(final Consumer<Visitor> consumer) {
         while (next()) {
@@ -159,7 +121,7 @@ public class Visitor {
 
     /**
      * A high-level utility method that fully traverses the tree and drives the
-     * provided {@link TreeIOGenerator}. This is the primary method for tree
+     * provided {@link TreeGenerator}. This is the primary method for tree
      * transformation, serialization, or deep cloning. It iterates through every
      * node using {@link #next()} and emits a corresponding event to the generator.
      *
@@ -168,7 +130,7 @@ public class Visitor {
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public void traverse(final TreeIOGenerator generator) throws IOException {
+    public void traverse(final TreeGenerator generator) throws IOException {
         while (next()) {
 
             if (Context.END == currentNodeContext) {
@@ -254,7 +216,7 @@ public class Visitor {
             throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
         }
 
-        TreeIOAdapter nodeAdapter = adapters.peek();
+        TreeAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
 
         if (NodeType.TREE_IO.equals(item)) {
@@ -351,7 +313,7 @@ public class Visitor {
     /**
      * Resets the visitor's internal state, clearing the traversal stack and
      * counters. The visitor can be reused after calling this method, but a new root
-     * node must be set using {@link #root(Object, TreeIOAdapter)}.
+     * node must be set using {@link #root(Object, TreeAdapter)}.
      *
      * @return this instance, for chaining.
      */
@@ -373,7 +335,7 @@ public class Visitor {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public Visitor root(Object node, TreeIOAdapter adapter) {
+    public Visitor root(Object node, TreeAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;
@@ -425,7 +387,7 @@ public class Visitor {
     }
 
     /** Gets the adapter to process the {@code #currentNode()}. */
-    public TreeIOAdapter adapter() {
+    public TreeAdapter adapter() {
         return adapters.peek();
     }
 

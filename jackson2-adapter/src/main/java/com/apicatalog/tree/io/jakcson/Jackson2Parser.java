@@ -3,12 +3,12 @@ package com.apicatalog.tree.io.jakcson;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apicatalog.tree.io.TreeIOReader;
+import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeIO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public final class Jackson2Parser implements TreeIOReader {
+public final class Jackson2Parser implements TreeParser {
 
     private final ObjectMapper mapper;
 
@@ -23,5 +23,4 @@ public final class Jackson2Parser implements TreeIOReader {
 
         return new TreeIO(tree, Jackson2Adapter.instance());
     }
-
 }

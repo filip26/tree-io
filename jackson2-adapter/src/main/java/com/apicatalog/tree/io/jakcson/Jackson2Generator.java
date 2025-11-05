@@ -6,8 +6,8 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeIOAdapter;
-import com.apicatalog.tree.io.TreeIOGenerator;
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.traverse.Visitor;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jackson 2 streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link Visitor} and {@link TreeIOGenerator},
+ * This class implements both {@link Visitor} and {@link TreeGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Generator extends Visitor implements TreeIOGenerator {
+public class Jackson2Generator extends Visitor implements TreeGenerator {
 
     protected final JsonGenerator writer;
 
@@ -57,7 +57,7 @@ public class Jackson2Generator extends Visitor implements TreeIOGenerator {
      * @return the underlying {@link JsonGenerator} for further use if needed
      * @throws IOException if an error occurs during writing
      */
-    public JsonGenerator node(Object node, TreeIOAdapter adapter) throws IOException {
+    public JsonGenerator node(Object node, TreeAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return writer;
     }

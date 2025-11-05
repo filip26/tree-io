@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeIOAdapter;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.NodeType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * A {@link TreeIOAdapter} implementation that bridges the generic tree processing
+ * A {@link TreeAdapter} implementation that bridges the generic tree processing
  * framework with the Jackson 2 {@link JsonNode} object model.
  * <p>
  * This adapter allows for the traversal and inspection of JSON structures that
@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * {@link #instance()} method.
  * </p>
  */
-public class Jackson2Adapter implements TreeIOAdapter {
+public class Jackson2Adapter implements TreeAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -132,7 +132,7 @@ public class Jackson2Adapter implements TreeIOAdapter {
     }
 
     @Override
-    public JsonNode property(Object key, TreeIOAdapter keyAdapter, Object node) {
+    public JsonNode property(Object key, TreeAdapter keyAdapter, Object node) {
         return property(keyAdapter.asString(key), node);
     }
 

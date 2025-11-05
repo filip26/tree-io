@@ -14,7 +14,7 @@ package com.apicatalog.tree.io;
  * This enables uniform traversal and comparison of mixed-format trees.
  * </p>
  *
- * @see TreeIOAdapter
+ * @see TreeAdapter
  * @see com.apicatalog.tree.io.TreeIO
  */
 public enum NodeType {

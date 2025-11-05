@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeIOAdapter;
-import com.apicatalog.tree.io.TreeIOGenerator;
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeIO;
 import com.apicatalog.tree.io.traverse.Visitor;
@@ -22,7 +22,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * A specialized class that builds a native object model from any tree-like
  * source.
  * <p>
- * This class implements both {@link Visitor} and {@link TreeIOGenerator},
+ * This class implements both {@link Visitor} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -33,7 +33,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends Visitor implements TreeIOGenerator {
+public class NativeMaterializer extends Visitor implements TreeGenerator {
 
     protected final Deque<Object> structures;
 
@@ -54,7 +54,7 @@ public class NativeMaterializer extends Visitor implements TreeIOGenerator {
         return node(node.node(), node.adapter());
     }
 
-    public static Object node(Object node, TreeIOAdapter adapter) throws IOException {
+    public static Object node(Object node, TreeAdapter adapter) throws IOException {
 
         if (NativeAdapter.instance().isCompatibleWith(adapter)) {
             return node;
@@ -69,7 +69,7 @@ public class NativeMaterializer extends Visitor implements TreeIOGenerator {
         return new NativeMaterializer().structure(node, adapter);
     }
 
-    public static Object scalar(Object node, TreeIOAdapter adapter) throws IOException {
+    public static Object scalar(Object node, TreeAdapter adapter) throws IOException {
         final NodeType type = adapter.type(node);
 
         switch (type) {
@@ -100,7 +100,7 @@ public class NativeMaterializer extends Visitor implements TreeIOGenerator {
      * @return the fully materialized object
      * @throws IOException if an error occurs during generation
      */
-    public Object structure(Object node, TreeIOAdapter adapter) throws IOException {
+    public Object structure(Object node, TreeAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return object;
     }

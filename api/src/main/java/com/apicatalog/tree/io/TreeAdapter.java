@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.traverse.Materializer;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
@@ -17,7 +16,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * format or library.
  * 
  * <p>
- * It is the conceptual counterpart to {@link TreeIOGenerator}. Where
+ * It is the conceptual counterpart to {@link TreeGenerator}. Where
  * {@code NodeGenerator} offers a "write-only" API for <em>constructing</em> a
  * tree, {@code NodeAdapter} provides a "read-only" API for <em>inspecting</em>
  * one.
@@ -30,7 +29,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * underlying data-binding library.</li>
  * <li><b>Data Transformation:</b> Serve as the input for a {@link Visitor},
  * which walks the tree exposed by this adapter and drives a
- * {@link TreeIOGenerator}. This powerful pattern is the foundation for
+ * {@link TreeGenerator}. This powerful pattern is the foundation for
  * converting between different data formats (e.g., from a YAML document to a
  * binary CBOR representation).</li>
  * </ol>
@@ -41,17 +40,14 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * is of an unexpected type or an operation is not supported for a given node.
  * </p>
  *
- * @see Visitor
- * @see Materializer
- * @see NodeType
  */
-public interface TreeIOAdapter {
+public interface TreeAdapter {
 
     // --- Adapter Capabilities & Node Introspection ---
 
     Features features();
 
-    default boolean isCompatibleWith(TreeIOAdapter adapter) {
+    default boolean isCompatibleWith(TreeAdapter adapter) {
         return adapter != null && this.getClass().equals(adapter.getClass());
     }
 
@@ -168,7 +164,7 @@ public interface TreeIOAdapter {
      */
     Object property(Object key, Object node);
 
-    Object property(Object key, TreeIOAdapter keyAdapter, Object node);
+    Object property(Object key, TreeAdapter keyAdapter, Object node);
 
     /**
      * Returns all key-value pairs of a map node as an {@link Iterable}. The entries

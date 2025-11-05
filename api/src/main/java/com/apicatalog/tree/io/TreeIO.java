@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 /**
  * Immutable representation of a tree root where the node and its descendants
- * are accessed through a {@link TreeIOAdapter}.
+ * are accessed through a {@link TreeAdapter}.
  * <p>
  * A {@link TreeIO} instance binds a node with its adapter, providing a uniform
  * way to traverse or compare trees of arbitrary underlying object models.
@@ -24,7 +24,7 @@ import java.util.function.Function;
  */
 public class TreeIO {
 
-    protected final TreeIOAdapter adapter;
+    protected final TreeAdapter adapter;
     protected final Object node;
 
     /**
@@ -36,30 +36,24 @@ public class TreeIO {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public TreeIO(Object node, TreeIOAdapter adapter) {
+    public TreeIO(Object node, TreeAdapter adapter) {
         this.node = Objects.requireNonNull(node);
         this.adapter = Objects.requireNonNull(adapter);
     }
 
-    public TreeIOAdapter adapter() {
+    public TreeAdapter adapter() {
         return adapter;
     }
 
     /**
      * Root node, can be scalar or a structure like Map or Collection.
+     * 
      * @return
      */
     public Object node() {
         return node;
     }
 
-//
-//    public static final PolyNode merge(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
-//        
-//        
-//        
-//    }
-//    
     public static final boolean deepEquals(TreeIO left, TreeIO right) {
         if (left == null) {
             return right == null;
@@ -70,7 +64,7 @@ public class TreeIO {
         return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
-    public static final boolean deepEquals(Object left, TreeIOAdapter leftAdapter, Object right, TreeIOAdapter rightAdapter) {
+    public static final boolean deepEquals(Object left, TreeAdapter leftAdapter, Object right, TreeAdapter rightAdapter) {
 
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
@@ -146,10 +140,10 @@ public class TreeIO {
         }
     }
 
-    protected static boolean deepEqualsCollection(Iterable<? extends Object> left, TreeIOAdapter leftAdapter, Iterable<? extends Object> right, TreeIOAdapter rightAdapter) {
+    protected static boolean deepEqualsCollection(Iterable<? extends Object> left, TreeAdapter leftAdapter, Iterable<? extends Object> right, TreeAdapter rightAdapter) {
 
-        Iterator<? extends Object> leftIterator = left.iterator();
-        Iterator<? extends Object> rightIterator = right.iterator();
+        final Iterator<? extends Object> leftIterator = left.iterator();
+        final Iterator<? extends Object> rightIterator = right.iterator();
 
         while (leftIterator.hasNext() && rightIterator.hasNext()) {
             if (!deepEquals(
@@ -175,7 +169,7 @@ public class TreeIO {
         return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 
-    public static Comparator<Entry<?, ?>> comparingStringKeys(TreeIOAdapter adapter) {
+    public static Comparator<Entry<?, ?>> comparingStringKeys(TreeAdapter adapter) {
         return comparingEntry(e -> adapter.asString(e.getKey()));
     }
 
@@ -243,6 +237,18 @@ public class TreeIO {
 
     public Collection<?> keys() {
         return adapter.keys(node);
+    }
+
+    public boolean isSingleEntry() {
+        return isSingleEntry(this);
+    }
+
+    public boolean isSingleEntry(TreeIO node) {
+        return node.adapter().isSingleEntry(node.node);
+    }
+
+    public Entry<?, ?> singleEntry() {
+        return adapter.singleEntry(node);
     }
 
 }

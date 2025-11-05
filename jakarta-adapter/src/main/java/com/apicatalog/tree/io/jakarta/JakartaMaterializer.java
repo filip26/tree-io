@@ -7,8 +7,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeIOAdapter;
-import com.apicatalog.tree.io.TreeIOGenerator;
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIO;
 import com.apicatalog.tree.io.traverse.Visitor;
 
@@ -21,7 +21,7 @@ import jakarta.json.spi.JsonProvider;
  * A specialized class that builds a {@code jakarta.json.JsonValue} object model
  * from any tree-like source.
  * <p>
- * This class implements both {@link Visitor} and {@link TreeIOGenerator},
+ * This class implements both {@link Visitor} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -32,7 +32,7 @@ import jakarta.json.spi.JsonProvider;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class JakartaMaterializer extends Visitor implements TreeIOGenerator {
+public class JakartaMaterializer extends Visitor implements TreeGenerator {
 
     protected final JsonProvider provider;
     protected final Deque<Object> builders;
@@ -78,7 +78,7 @@ public class JakartaMaterializer extends Visitor implements TreeIOGenerator {
      * @return the fully materialized {@link JsonValue}
      * @throws IOException if an error occurs during generation
      */
-    public JsonValue node(Object node, TreeIOAdapter adapter) throws IOException {
+    public JsonValue node(Object node, TreeAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return json;
     }

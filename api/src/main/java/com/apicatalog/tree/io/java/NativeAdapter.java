@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeIOAdapter;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeIO;
 
-public class NativeAdapter implements TreeIOAdapter {
+public class NativeAdapter implements TreeAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -120,7 +120,7 @@ public class NativeAdapter implements TreeIOAdapter {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Object property(Object key, TreeIOAdapter keyAdapter, Object node) {
+    public Object property(Object key, TreeAdapter keyAdapter, Object node) {
         try {
             return ((Map) node).get(NativeMaterializer.node(key, keyAdapter));
 
@@ -378,7 +378,7 @@ public class NativeAdapter implements TreeIOAdapter {
         throw new IllegalArgumentException();
     }
 
-    public static final Object adapt(Object value, TreeIOAdapter adapter) {
+    public static final Object adapt(Object value, TreeAdapter adapter) {
 
         if (value == null) {
             return null;
