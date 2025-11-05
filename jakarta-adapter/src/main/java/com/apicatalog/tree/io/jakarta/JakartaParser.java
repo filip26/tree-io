@@ -5,14 +5,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
 
-import com.apicatalog.tree.io.NodeParser;
-import com.apicatalog.tree.io.PolyNode;
+import com.apicatalog.tree.io.TreeIOReader;
+import com.apicatalog.tree.io.TreeIO;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonReaderFactory;
 
-public class JakartaParser implements NodeParser {
+public class JakartaParser implements TreeIOReader {
 
     protected final JsonReaderFactory factory;
 
@@ -25,9 +25,9 @@ public class JakartaParser implements NodeParser {
     }
 
     @Override
-    public PolyNode parse(InputStream is) throws IOException {
+    public TreeIO parse(InputStream is) throws IOException {
         try (final JsonReader reader = factory.createReader(is, Charset.defaultCharset())) {
-            return new PolyNode(reader.readValue(), JakartaAdapter.instance());
+            return new TreeIO(reader.readValue(), JakartaAdapter.instance());
         }
     }
 

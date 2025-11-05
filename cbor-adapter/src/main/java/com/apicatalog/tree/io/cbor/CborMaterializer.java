@@ -7,8 +7,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeAdapter;
-import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.TreeIOAdapter;
+import com.apicatalog.tree.io.TreeIOGenerator;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 import co.nstant.in.cbor.model.Array;
@@ -25,7 +25,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link Visitor} and {@link NodeGenerator},
+ * This class implements both {@link Visitor} and {@link TreeIOGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -36,7 +36,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class CborMaterializer extends Visitor implements NodeGenerator {
+public class CborMaterializer extends Visitor implements TreeIOGenerator {
 
     protected DataItem cbor;
     protected final Deque<Object> builders;
@@ -56,7 +56,7 @@ public class CborMaterializer extends Visitor implements NodeGenerator {
     }
 
 
-    public static DataItem node(Object key, NodeAdapter keyAdapter) throws IOException {
+    public static DataItem node(Object key, TreeIOAdapter keyAdapter) throws IOException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -70,7 +70,7 @@ public class CborMaterializer extends Visitor implements NodeGenerator {
      * @return the fully materialized {@link DataItem}
      * @throws IOException if an error occurs during generation
      */
-    public DataItem structure(Object node, NodeAdapter adapter) throws IOException {
+    public DataItem structure(Object node, TreeIOAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return cbor;
     }

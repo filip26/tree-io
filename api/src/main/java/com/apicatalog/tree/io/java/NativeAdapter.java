@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.TreeIOAdapter;
 import com.apicatalog.tree.io.NodeType;
-import com.apicatalog.tree.io.PolyNode;
+import com.apicatalog.tree.io.TreeIO;
 
-public class NativeAdapter implements NodeAdapter {
+public class NativeAdapter implements TreeIOAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -33,7 +33,7 @@ public class NativeAdapter implements NodeAdapter {
             NodeType.FALSE,
             NodeType.TRUE,
             NodeType.NULL,
-            NodeType.POLY));
+            NodeType.TREE_IO));
 
     static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -68,7 +68,7 @@ public class NativeAdapter implements NodeAdapter {
                 || node instanceof Map
                 || node instanceof Collection
                 || node instanceof byte[]
-                || node instanceof PolyNode;
+                || node instanceof TreeIO;
     }
 
     @Override
@@ -99,8 +99,8 @@ public class NativeAdapter implements NodeAdapter {
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
-        if (node instanceof PolyNode) {
-            return NodeType.POLY;
+        if (node instanceof TreeIO) {
+            return NodeType.TREE_IO;
         }
 
         throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
@@ -120,14 +120,12 @@ public class NativeAdapter implements NodeAdapter {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Object property(Object key, NodeAdapter keyAdapter, Object node) {
+    public Object property(Object key, TreeIOAdapter keyAdapter, Object node) {
         try {
             return ((Map) node).get(NativeMaterializer.node(key, keyAdapter));
-            
+
         } catch (IOException e) {
-            // TODO ?!?!?
-            e.printStackTrace();
-            throw new IllegalArgumentException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -380,7 +378,7 @@ public class NativeAdapter implements NodeAdapter {
         throw new IllegalArgumentException();
     }
 
-    public static final Object adapt(Object value, NodeAdapter adapter) {
+    public static final Object adapt(Object value, TreeIOAdapter adapter) {
 
         if (value == null) {
             return null;

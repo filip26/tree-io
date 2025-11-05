@@ -3,12 +3,12 @@ package com.apicatalog.tree.io.jakcson;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apicatalog.tree.io.NodeParser;
-import com.apicatalog.tree.io.PolyNode;
+import com.apicatalog.tree.io.TreeIOReader;
+import com.apicatalog.tree.io.TreeIO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public final class Jackson2Parser implements NodeParser {
+public final class Jackson2Parser implements TreeIOReader {
 
     private final ObjectMapper mapper;
 
@@ -17,11 +17,11 @@ public final class Jackson2Parser implements NodeParser {
     }
 
     @Override
-    public PolyNode parse(InputStream is) throws IOException {
+    public TreeIO parse(InputStream is) throws IOException {
 
         final JsonNode tree = mapper.readTree(is);
 
-        return new PolyNode(tree, Jackson2Adapter.instance());
+        return new TreeIO(tree, Jackson2Adapter.instance());
     }
 
 }

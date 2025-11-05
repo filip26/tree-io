@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.TreeIOAdapter;
 import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.java.NativeMaterializer;
 
@@ -35,7 +35,7 @@ import co.nstant.in.cbor.model.UnicodeString;
 import co.nstant.in.cbor.model.UnsignedInteger;
 
 /**
- * A {@link NodeAdapter} implementation for the
+ * A {@link TreeIOAdapter} implementation for the
  * {@code co.nstant.in.cbor.model.DataItem} object model, which represents CBOR
  * (Concise Binary Object Representation) data.
  * <p>
@@ -48,7 +48,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reports support for non-string keys in map structures.
  * </p>
  */
-public class CborAdapter implements NodeAdapter {
+public class CborAdapter implements TreeIOAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -165,7 +165,7 @@ public class CborAdapter implements NodeAdapter {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Object property(Object key, NodeAdapter keyAdapter, Object node) {
+    public Object property(Object key, TreeIOAdapter keyAdapter, Object node) {
         try {
             return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
         } catch (IOException e) {

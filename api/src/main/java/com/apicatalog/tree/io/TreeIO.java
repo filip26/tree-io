@@ -9,21 +9,22 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Immutable representation of a tree node accessed through a
- * {@link NodeAdapter}.
+ * Immutable representation of a tree root where the node and its descendants
+ * are accessed through a {@link TreeIOAdapter}.
  * <p>
- * A {@link PolyNode} instance binds a node with its adapter, providing a
- * uniform way to traverse or compare trees of arbitrary underlying object
- * models.
+ * A {@link TreeIO} instance binds a node with its adapter, providing a uniform
+ * way to traverse or compare trees of arbitrary underlying object models.
  * </p>
  * <p>
- * Pass a {@link PolyNode} from JSON, YAML, or CBOR into the tree.
+ * Pass a {@link TreeIO} from JSON, YAML, or CBOR into the tree to create
+ * polyformic tree composed of various different serializations, libraries, in
+ * order to uniformly prosses such a tree.
  * </p>
  *
  */
-public class PolyNode {
+public class TreeIO {
 
-    protected final NodeAdapter adapter;
+    protected final TreeIOAdapter adapter;
     protected final Object node;
 
     /**
@@ -35,15 +36,19 @@ public class PolyNode {
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public PolyNode(Object node, NodeAdapter adapter) {
+    public TreeIO(Object node, TreeIOAdapter adapter) {
         this.node = Objects.requireNonNull(node);
         this.adapter = Objects.requireNonNull(adapter);
     }
 
-    public NodeAdapter adapter() {
+    public TreeIOAdapter adapter() {
         return adapter;
     }
 
+    /**
+     * Root node, can be scalar or a structure like Map or Collection.
+     * @return
+     */
     public Object node() {
         return node;
     }
@@ -55,7 +60,7 @@ public class PolyNode {
 //        
 //    }
 //    
-    public static final boolean deepEquals(PolyNode left, PolyNode right) {
+    public static final boolean deepEquals(TreeIO left, TreeIO right) {
         if (left == null) {
             return right == null;
 
@@ -65,7 +70,7 @@ public class PolyNode {
         return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
-    public static final boolean deepEquals(Object left, NodeAdapter leftAdapter, Object right, NodeAdapter rightAdapter) {
+    public static final boolean deepEquals(Object left, TreeIOAdapter leftAdapter, Object right, TreeIOAdapter rightAdapter) {
 
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
@@ -111,11 +116,11 @@ public class PolyNode {
 
         case MAP:
             final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
-                    .sorted(PolyNode.comparingEntry(e -> leftAdapter.asString(e.getKey())))
+                    .sorted(TreeIO.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
             final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
-                    .sorted(PolyNode.comparingEntry(e -> rightAdapter.asString(e.getKey())))
+                    .sorted(TreeIO.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {
@@ -141,7 +146,7 @@ public class PolyNode {
         }
     }
 
-    protected static boolean deepEqualsCollection(Iterable<? extends Object> left, NodeAdapter leftAdapter, Iterable<? extends Object> right, NodeAdapter rightAdapter) {
+    protected static boolean deepEqualsCollection(Iterable<? extends Object> left, TreeIOAdapter leftAdapter, Iterable<? extends Object> right, TreeIOAdapter rightAdapter) {
 
         Iterator<? extends Object> leftIterator = left.iterator();
         Iterator<? extends Object> rightIterator = right.iterator();
@@ -170,7 +175,7 @@ public class PolyNode {
         return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
     }
 
-    public static Comparator<Entry<?, ?>> comparingStringKeys(NodeAdapter adapter) {
+    public static Comparator<Entry<?, ?>> comparingStringKeys(TreeIOAdapter adapter) {
         return comparingEntry(e -> adapter.asString(e.getKey()));
     }
 
@@ -183,7 +188,7 @@ public class PolyNode {
         return isEmptyOrNull(this);
     }
 
-    public static final boolean isEmptyOrNull(PolyNode node) {
+    public static final boolean isEmptyOrNull(TreeIO node) {
         return node == null
                 || node.node == null
                 || node.adapter.isNull(node.node)
@@ -194,7 +199,7 @@ public class PolyNode {
         return isMap(this);
     }
 
-    public static final boolean isMap(PolyNode node) {
+    public static final boolean isMap(TreeIO node) {
         return node != null && node.adapter().isMap(node.node);
     }
 
@@ -202,7 +207,7 @@ public class PolyNode {
         return property(key, this);
     }
 
-    public static final Object property(Object key, PolyNode node) {
+    public static final Object property(Object key, TreeIO node) {
         return node != null
                 ? node.adapter().property(key, node.node)
                 : null;
@@ -212,7 +217,7 @@ public class PolyNode {
         return isCollection(this);
     }
 
-    public static final boolean isCollection(PolyNode node) {
+    public static final boolean isCollection(TreeIO node) {
         return node != null && node.adapter().isCollection(node.node);
     }
 
@@ -220,15 +225,15 @@ public class PolyNode {
         return type(this);
     }
 
-    public static final NodeType type(PolyNode node) {
+    public static final NodeType type(TreeIO node) {
         return node.adapter().type(node.node);
     }
 
     public boolean isSingleElement() {
         return isSingleElement(this);
     }
-    
-    public boolean isSingleElement(PolyNode node) {
+
+    public boolean isSingleElement(TreeIO node) {
         return node.adapter().isSingleElement(node.node);
     }
 

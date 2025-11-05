@@ -11,13 +11,13 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * structures. This interface decouples the process of describing a tree from
  * its final representation.
  * <p>
- * It is the conceptual counterpart to {@link NodeAdapter}, which reads tree
+ * It is the conceptual counterpart to {@link TreeIOAdapter}, which reads tree
  * structures.
  * </p>
  * <p>
  * While this interface can be implemented and driven manually, it is often used
  * as a target for a {@link Visitor}. The visitor traverses a source tree
- * (read via a {@link NodeAdapter}) and calls the appropriate methods on this
+ * (read via a {@link TreeIOAdapter}) and calls the appropriate methods on this
  * generator, effectively enabling powerful tree transformation and conversion
  * workflows.
  * </p>
@@ -38,7 +38,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * expecting methods to be called in a valid sequence.
  * </p>
  */
-public interface NodeGenerator {
+public interface TreeIOGenerator {
 
     Features features();
     

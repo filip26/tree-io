@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeAdapter;
+import com.apicatalog.tree.io.TreeIOAdapter;
 import com.apicatalog.tree.io.NodeType;
 
 import jakarta.json.JsonArray;
@@ -23,7 +23,7 @@ import jakarta.json.JsonValue;
 import jakarta.json.JsonValue.ValueType;
 
 /**
- * A {@link NodeAdapter} implementation that bridges the generic tree processing
+ * A {@link TreeIOAdapter} implementation that bridges the generic tree processing
  * framework with the Jakarta JSON-P {@link JsonValue} object model.
  * <p>
  * This adapter allows for the traversal and inspection of JSON structures that
@@ -41,7 +41,7 @@ import jakarta.json.JsonValue.ValueType;
  * {@link #instance()} method.
  * </p>
  */
-public class JakartaAdapter implements NodeAdapter {
+public class JakartaAdapter implements TreeIOAdapter {
 
     static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
             NodeType.COLLECTION,
@@ -145,7 +145,7 @@ public class JakartaAdapter implements NodeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public JsonValue property(Object key, NodeAdapter keyAdapter, Object node) {
+    public JsonValue property(Object key, TreeIOAdapter keyAdapter, Object node) {
         return property(keyAdapter.asString(key), node);
     }
 

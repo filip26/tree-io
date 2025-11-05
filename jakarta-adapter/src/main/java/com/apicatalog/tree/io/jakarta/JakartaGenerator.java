@@ -7,8 +7,8 @@ import java.util.ArrayDeque;
 import java.util.function.Function;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeAdapter;
-import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.TreeIOAdapter;
+import com.apicatalog.tree.io.TreeIOGenerator;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 import jakarta.json.stream.JsonGenerator;
@@ -17,7 +17,7 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link Visitor} and {@link NodeGenerator},
+ * This class implements both {@link Visitor} and {@link TreeIOGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -30,7 +30,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator extends Visitor implements NodeGenerator {
+public class JakartaGenerator extends Visitor implements TreeIOGenerator {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -77,7 +77,7 @@ public class JakartaGenerator extends Visitor implements NodeGenerator {
      * @return the underlying {@link JsonGenerator} for further use if needed
      * @throws IOException if an error occurs during writing
      */
-    public JsonGenerator node(Object node, NodeAdapter adapter) throws IOException {
+    public JsonGenerator node(Object node, TreeIOAdapter adapter) throws IOException {
         root(node, adapter).traverse(this);
         return writer;
     }
@@ -200,7 +200,7 @@ public class JakartaGenerator extends Visitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void beginList() throws IOException {
+    public void beginList() {
         writer.writeStartArray();
     }
 
@@ -208,7 +208,7 @@ public class JakartaGenerator extends Visitor implements NodeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginSet() throws IOException {
+    public void beginSet() {
         throw new UnsupportedOperationException();
     }
 
@@ -220,7 +220,7 @@ public class JakartaGenerator extends Visitor implements NodeGenerator {
      * </p>
      */
     @Override
-    public void end() throws IOException {
+    public void end() {
         writer.writeEnd();
     }
 }

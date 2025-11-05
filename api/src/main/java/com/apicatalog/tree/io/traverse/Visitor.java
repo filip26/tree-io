@@ -11,15 +11,15 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.NodeAdapter;
-import com.apicatalog.tree.io.NodeGenerator;
+import com.apicatalog.tree.io.TreeIOAdapter;
+import com.apicatalog.tree.io.TreeIOGenerator;
 import com.apicatalog.tree.io.NodeType;
-import com.apicatalog.tree.io.PolyNode;
+import com.apicatalog.tree.io.TreeIO;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
- * concrete representation of the tree by operating on the {@link NodeAdapter}
+ * concrete representation of the tree by operating on the {@link TreeIOAdapter}
  * abstraction.
  * <p>
  * It can be used in two primary ways:
@@ -28,9 +28,9 @@ import com.apicatalog.tree.io.PolyNode;
  * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
  * in a loop, you can process each node individually, allowing for complex logic
  * like searching, validation, or conditional processing.</li>
- * <li><b>Automated Transformation:</b> The {@link #traverse(NodeGenerator)}
+ * <li><b>Automated Transformation:</b> The {@link #traverse(TreeIOGenerator)}
  * method provides a high-level utility to walk the entire tree and drive a
- * {@link NodeGenerator}, effectively translating or transforming one tree
+ * {@link TreeIOGenerator}, effectively translating or transforming one tree
  * representation into another.</li>
  * </ol>
  * <p>
@@ -78,7 +78,7 @@ public class Visitor {
      */
     public static final int UNLIMITED_NODES = -1;
 
-    protected final Deque<NodeAdapter> adapters;
+    protected final Deque<TreeIOAdapter> adapters;
     protected final Deque<Object> stack;
 
     protected Comparator<Entry<?, ?>> entryComparator;
@@ -125,7 +125,7 @@ public class Visitor {
      * @return a new {@code NodeVisitor} instance positioned at the root.
      */
     @Deprecated
-    public static Visitor of(Object root, NodeAdapter adapter) {
+    public static Visitor of(Object root, TreeIOAdapter adapter) {
         return of(root, adapter, null);
     }
 
@@ -144,7 +144,7 @@ public class Visitor {
     @Deprecated
     public static Visitor of(
             final Object root,
-            final NodeAdapter adapter,
+            final TreeIOAdapter adapter,
             final Comparator<Entry<?, ?>> propertyComparator) {
         Objects.requireNonNull(root);
         Objects.requireNonNull(adapter);
@@ -159,7 +159,7 @@ public class Visitor {
 
     /**
      * A high-level utility method that fully traverses the tree and drives the
-     * provided {@link NodeGenerator}. This is the primary method for tree
+     * provided {@link TreeIOGenerator}. This is the primary method for tree
      * transformation, serialization, or deep cloning. It iterates through every
      * node using {@link #next()} and emits a corresponding event to the generator.
      *
@@ -168,7 +168,7 @@ public class Visitor {
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public void traverse(final NodeGenerator generator) throws IOException {
+    public void traverse(final TreeIOGenerator generator) throws IOException {
         while (next()) {
 
             if (Context.END == currentNodeContext) {
@@ -254,10 +254,10 @@ public class Visitor {
             throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
         }
 
-        NodeAdapter nodeAdapter = adapters.peek();
+        TreeIOAdapter nodeAdapter = adapters.peek();
         Object item = stack.peek();
 
-        if (NodeType.POLY.equals(item)) {
+        if (NodeType.TREE_IO.equals(item)) {
             adapters.pop();
             nodeAdapter = adapters.peek();
             stack.pop();
@@ -316,9 +316,9 @@ public class Visitor {
         currentNodeType = nodeAdapter.type(currentNode);
 
         switch (currentNodeType) {
-        case POLY:
-            stack.push(NodeType.POLY);
-            final PolyNode adaptedNode = (PolyNode) currentNode;
+        case TREE_IO:
+            stack.push(NodeType.TREE_IO);
+            final TreeIO adaptedNode = (TreeIO) currentNode;
             root(adaptedNode.node(), adaptedNode.adapter());
             return next(currentNodeContext);
 
@@ -351,7 +351,7 @@ public class Visitor {
     /**
      * Resets the visitor's internal state, clearing the traversal stack and
      * counters. The visitor can be reused after calling this method, but a new root
-     * node must be set using {@link #root(Object, NodeAdapter)}.
+     * node must be set using {@link #root(Object, TreeIOAdapter)}.
      *
      * @return this instance, for chaining.
      */
@@ -373,7 +373,7 @@ public class Visitor {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public Visitor root(Object node, NodeAdapter adapter) {
+    public Visitor root(Object node, TreeIOAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;
@@ -425,7 +425,7 @@ public class Visitor {
     }
 
     /** Gets the adapter to process the {@code #currentNode()}. */
-    public NodeAdapter adapter() {
+    public TreeIOAdapter adapter() {
         return adapters.peek();
     }
 
