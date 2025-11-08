@@ -128,6 +128,14 @@ public class Jackson2Adapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
+    public Stream<String> keyStream(Object node) {
+        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public JsonNode property(Object key, Object node) {
         return ((ObjectNode) node).get((String) key);
     }
