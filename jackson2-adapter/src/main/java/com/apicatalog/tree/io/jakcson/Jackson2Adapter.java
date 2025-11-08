@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -15,8 +16,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -120,7 +121,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public Set<String> keys(Object node) {
-        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toSet());
+        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -289,8 +290,8 @@ public class Jackson2Adapter implements TreeAdapter {
     public boolean isNull(Object node) {
         return node == null
                 || (node instanceof JsonNode
-                        && (((JsonNode) node).isNull()
-                                || ((JsonNode) node).isMissingNode()));
+                        && (((JsonNode) node).isNull()));
+//                                || ((JsonNode) node).isMissingNode()));
     }
 
     /**

@@ -162,18 +162,15 @@ public class CborAdapter implements TreeAdapter {
         return ((Map) node).get((DataItem) property);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
         try {
             return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
         } catch (IOException e) {
-            //TODO ?!?!?
-            e.printStackTrace();
             throw new IllegalArgumentException(e);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */

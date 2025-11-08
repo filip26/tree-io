@@ -1,12 +1,16 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
+
+import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
  * Immutable representation of a tree root where the node and its descendants
@@ -54,6 +58,14 @@ public class TreeIO {
         return node;
     }
 
+    public void traverse(Consumer<Visitor> visitor) {
+        (new Visitor()).root(node, adapter).traverse(visitor);
+    }
+
+    public void traverse(TreeGenerator generator) throws IOException {
+        (new Visitor()).root(node, adapter).traverse(generator);
+    }
+
     public static final boolean deepEquals(TreeIO left, TreeIO right) {
         if (left == null) {
             return right == null;
@@ -64,7 +76,11 @@ public class TreeIO {
         return deepEquals(left.node, left.adapter, right.node, right.adapter);
     }
 
-    public static final boolean deepEquals(Object left, TreeAdapter leftAdapter, Object right, TreeAdapter rightAdapter) {
+    public static final boolean deepEquals(
+            final Object left,
+            final TreeAdapter leftAdapter,
+            final Object right,
+            final TreeAdapter rightAdapter) {
 
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
@@ -73,9 +89,14 @@ public class TreeIO {
             return false;
         }
 
-        NodeType leftType = leftAdapter.type(left);
-        NodeType rightType = rightAdapter.type(right);
+        final NodeType leftType = leftAdapter.type(left);
+        final NodeType rightType = rightAdapter.type(right);
 
+//TODO polynode!!
+//        if (leftType == NodeType.TREE_IO) {
+//            return deepEquals((((TreeIO)leftType), null)
+//        }
+        
         if (leftType != rightType) {
             return false;
         }
@@ -140,7 +161,11 @@ public class TreeIO {
         }
     }
 
-    protected static boolean deepEqualsCollection(Iterable<? extends Object> left, TreeAdapter leftAdapter, Iterable<? extends Object> right, TreeAdapter rightAdapter) {
+    protected static boolean deepEqualsCollection(
+            final Iterable<? extends Object> left, 
+            final TreeAdapter leftAdapter, 
+            final Iterable<? extends Object> right, 
+            final TreeAdapter rightAdapter) {
 
         final Iterator<? extends Object> leftIterator = left.iterator();
         final Iterator<? extends Object> rightIterator = right.iterator();
