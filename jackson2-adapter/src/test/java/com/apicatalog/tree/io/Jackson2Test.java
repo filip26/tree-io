@@ -36,7 +36,7 @@ class Jackson2Test {
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(0)
-    void testWrite(String name) throws IOException {
+    void testWrite(String name) throws IOException, TreeIOException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 

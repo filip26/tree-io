@@ -31,7 +31,7 @@ class CborTest {
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(1)
-    void testMaterialize(String name) throws IOException, CborException {
+    void testMaterialize(String name) throws IOException, CborException, TreeIOException {
         MATERIALIZER.structure(getCborResource(name).iterator().next(), CborAdapter.instance());
         assertEquals(getCborResource(name).iterator().next(), MATERIALIZER.cbor());
     }
