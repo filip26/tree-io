@@ -1,10 +1,10 @@
 package com.apicatalog.tree.io.jakarta;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeRenderer;
 
 import jakarta.json.Json;
@@ -24,9 +24,9 @@ public class JakartaRenderer implements TreeRenderer {
     }
 
     @Override
-    public void render(Object node, TreeAdapter adapter, OutputStream os) throws IOException {
+    public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
         try (final JsonGenerator generator = factory.createGenerator(os)) {
             (new JakartaGenerator(generator)).node(node, adapter);
-        }        
+        }
     }
 }

@@ -8,8 +8,12 @@ package com.apicatalog.tree.io;
  * processed due to invalid data, unsupported structure, or adapter failure.
  * </p>
  */
-public class TreeException extends Exception {
+public class TreeIOException extends Exception {
 
-    private static final long serialVersionUID = -5531531271614115471L;
+    private static final long serialVersionUID = -8158955344692239114L;
+
+    public TreeIOException(Throwable e) {
+        super(e);
+    }
 
 }

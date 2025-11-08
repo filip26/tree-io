@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.cbor;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
@@ -18,6 +17,7 @@ import java.util.stream.Stream;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeIOException;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -166,7 +166,7 @@ public class CborAdapter implements TreeAdapter {
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
         try {
             return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
-        } catch (IOException e) {
+        } catch (TreeIOException e) {
             throw new IllegalArgumentException(e);
         }
     }

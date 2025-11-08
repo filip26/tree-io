@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.cbor;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -9,6 +8,7 @@ import java.util.Deque;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 import co.nstant.in.cbor.model.Array;
@@ -56,7 +56,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
     }
 
 
-    public static DataItem node(Object key, TreeAdapter keyAdapter) throws IOException {
+    public static DataItem node(Object key, TreeAdapter keyAdapter) throws TreeIOException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -68,9 +68,9 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * @param node    the source root node to traverse
      * @param adapter the adapter for interpreting the source node's structure
      * @return the fully materialized {@link DataItem}
-     * @throws IOException if an error occurs during generation
+     * @throws TreeIOException if an error occurs during generation
      */
-    public DataItem structure(Object node, TreeAdapter adapter) throws IOException {
+    public DataItem structure(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).traverse(this);
         return cbor;
     }
@@ -115,7 +115,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginSet() throws IOException {
+    public void beginSet() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
 
@@ -170,7 +170,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void nullValue() throws IOException {
+    public void nullValue() throws TreeIOException {
         cbor(SimpleValue.NULL);
     }
 
@@ -178,7 +178,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void booleanValue(boolean node) throws IOException {
+    public void booleanValue(boolean node) throws TreeIOException {
         cbor(node ? SimpleValue.TRUE : SimpleValue.FALSE);
     }
 
@@ -186,7 +186,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void stringValue(String node) throws IOException {
+    public void stringValue(String node) throws TreeIOException {
         cbor(new UnicodeString(node));
     }
 
@@ -194,7 +194,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(long node) throws IOException {
+    public void numericValue(long node) throws TreeIOException {
         if (node < 0) {
             cbor(new NegativeInteger(node));
         } else {
@@ -206,7 +206,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(BigInteger node) throws IOException {
+    public void numericValue(BigInteger node) throws TreeIOException {
         if (node.signum() < 0) {
             cbor(new NegativeInteger(node));
         } else {
@@ -218,7 +218,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(double node) throws IOException {
+    public void numericValue(double node) throws TreeIOException {
         cbor(new DoublePrecisionFloat(node));
     }
 
@@ -226,7 +226,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(BigDecimal node) throws IOException {
+    public void numericValue(BigDecimal node) throws TreeIOException {
         cbor(new DoublePrecisionFloat(node.doubleValue()));
     }
 
@@ -234,7 +234,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void binaryValue(byte[] node) throws IOException {
+    public void binaryValue(byte[] node) throws TreeIOException {
         cbor(new ByteString(node));
     }
 

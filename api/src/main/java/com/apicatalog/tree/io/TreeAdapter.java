@@ -415,33 +415,6 @@ public interface TreeAdapter {
         return node != null && type(node) == NodeType.FALSE;
     }
 
-    @Deprecated
-    default Object asScalar(Object node) {
-        if (node == null) {
-            return null;
-        }
-
-        switch (type(node)) {
-        case NULL:
-            return null;
-
-        case FALSE:
-            return false;
-
-        case TRUE:
-            return true;
-
-        case NUMBER:
-            return numericValue(node);
-
-        case STRING:
-            return stringValue(node);
-
-        default:
-            return asString(node);
-        }
-    }
-
     default Number numericValue(Object node) {
         if (isIntegral(node)) {
             return bigIntegerValue(node);

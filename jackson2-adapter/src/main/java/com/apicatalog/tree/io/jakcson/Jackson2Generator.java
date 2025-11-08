@@ -6,9 +6,10 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 
 import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.traverse.Visitor;
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -46,7 +47,7 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
     public Features features() {
         return Jackson2Adapter.FEATURES;
     }
-    
+
     /**
      * The primary entry point for serialization. Traverses the given source node
      * and writes the corresponding JSON structure to the underlying
@@ -55,9 +56,9 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * @param node    the source root node to traverse
      * @param adapter the adapter for interpreting the source node's structure
      * @return the underlying {@link JsonGenerator} for further use if needed
-     * @throws IOException if an error occurs during writing
+     * @throws TreeIOException if an error occurs during writing
      */
-    public JsonGenerator node(Object node, TreeAdapter adapter) throws IOException {
+    public JsonGenerator node(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).traverse(this);
         return writer;
     }
@@ -67,11 +68,16 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * <p>
      * Writes a JSON start-object token (<code>{</code>).
      * </p>
-     * @throws IOException 
+     * 
+     * @throws TreeIOException
      */
     @Override
-    public void beginMap() throws IOException {
-        writer.writeStartObject();
+    public void beginMap() throws TreeIOException {
+        try {
+            writer.writeStartObject();
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -81,19 +87,22 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginList() throws IOException {
-        writer.writeStartArray();
+    public void beginList() throws TreeIOException {
+        try {
+            writer.writeStartArray();
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void beginSet() throws IOException {
+    public void beginSet() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
 
-    
     /**
      * {@inheritDoc}
      * <p>
@@ -102,15 +111,20 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void end() throws IOException {
-        if (NodeType.MAP == currentNodeType) {
-            writer.writeEndObject();
-            return;
+    public void end() throws TreeIOException {
+        try {
+            if (NodeType.MAP == currentNodeType) {
+                writer.writeEndObject();
+                return;
+            }
+            if (NodeType.COLLECTION == currentNodeType) {
+                writer.writeEndArray();
+                return;
+            }
+        } catch (IOException e) {
+            throw new TreeIOException(e);
         }
-        if (NodeType.COLLECTION == currentNodeType) {
-            writer.writeEndArray();
-            return;
-        }
+
         throw new IllegalStateException("The end() method was called in an invalid context.");
     }
 
@@ -121,8 +135,13 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws IOException {
-        writer.writeNull();
+    public void nullValue() throws TreeIOException {
+        try {
+            writer.writeNull();
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -132,8 +151,12 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(boolean value) throws IOException {
-        writer.writeBoolean(value);
+    public void booleanValue(boolean value) throws TreeIOException {
+        try {
+            writer.writeBoolean(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -144,12 +167,16 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(String value) throws IOException {
-        if (currentNodeContext == Context.PROPERTY_KEY) {
-            writer.writeFieldName(value);
-            return;
+    public void stringValue(String value) throws TreeIOException {
+        try {
+            if (currentNodeContext == Context.PROPERTY_KEY) {
+                writer.writeFieldName(value);
+                return;
+            }
+            writer.writeString(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
         }
-        writer.writeString(value);
     }
 
     /**
@@ -159,8 +186,12 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(long value) throws IOException {
-        writer.writeNumber(value);
+    public void numericValue(long value) throws TreeIOException {
+        try {
+            writer.writeNumber(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -170,8 +201,12 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigInteger value) throws IOException {
-        writer.writeNumber(value);
+    public void numericValue(BigInteger value) throws TreeIOException {
+        try {
+            writer.writeNumber(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -181,8 +216,12 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(double value) throws IOException {
-        writer.writeNumber(value);
+    public void numericValue(double value) throws TreeIOException {
+        try {
+            writer.writeNumber(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -192,8 +231,12 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigDecimal value) throws IOException {
-        writer.writeNumber(value);
+    public void numericValue(BigDecimal value) throws TreeIOException {
+        try {
+            writer.writeNumber(value);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -206,7 +249,7 @@ public class Jackson2Generator extends Visitor implements TreeGenerator {
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void binaryValue(byte[] value) throws IOException {
+    public void binaryValue(byte[] value) throws TreeIOException {
         throw new UnsupportedOperationException("JSON does not support a native binary type.");
     }
 }

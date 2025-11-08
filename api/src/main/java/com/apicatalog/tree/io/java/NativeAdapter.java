@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.java;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -18,9 +17,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.TreeIOException;
 
 public class NativeAdapter implements TreeAdapter {
 
@@ -124,7 +124,7 @@ public class NativeAdapter implements TreeAdapter {
         try {
             return ((Map) node).get(NativeMaterializer.node(key, keyAdapter));
 
-        } catch (IOException e) {
+        } catch (TreeIOException e) {
             throw new IllegalStateException(e);
         }
     }

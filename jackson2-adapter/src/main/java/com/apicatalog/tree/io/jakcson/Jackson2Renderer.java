@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeRenderer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -17,10 +18,11 @@ public class Jackson2Renderer implements TreeRenderer {
     }
 
     @Override
-    public void render(Object node, TreeAdapter adapter, OutputStream os) throws IOException {
+    public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
         try (JsonGenerator generator = factory.createGenerator(os)) {
             (new Jackson2Generator(generator)).node(node, adapter);
+        } catch (IOException e) {
+            throw new TreeIOException(e);
         }
     }
-
 }

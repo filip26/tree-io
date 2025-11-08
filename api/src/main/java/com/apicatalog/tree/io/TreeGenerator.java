@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -47,60 +46,60 @@ public interface TreeGenerator {
     /**
      * Adds a null value to the current context.
      *
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void nullValue() throws IOException;
+    void nullValue() throws TreeIOException;
 
     /**
      * Adds a boolean value to the current context.
      *
      * @param value the boolean value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void booleanValue(boolean value) throws IOException;
+    void booleanValue(boolean value) throws TreeIOException;
 
     /**
      * Adds a string value. Depending on the context, this could represent a map
      * key, a value associated with a key, or an element in a collection.
      *
      * @param value the non-null string value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void stringValue(String value) throws IOException;
+    void stringValue(String value) throws TreeIOException;
 
     /**
      * Adds a long integer value. Depending on the context, this could represent a
      * map key (in formats like CBOR), a value, or a collection element.
      *
      * @param value the long value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void numericValue(long value) throws IOException;
+    void numericValue(long value) throws TreeIOException;
 
     /**
      * Adds an arbitrary-precision integer value. Depending on the context, this
      * could represent a map key, a value, or a collection element.
      *
      * @param value the non-null BigInteger value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void numericValue(BigInteger value) throws IOException;
+    void numericValue(BigInteger value) throws TreeIOException;
 
     /**
      * Adds a double-precision floating-point value to the current context.
      *
      * @param value the double value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void numericValue(double value) throws IOException;
+    void numericValue(double value) throws TreeIOException;
 
     /**
      * Adds an arbitrary-precision decimal value to the current context.
      *
      * @param value the non-null BigDecimal value to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void numericValue(BigDecimal value) throws IOException;
+    void numericValue(BigDecimal value) throws TreeIOException;
 
     /**
      * Adds a binary data value to the current context. The specific encoding (e.g.,
@@ -108,9 +107,9 @@ public interface TreeGenerator {
      * implementation.
      *
      * @param value the non-null byte array to add.
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void binaryValue(byte[] value) throws IOException;
+    void binaryValue(byte[] value) throws TreeIOException;
 
     // --- structures --
 
@@ -125,9 +124,9 @@ public interface TreeGenerator {
      * Every call to this method must be matched by a corresponding call to
      * {@link #end()}.
      *
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void beginMap() throws IOException;
+    void beginMap() throws TreeIOException;
 
     /**
      * Begins a new list (or array) structure. An ordered collection that allows
@@ -135,9 +134,9 @@ public interface TreeGenerator {
      * of the list. Every call to this method must be matched by a corresponding
      * call to {@link #end()}.
      *
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void beginList() throws IOException;
+    void beginList() throws TreeIOException;
 
     /**
      * Begins a new set structure. An unordered collection of unique elements. After
@@ -145,15 +144,15 @@ public interface TreeGenerator {
      * call to this method must be matched by a corresponding call to
      * {@link #end()}.
      *
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void beginSet() throws IOException;
+    void beginSet() throws TreeIOException;
 
     /**
      * Ends the current map or collection structure. This call must match a
      * preceding {@link #beginMap()} or {@link #beginList()}.
      *
-     * @throws IOException if an I/O error occurs during construction.
+     * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void end() throws IOException;
+    void end() throws TreeIOException;
 }

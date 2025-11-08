@@ -23,8 +23,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.apicatalog.tree.io.jakarta.JakartaAdapter;
-import com.apicatalog.tree.io.jakarta.JakartaMaterializer;
 import com.apicatalog.tree.io.jakarta.JakartaGenerator;
+import com.apicatalog.tree.io.jakarta.JakartaMaterializer;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
@@ -47,7 +47,7 @@ class JakartaTest {
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(0)
-    void testWrite(String name) throws IOException {
+    void testWrite(String name) throws TreeIOException {
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -61,13 +61,13 @@ class JakartaTest {
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(1)
-    void testMaterialize(String name) throws IOException {
+    void testMaterialize(String name) throws TreeIOException {
         JakartaMaterializer materializer = new JakartaMaterializer();
         materializer.node(getJsonResource(name), JakartaAdapter.instance());
         assertEquals(getJsonResource(name), materializer.json());
     }
 
-    static final Stream<String> resources() throws IOException {
+    static final Stream<String> resources() throws TreeIOException {
         URL url = JakartaTest.class.getResource("");
 
         return Stream.of(new File(url.getPath()).listFiles())

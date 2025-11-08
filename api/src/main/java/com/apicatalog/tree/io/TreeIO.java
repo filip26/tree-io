@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -62,7 +61,7 @@ public class TreeIO {
         (new Visitor()).root(node, adapter).traverse(visitor);
     }
 
-    public void traverse(TreeGenerator generator) throws IOException {
+    public void traverse(TreeGenerator generator) throws TreeIOException {
         (new Visitor()).root(node, adapter).traverse(generator);
     }
 

@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.jakarta;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -10,6 +9,7 @@ import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 import jakarta.json.JsonArrayBuilder;
@@ -65,7 +65,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
         this.json = null;
     }
 
-    public JsonValue node(TreeIO node) throws IOException {
+    public JsonValue node(TreeIO node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
     
@@ -76,9 +76,9 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * @param node    the source root node to traverse
      * @param adapter the adapter for interpreting the source node's structure
      * @return the fully materialized {@link JsonValue}
-     * @throws IOException if an error occurs during generation
+     * @throws TreeIOException if an error occurs during generation
      */
-    public JsonValue node(Object node, TreeAdapter adapter) throws IOException {
+    public JsonValue node(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).traverse(this);
         return json;
     }
@@ -115,7 +115,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws IOException {
+    public void nullValue() throws TreeIOException {
         json(JsonValue.NULL);
     }
 
@@ -126,7 +126,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(boolean node) throws IOException {
+    public void booleanValue(boolean node) throws TreeIOException {
         json(node ? JsonValue.TRUE : JsonValue.FALSE);
     }
 
@@ -139,7 +139,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(String node) throws IOException {
+    public void stringValue(String node) throws TreeIOException {
         if (currentNodeContext == Context.PROPERTY_KEY) {
             builders.push(node);
             return;
@@ -154,7 +154,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(long node) throws IOException {
+    public void numericValue(long node) throws TreeIOException {
         json(provider.createValue(node));
     }
 
@@ -165,7 +165,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigInteger node) throws IOException {
+    public void numericValue(BigInteger node) throws TreeIOException {
         json(provider.createValue(node));
     }
 
@@ -176,7 +176,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(double node) throws IOException {
+    public void numericValue(double node) throws TreeIOException {
         json(provider.createValue(node));
     }
 
@@ -187,7 +187,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigDecimal node) throws IOException {
+    public void numericValue(BigDecimal node) throws TreeIOException {
         json(provider.createValue(node));
     }
 
@@ -201,7 +201,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void binaryValue(byte[] node) throws IOException {
+    public void binaryValue(byte[] node) throws TreeIOException {
         throw new UnsupportedOperationException("Jakarta JSON-P does not support a native binary type.");
     }
 
@@ -213,7 +213,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginMap() throws IOException {
+    public void beginMap() throws TreeIOException {
         builders.push(provider.createObjectBuilder());
     }
 
@@ -225,7 +225,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginList() throws IOException {
+    public void beginList() throws TreeIOException {
         builders.push(provider.createArrayBuilder());
     }
 
@@ -233,7 +233,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginSet() throws IOException {
+    public void beginSet() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
 
@@ -247,7 +247,7 @@ public class JakartaMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void end() throws IOException {
+    public void end() throws TreeIOException {
 
         final Object builder = builders.pop();
 

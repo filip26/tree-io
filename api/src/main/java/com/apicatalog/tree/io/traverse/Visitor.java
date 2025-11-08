@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.traverse;
 
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
@@ -14,6 +13,7 @@ import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.TreeIOException;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
@@ -126,11 +126,11 @@ public class Visitor {
      * node using {@link #next()} and emits a corresponding event to the generator.
      *
      * @param generator the generator that will receive construction events.
-     * @throws IOException           if the generator encounters an I/O error.
+     * @throws TreeIOException           if the generator encounters an I/O error.
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public void traverse(final TreeGenerator generator) throws IOException {
+    public void traverse(final TreeGenerator generator) throws TreeIOException {
         while (next()) {
 
             if (Context.END == currentNodeContext) {

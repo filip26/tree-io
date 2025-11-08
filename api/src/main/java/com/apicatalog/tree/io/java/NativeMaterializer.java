@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.java;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -12,10 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.apicatalog.tree.io.Features;
+import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.traverse.Visitor;
 
 /**
@@ -50,11 +50,11 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
         return NativeAdapter.FEATURES;
     }
 
-    public static Object node(TreeIO node) throws IOException {
+    public static Object node(TreeIO node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
 
-    public static Object node(Object node, TreeAdapter adapter) throws IOException {
+    public static Object node(Object node, TreeAdapter adapter) throws TreeIOException {
 
         if (NativeAdapter.instance().isCompatibleWith(adapter)) {
             return node;
@@ -69,7 +69,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
         return new NativeMaterializer().structure(node, adapter);
     }
 
-    public static Object scalar(Object node, TreeAdapter adapter) throws IOException {
+    public static Object scalar(Object node, TreeAdapter adapter) throws TreeIOException {
         final NodeType type = adapter.type(node);
 
         switch (type) {
@@ -98,9 +98,9 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * @param node    the source root node to traverse
      * @param adapter the adapter for interpreting the source node's structure
      * @return the fully materialized object
-     * @throws IOException if an error occurs during generation
+     * @throws TreeIOException if an error occurs during generation
      */
-    public Object structure(Object node, TreeAdapter adapter) throws IOException {
+    public Object structure(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).traverse(this);
         return object;
     }
@@ -134,7 +134,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void nullValue() throws IOException {
+    public void nullValue() throws TreeIOException {
         value(null);
     }
 
@@ -142,7 +142,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void booleanValue(boolean node) throws IOException {
+    public void booleanValue(boolean node) throws TreeIOException {
         value(node);
     }
 
@@ -155,7 +155,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(String node) throws IOException {
+    public void stringValue(String node) throws TreeIOException {
         if (currentNodeContext == Context.PROPERTY_KEY) {
             structures.push(node);
             return;
@@ -167,7 +167,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(long node) throws IOException {
+    public void numericValue(long node) throws TreeIOException {
         value(node);
     }
 
@@ -175,7 +175,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(BigInteger node) throws IOException {
+    public void numericValue(BigInteger node) throws TreeIOException {
         value(node);
     }
 
@@ -183,7 +183,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(double node) throws IOException {
+    public void numericValue(double node) throws TreeIOException {
         value(node);
     }
 
@@ -191,7 +191,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void numericValue(BigDecimal node) throws IOException {
+    public void numericValue(BigDecimal node) throws TreeIOException {
         value(node);
     }
 
@@ -201,7 +201,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void binaryValue(byte[] node) throws IOException {
+    public void binaryValue(byte[] node) throws TreeIOException {
         value(node);
     }
 
@@ -209,7 +209,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginMap() throws IOException {
+    public void beginMap() throws TreeIOException {
         structures.push(new LinkedHashMap<>());
     }
 
@@ -217,7 +217,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginList() throws IOException {
+    public void beginList() throws TreeIOException {
         structures.push(new ArrayList<>());
     }
 
@@ -225,7 +225,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginSet() throws IOException {
+    public void beginSet() throws TreeIOException {
         structures.push(new LinkedHashSet<>());
     }
 
@@ -239,7 +239,7 @@ public class NativeMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void end() throws IOException {
+    public void end() throws TreeIOException {
 
         object = structures.pop();
 

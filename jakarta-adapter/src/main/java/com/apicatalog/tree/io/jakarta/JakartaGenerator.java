@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.jakarta;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -9,8 +8,10 @@ import java.util.function.Function;
 import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.traverse.Visitor;
 
+import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
 
 /**
@@ -75,9 +76,9 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * @param node    the source root node to traverse
      * @param adapter the adapter for interpreting the source node's structure
      * @return the underlying {@link JsonGenerator} for further use if needed
-     * @throws IOException if an error occurs during writing
+     * @throws TreeIOException if an error occurs during writing
      */
-    public JsonGenerator node(Object node, TreeAdapter adapter) throws IOException {
+    public JsonGenerator node(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).traverse(this);
         return writer;
     }
@@ -89,8 +90,13 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws IOException {
-        writer.writeNull();
+    public void nullValue() throws TreeIOException {
+        try {
+            writer.writeNull();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -100,8 +106,13 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(boolean node) throws IOException {
-        writer.write(node);
+    public void booleanValue(boolean node) throws TreeIOException {
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -112,12 +123,17 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(String node) throws IOException {
-        if (currentNodeContext == Context.PROPERTY_KEY) {
-            writer.writeKey(node);
-            return;
+    public void stringValue(String node) throws TreeIOException {
+        try {
+            if (currentNodeContext == Context.PROPERTY_KEY) {
+                writer.writeKey(node);
+                return;
+            }
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
         }
-        writer.write(node);
+
     }
 
     /**
@@ -127,8 +143,13 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(long node) throws IOException {
-        writer.write(node);
+    public void numericValue(long node) throws TreeIOException {
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -138,8 +159,13 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigInteger node) throws IOException {
-        writer.write(node);
+    public void numericValue(BigInteger node) throws TreeIOException {
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -149,8 +175,13 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(double node) throws IOException {
-        writer.write(node);
+    public void numericValue(double node) throws TreeIOException {
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
     }
 
     /**
@@ -160,8 +191,12 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigDecimal node) throws IOException {
-        writer.write(node);
+    public void numericValue(BigDecimal node) throws TreeIOException {
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -175,11 +210,15 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      *                                       construction
      */
     @Override
-    public void binaryValue(byte[] node) throws IOException {
+    public void binaryValue(byte[] node) throws TreeIOException {
         if (encoder == null) {
             throw new UnsupportedOperationException("Binary values are not supported without a configured encoder.");
-        } 
-        writer.write(encoder.apply(node));
+        }
+        try {
+            writer.write(encoder.apply(node));
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -189,8 +228,12 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginMap() throws IOException {
-        writer.writeStartObject();
+    public void beginMap() throws TreeIOException {
+        try {
+            writer.writeStartObject();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -198,18 +241,28 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * <p>
      * Writes a JSON start-array token ({@code '['}).
      * </p>
+     * @throws TreeIOException 
      */
     @Override
-    public void beginList() {
-        writer.writeStartArray();
+    public void beginList() throws TreeIOException {
+        try {
+            writer.writeStartArray();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
      * {@inheritDoc}
+     * @throws TreeIOException 
      */
     @Override
-    public void beginSet() {
-        writer.writeStartArray();
+    public void beginSet() throws TreeIOException {
+        try {
+            writer.writeStartArray();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 
     /**
@@ -218,9 +271,15 @@ public class JakartaGenerator extends Visitor implements TreeGenerator {
      * Writes a JSON end token (<code>}</code> or <code>]</code>) to close the
      * current object or array context.
      * </p>
+     * 
+     * @throws TreeIOException
      */
     @Override
-    public void end() {
-        writer.writeEnd();
+    public void end() throws TreeIOException {
+        try {
+            writer.writeEnd();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
     }
 }
