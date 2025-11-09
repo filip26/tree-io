@@ -8,9 +8,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
- * Immutable representation of a tree root where the node and its descendants
+ * Immutable representation of a tree node where the node and its descendants
  * are accessed through a {@link TreeAdapter}.
  * <p>
  * A {@link TreeIO} instance binds a node with its adapter, providing a uniform
@@ -271,6 +272,10 @@ public class TreeIO {
 
     public Entry<?, ?> singleEntry() {
         return adapter.singleEntry(node);
+    }
+
+    public Stream<?> keyStream() {
+        return adapter.keyStream(node);
     }
 
 }
