@@ -9,8 +9,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.apicatalog.tree.io.traverse.Visitor;
-
 /**
  * Immutable representation of a tree root where the node and its descendants
  * are accessed through a {@link TreeAdapter}.
@@ -57,12 +55,12 @@ public class TreeIO {
         return node;
     }
 
-    public void traverse(Consumer<Visitor> visitor) {
-        (new Visitor()).root(node, adapter).traverse(visitor);
+    public void traverse(Consumer<TreeTraversal> visitor) {
+        (new TreeTraversal()).root(node, adapter).traverse(visitor);
     }
 
     public void traverse(TreeGenerator generator) throws TreeIOException {
-        (new Visitor()).root(node, adapter).traverse(generator);
+        (new TreeTraversal()).root(node, adapter).traverse(generator);
     }
 
     public static final boolean deepEquals(TreeIO left, TreeIO right) {

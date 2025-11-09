@@ -9,7 +9,7 @@ import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.traverse.Visitor;
+import com.apicatalog.tree.io.TreeTraversal;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -25,7 +25,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link Visitor} and {@link TreeGenerator},
+ * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -36,7 +36,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class CborMaterializer extends Visitor implements TreeGenerator {
+public class CborMaterializer extends TreeTraversal implements TreeGenerator {
 
     protected DataItem cbor;
     protected final Deque<Object> builders;
@@ -83,7 +83,7 @@ public class CborMaterializer extends Visitor implements TreeGenerator {
      * </p>
      */
     @Override
-    public Visitor reset() {
+    public TreeTraversal reset() {
         this.cbor = null;
         this.builders.clear();
         return super.reset();

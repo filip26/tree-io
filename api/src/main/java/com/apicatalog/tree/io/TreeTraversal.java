@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io.traverse;
+package com.apicatalog.tree.io;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -8,12 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import com.apicatalog.tree.io.NodeType;
-import com.apicatalog.tree.io.TreeAdapter;
-import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIO;
-import com.apicatalog.tree.io.TreeIOException;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
@@ -42,7 +36,7 @@ import com.apicatalog.tree.io.TreeIOException;
  * iteration order.</li>
  * </ul>
  */
-public class Visitor {
+public class TreeTraversal {
 
     /**
      * Identifies the role of the current node within the tree structure during
@@ -92,15 +86,15 @@ public class Visitor {
     protected NodeType currentNodeType;
     protected Context currentNodeContext;
 
-    public Visitor() {
+    public TreeTraversal() {
         this(new ArrayDeque<>(), null);
     }
 
-    public Visitor(final Deque<Object> stack) {
+    public TreeTraversal(final Deque<Object> stack) {
         this(stack, null);
     }
 
-    public Visitor(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    public TreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -113,7 +107,7 @@ public class Visitor {
         this.currentNodeType = null;
     }
     
-    public void traverse(final Consumer<Visitor> consumer) {
+    public void traverse(final Consumer<TreeTraversal> consumer) {
         while (next()) {
             consumer.accept(this);
         }        
@@ -317,7 +311,7 @@ public class Visitor {
      *
      * @return this instance, for chaining.
      */
-    public Visitor reset() {
+    public TreeTraversal reset() {
         this.adapters.clear();
         this.stack.clear();
         this.depth = 0;
@@ -335,7 +329,7 @@ public class Visitor {
      * @param adapter the adapter for interpreting the new tree structure.
      * @return this instance, for chaining.
      */
-    public Visitor root(Object node, TreeAdapter adapter) {
+    public TreeTraversal root(Object node, TreeAdapter adapter) {
         this.adapters.push(adapter);
         this.stack.push(node);
         return this;

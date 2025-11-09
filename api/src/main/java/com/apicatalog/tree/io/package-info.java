@@ -9,16 +9,16 @@
  * 
  * <ol>
  * <li><b>{@link com.apicatalog.tree.io.TreeAdapter}: The Reader</b><br>
- * Acts as a read-only "view" or "wrapper" over a native tree structure. It
- * translates a specific format into a generic interface that the rest of the
- * framework can understand.</li>
+ * Acts as a read-only "view" over a native tree structure. It translates a
+ * specific format into a generic interface that the rest of the framework can
+ * understand.</li>
  * <li><b>{@link com.apicatalog.tree.io.TreeGenerator}: The Writer</b><br>
- * Provides a write-only, streaming API for building a new tree structure. It
+ * Provides a write-only, streaming API for serializing a tree structure. It
  * abstracts the destination, which could be anything from a file on disk to an
  * in-memory object model.</li>
- * <li><b>{@link com.apicatalog.tree.io.traverse.Visitor}: The Engine</b><br>
+ * <li><b>{@link com.apicatalog.tree.io.TreeTraversal}: The Engine</b><br>
  * A stateful, non-recursive iterator that traverses the structure exposed by a
- * {@code NodeAdapter} and drives a {@code NodeGenerator}. It is the engine that
+ * {@code TreeAdapter} and drives a {@code TreeGenerator}. It is the engine that
  * connects a source to a destination.</li>
  * </ol>
  *

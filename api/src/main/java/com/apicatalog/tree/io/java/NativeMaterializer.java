@@ -16,13 +16,13 @@ import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIO;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.traverse.Visitor;
+import com.apicatalog.tree.io.TreeTraversal;
 
 /**
  * A specialized class that builds a native object model from any tree-like
  * source.
  * <p>
- * This class implements both {@link Visitor} and {@link TreeGenerator},
+ * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -33,7 +33,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends Visitor implements TreeGenerator {
+public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
 
     protected final Deque<Object> structures;
 

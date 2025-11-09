@@ -9,7 +9,7 @@ import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.traverse.Visitor;
+import com.apicatalog.tree.io.TreeTraversal;
 
 import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
@@ -18,7 +18,7 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link Visitor} and {@link TreeGenerator},
+ * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
  * enabling it to function as a self-contained serialization engine. It
  * traverses a source structure (via its {@code NodeVisitor} parent) and
  * consumes its own traversal events (via its {@code NodeGenerator}
@@ -31,7 +31,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator extends Visitor implements TreeGenerator {
+public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;

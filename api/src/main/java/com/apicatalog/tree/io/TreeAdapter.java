@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.traverse.Visitor;
-
 /**
  * Provides a uniform, read-only abstraction for navigating tree-like data
  * structures. This interface acts as a "wrapper" or "view" over an existing,
@@ -27,7 +25,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * from a native tree representation (e.g., an in-memory JSON object model)
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
- * <li><b>Data Transformation:</b> Serve as the input for a {@link Visitor},
+ * <li><b>Data Transformation:</b> Serve as the input for a {@link TreeTraversal},
  * which walks the tree exposed by this adapter and drives a
  * {@link TreeGenerator}. This powerful pattern is the foundation for
  * converting between different data formats (e.g., from a YAML document to a

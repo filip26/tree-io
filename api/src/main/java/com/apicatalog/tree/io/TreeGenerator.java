@@ -3,8 +3,6 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.apicatalog.tree.io.traverse.Visitor;
-
 /**
  * Provides a uniform, event-based abstraction for constructing tree-like data
  * structures. This interface decouples the process of describing a tree from
@@ -15,7 +13,7 @@ import com.apicatalog.tree.io.traverse.Visitor;
  * </p>
  * <p>
  * While this interface can be implemented and driven manually, it is often used
- * as a target for a {@link Visitor}. The visitor traverses a source tree
+ * as a target for a {@link TreeTraversal}. The visitor traverses a source tree
  * (read via a {@link TreeAdapter}) and calls the appropriate methods on this
  * generator, effectively enabling powerful tree transformation and conversion
  * workflows.
