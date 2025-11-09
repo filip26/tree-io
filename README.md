@@ -35,24 +35,18 @@
 The most common use case is a full transformation from a source to a destination.
 
 ```javascript
-// Have a source object (e.g., a Map) and a destination (e.g., a JsonGenerator)
-Map<String, Object> source = Map.of("hello", "world");
-JsonGenerator destination = ... ;
+var source = Map.of("hello", "world");
 
-// Create an adapter for the source and a writer for the destination
-var adapter = new NativeAdapter();
-var jsonWriter = new Jackson2Writer(destination);
-var cborWriter = new CborWriter(destination);
+var renderer = new Jackson2Rendered(objectMapper);
 
-// Run the transformation with a single call
-jsonWriter.node(source, adapter);
-// or/and
-cborWriter.node(source, adapter);
+// prints the Map as JSON Object
+renderer.render(source, NativeAdapter.instance(), outputStream);
+
 ```
 
 ### Direct Node Inspection using NodeAdapter
 
-Use a NodeAdapter directly when you need to read, inspect, or extract specific values from a tree structure without traversing the entire tree.
+Use a `TreeAdapter` directly when you need to read, inspect, or extract specific values from a tree structure without traversing the entire tree.
 
 ```javascript
 // Given any 'node' object and a suitable 'adapter'...
@@ -89,16 +83,20 @@ if (adapter.isMap(node)) {
 }
 ```
 
-### Manual Traversal using NodeVisitor
-For complex processing like searching or validation, you can manually iterate through the tree using the step() method of a NodeVisitor.
+### Automatic Traversal with TreeGenerator
+
+TDB
+
+### Manual Traversal using TreeTraversal
+For complex processing like searching or validation, you can manually iterate through the tree using the next() method of a `TreeTraversal`.
 
 ```javascript
 // Given a source object and a suitable adapter...
-Object source = ... ;
-NodeAdapter adapter = ... ;
+var source = ... ;
+TreeAdapter adapter = ... ;
 
 // 1. Create the visitor instance.
-NodeVisitor visitor = NodeVisitor.of(source, adapter);
+var traversal = new TreeTraversal().root(source, adapter);
 
 // 2. Loop step-by-step through every node in the tree.
 while (visitor.step()) {
