@@ -187,7 +187,7 @@ public class NativeAdapter implements TreeAdapter {
     }
 
     @Override
-    public BigInteger bigIntegerValue(Object node) {
+    public BigInteger integerValue(Object node) {
         if (node instanceof Long) {
             return BigInteger.valueOf((Long) node);
         }
@@ -393,7 +393,7 @@ public class NativeAdapter implements TreeAdapter {
 
         case NUMBER:
             return adapter.isIntegral(value)
-                    ? adapter.bigIntegerValue(value)
+                    ? adapter.integerValue(value)
                     : adapter.decimalValue(value);
 
         case TRUE:

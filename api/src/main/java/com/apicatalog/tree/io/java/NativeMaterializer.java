@@ -85,7 +85,7 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
             return adapter.stringValue(node);
         case NUMBER:
             return adapter.isIntegral(node)
-                    ? adapter.bigIntegerValue(node)
+                    ? adapter.integerValue(node)
                     : adapter.decimalValue(node);
         default:
             throw new IllegalArgumentException();

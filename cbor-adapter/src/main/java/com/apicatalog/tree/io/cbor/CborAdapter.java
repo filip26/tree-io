@@ -253,7 +253,7 @@ public class CborAdapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public BigInteger bigIntegerValue(Object node) {
+    public BigInteger integerValue(Object node) {
         return ((co.nstant.in.cbor.model.Number) node).getValue();
     }
 
@@ -462,7 +462,7 @@ public class CborAdapter implements TreeAdapter {
     @Override
     public BigDecimal asDecimal(Object node) {
         if (isIntegral(node)) {
-            return new BigDecimal(bigIntegerValue(node));
+            return new BigDecimal(integerValue(node));
         }
         return decimalValue(node);
     }

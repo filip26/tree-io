@@ -210,7 +210,7 @@ public class Jackson2Adapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public BigInteger bigIntegerValue(Object node) {
+    public BigInteger integerValue(Object node) {
         return ((JsonNode) node).bigIntegerValue();
     }
 

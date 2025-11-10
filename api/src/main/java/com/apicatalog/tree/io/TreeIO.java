@@ -113,8 +113,8 @@ public class TreeIO {
         case NUMBER:
             if (leftAdapter.isIntegral(left)) {
                 return rightAdapter.isIntegral(right) && Objects.equals(
-                        leftAdapter.bigIntegerValue(left),
-                        rightAdapter.bigIntegerValue(right));
+                        leftAdapter.integerValue(left),
+                        rightAdapter.integerValue(right));
             }
             return !rightAdapter.isIntegral(right) && Objects.equals(
                     leftAdapter.decimalValue(left),

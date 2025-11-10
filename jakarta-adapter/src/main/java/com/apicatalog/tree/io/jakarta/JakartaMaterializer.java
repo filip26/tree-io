@@ -79,6 +79,12 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
      * @throws TreeIOException if an error occurs during generation
      */
     public JsonValue node(Object node, TreeAdapter adapter) throws TreeIOException {
+        
+        if (adapter.type(node).isScalar()) {
+            scalar(node, adapter);
+            return json;
+        }
+        
         root(node, adapter).traverse(this);
         return json;
     }
@@ -297,6 +303,41 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
 
         default:
             throw new IllegalStateException("Cannot add a JsonValue in the current context: " + currentNodeContext);
+        }
+    }
+    
+    protected void scalar(final Object node, final TreeAdapter adapter) throws TreeIOException {
+        
+        currentNodeContext = Context.ROOT;
+        
+        switch (adapter.type(node)) {
+        case FALSE:
+            booleanValue(false);
+            break;
+            
+        case TRUE:
+            booleanValue(true);
+            break;
+            
+        case STRING:
+            stringValue(adapter.stringValue(node));
+            break;
+            
+        case NULL:
+            nullValue();
+            break;
+            
+        case NUMBER:
+            if (adapter.isIntegral(node)) {
+                numericValue(adapter.integerValue(node));
+                break;                
+            }
+            numericValue(adapter.decimalValue(node));
+            break;
+        
+        default:
+            throw new IllegalStateException();  //TODO
+            
         }
     }
 }

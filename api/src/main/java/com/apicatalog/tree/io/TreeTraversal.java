@@ -163,7 +163,7 @@ public class TreeTraversal {
 
             case NUMBER:
                 if (adapter().isIntegral(currentNode)) {
-                    generator.numericValue(adapter().bigIntegerValue(currentNode));
+                    generator.numericValue(adapter().integerValue(currentNode));
                 } else {
                     generator.numericValue(adapter().asDecimal(currentNode));
                 }

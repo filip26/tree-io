@@ -330,7 +330,7 @@ public interface TreeAdapter {
      * @return the value as a {@link BigInteger}.
      * @throws ClassCastException if the node is not a number.
      */
-    BigInteger bigIntegerValue(Object node);
+    BigInteger integerValue(Object node);
 
     /**
      * Extracts the {@code double} value from a numeric node.
@@ -415,7 +415,7 @@ public interface TreeAdapter {
 
     default Number numericValue(Object node) {
         if (isIntegral(node)) {
-            return bigIntegerValue(node);
+            return integerValue(node);
         }
         return decimalValue(node);
     }
