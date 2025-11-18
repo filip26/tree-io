@@ -2,7 +2,12 @@ name: Publish to the Maven Central
 
 on:
   workflow_dispatch:
-  
+    inputs:
+      workingDir:
+        description: "Folder to use as working directory (e.g. '.' or 'submodule')"
+        required: true
+        default: ${{ github.workspace }}
+          
 jobs:
   publish:
     permissions:
@@ -23,6 +28,7 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
       - name: Build and Deploy
+        working-directory: ${{ github.event.inputs.workingDir }}
         run: mvn -B -Pmaven-central deploy
         env:
           CENTRAL_TOKEN_ID: ${{ secrets.CENTRAL_TOKEN_ID }}
