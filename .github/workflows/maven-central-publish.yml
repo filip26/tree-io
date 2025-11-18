@@ -6,7 +6,7 @@ on:
       workingDir:
         description: "Folder to use as working directory (e.g. '.' or 'submodule')"
         required: true
-        default: ${{ github.workspace }}
+        default: "."
           
 jobs:
   publish:
