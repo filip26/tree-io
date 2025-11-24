@@ -2,18 +2,17 @@ package com.apicatalog.tree.io.jakarta;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
@@ -98,31 +97,23 @@ public class JakartaAdapter implements TreeAdapter {
         if (node == null) {
             return NodeType.NULL;
         }
-        
+
         // property keys are strings
         if (node instanceof String) {
             return NodeType.STRING;
         }
 
         // all other values
-        switch (((JsonValue) node).getValueType()) {
-        case NULL:
-            return NodeType.NULL;
-        case TRUE:
-            return NodeType.TRUE;
-        case FALSE:
-            return NodeType.FALSE;
-        case STRING:
-            return NodeType.STRING;
-        case NUMBER:
-            return NodeType.NUMBER;
-        case ARRAY:
-            return NodeType.COLLECTION;
-        case OBJECT:
-            return NodeType.MAP;
-        default:
-            throw new IllegalArgumentException("Unsupported JsonValue type.");
-        }
+        return switch (((JsonValue) node).getValueType()) {
+        case NULL -> NodeType.NULL;
+        case TRUE -> NodeType.TRUE;
+        case FALSE -> NodeType.FALSE;
+        case STRING -> NodeType.STRING;
+        case NUMBER -> NodeType.NUMBER;
+        case ARRAY -> NodeType.COLLECTION;
+        case OBJECT -> NodeType.MAP;
+        default -> throw new IllegalArgumentException("Unsupported JsonValue type=" + ((JsonValue) node).getValueType());
+        };
     }
 
     /**
@@ -188,8 +179,8 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public String stringValue(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
         return ((JsonString) node).getString();
     }
@@ -256,10 +247,10 @@ public class JakartaAdapter implements TreeAdapter {
         if (node == null) {
             return Collections.emptyList();
         }
-        if (node instanceof JsonArray) {
-            return ((JsonArray) node);
+        if (node instanceof JsonArray array) {
+            return array;
         }
-        return Collections.singletonList((JsonValue) node);
+        return List.of((JsonValue) node);
     }
 
     /**
@@ -270,10 +261,13 @@ public class JakartaAdapter implements TreeAdapter {
         if (node == null) {
             return Stream.empty();
         }
-        if (node instanceof JsonArray) {
-            return ((JsonArray) node).stream();
+        if (node instanceof JsonArray array) {
+            return array.stream();
         }
-        return Stream.of((JsonValue) node);
+        if (node instanceof JsonValue value) {
+            return Stream.of(value);
+        }
+        throw new ClassCastException();
     }
 
     /**
@@ -282,8 +276,8 @@ public class JakartaAdapter implements TreeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || (node instanceof JsonValue
-                        && ValueType.NULL.equals(((JsonValue) node).getValueType()));
+                || (node instanceof JsonValue value
+                        && ValueType.NULL == value.getValueType());
     }
 
     /**
@@ -291,9 +285,9 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public boolean isBoolean(Object node) {
-        return node instanceof JsonValue
-                && (ValueType.TRUE.equals(((JsonValue) node).getValueType())
-                        || ValueType.FALSE.equals(((JsonValue) node).getValueType()));
+        return node instanceof JsonValue value
+                && (ValueType.TRUE == value.getValueType()
+                        || ValueType.FALSE == value.getValueType());
     }
 
     /**
@@ -353,7 +347,8 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public boolean isIntegral(Object node) {
-        return node instanceof JsonNumber && ((JsonNumber) node).isIntegral();
+        return node instanceof JsonNumber number
+                && number.isIntegral();
     }
 
     /**
@@ -378,22 +373,26 @@ public class JakartaAdapter implements TreeAdapter {
 
     @Override
     public boolean isEmptyCollection(Object node) {
-        return node instanceof JsonArray && ((JsonArray) node).isEmpty();
+        return node instanceof JsonArray array
+                && array.isEmpty();
     }
 
     @Override
     public boolean isEmptyMap(Object node) {
-        return node instanceof JsonObject && ((JsonObject) node).isEmpty();
+        return node instanceof JsonObject object
+                && object.isEmpty();
     }
 
     @Override
     public boolean isTrue(Object node) {
-        return node instanceof JsonValue && ((JsonValue) node).getValueType() == ValueType.TRUE;
+        return node instanceof JsonValue value
+                && value.getValueType() == ValueType.TRUE;
     }
 
     @Override
     public boolean isFalse(Object node) {
-        return node instanceof JsonValue && ((JsonValue) node).getValueType() == ValueType.FALSE;
+        return node instanceof JsonValue value
+                && value.getValueType() == ValueType.FALSE;
     }
 
     /**
@@ -401,11 +400,11 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public int size(Object node) {
-        if (node instanceof JsonObject) {
-            return ((JsonObject) node).size();
+        if (node instanceof JsonObject object) {
+            return object.size();
         }
-        if (node instanceof JsonArray) {
-            return ((JsonArray) node).size();
+        if (node instanceof JsonArray array) {
+            return array.size();
         }
         throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
     }
@@ -415,11 +414,11 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public String asString(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
-        if (node instanceof JsonString) {
-            return ((JsonString) node).getString();
+        if (node instanceof JsonString jsonString) {
+            return jsonString.getString();
         }
         return Objects.toString(node);
     }
@@ -429,8 +428,8 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public BigDecimal asDecimal(Object node) {
-        if (node instanceof JsonNumber) {
-            return ((JsonNumber) node).bigDecimalValue();
+        if (node instanceof JsonNumber jsonNumber) {
+            return jsonNumber.bigDecimalValue();
         }
         throw new IllegalArgumentException("Node must be a JsonNumber.");
     }

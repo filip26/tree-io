@@ -70,26 +70,22 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
     }
 
     public static Object scalar(Object node, TreeAdapter adapter) throws TreeIOException {
-        final NodeType type = adapter.type(node);
+        return switch (adapter.type(node)) {
+        case NULL -> null;
 
-        switch (type) {
-        case NULL:
-            return null;
-        case TRUE:
-            return true;
-        case FALSE:
-            return false;
-        case BINARY:
-            return adapter.binaryValue(node);
-        case STRING:
-            return adapter.stringValue(node);
-        case NUMBER:
-            return adapter.isIntegral(node)
-                    ? adapter.integerValue(node)
-                    : adapter.decimalValue(node);
-        default:
-            throw new IllegalArgumentException();
-        }
+        case TRUE -> true;
+        case FALSE -> false;
+
+        case BINARY -> adapter.binaryValue(node);
+
+        case STRING -> adapter.stringValue(node);
+
+        case NUMBER -> adapter.isIntegral(node)
+                ? adapter.integerValue(node)
+                : adapter.decimalValue(node);
+
+        default -> throw new IllegalArgumentException();
+        };
     }
 
     /**
@@ -244,11 +240,12 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
         object = structures.pop();
 
         if (!structures.isEmpty()) {
-            if (structures.peek() instanceof String) {
-                String key = (String) structures.pop();
+            if (structures.peek() instanceof String key) {
+                structures.pop();
                 ((Map) structures.peek()).put(key, object);
-            } else if (structures.peek() instanceof List) {
-                ((List) structures.peek()).add(object);
+                
+            } else if (structures.peek() instanceof List list) {
+                list.add(object);
             }
         }
     }

@@ -68,7 +68,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
     public JsonValue node(TreeIO node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
-    
+
     /**
      * The primary entry point for materialization. Traverses the given source node
      * and returns the resulting Jakarta {@link JsonValue}.
@@ -79,12 +79,12 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
      * @throws TreeIOException if an error occurs during generation
      */
     public JsonValue node(Object node, TreeAdapter adapter) throws TreeIOException {
-        
+
         if (adapter.type(node).isScalar()) {
             scalar(node, adapter);
             return json;
         }
-        
+
         root(node, adapter).traverse(this);
         return json;
     }
@@ -255,27 +255,29 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
     @Override
     public void end() throws TreeIOException {
 
-        final Object builder = builders.pop();
+        final var builder = builders.pop();
 
-        if (builder instanceof JsonArrayBuilder) {
-            json = ((JsonArrayBuilder) builder).build();
+        if (builder instanceof JsonArrayBuilder array) {
+            json = array.build();
 
-        } else if (builder instanceof JsonObjectBuilder) {
-            json = ((JsonObjectBuilder) builder).build();
+        } else if (builder instanceof JsonObjectBuilder object) {
+            json = object.build();
 
-        } else if (builder instanceof JsonValue) {
-            json = (JsonValue) builder;
+        } else if (builder instanceof JsonValue value) {
+            json = value;
 
         } else {
             throw new IllegalStateException("Internal builder stack is in an inconsistent state [" + builder + "].");
         }
 
         if (!builders.isEmpty()) {
-            if (builders.peek() instanceof String) {
-                String key = (String) builders.pop();
+            if (builders.peek() instanceof String key) {
+
+                builders.pop();
                 ((JsonObjectBuilder) builders.peek()).add(key, json);
-            } else if (builders.peek() instanceof JsonArrayBuilder) {
-                ((JsonArrayBuilder) builders.peek()).add(json);
+
+            } else if (builders.peek() instanceof JsonArrayBuilder array) {
+                array.add(json);
             }
         }
     }
@@ -305,39 +307,39 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
             throw new IllegalStateException("Cannot add a JsonValue in the current context: " + currentNodeContext);
         }
     }
-    
+
     protected void scalar(final Object node, final TreeAdapter adapter) throws TreeIOException {
-        
+
         currentNodeContext = Context.ROOT;
-        
+
         switch (adapter.type(node)) {
         case FALSE:
             booleanValue(false);
             break;
-            
+
         case TRUE:
             booleanValue(true);
             break;
-            
+
         case STRING:
             stringValue(adapter.stringValue(node));
             break;
-            
+
         case NULL:
             nullValue();
             break;
-            
+
         case NUMBER:
             if (adapter.isIntegral(node)) {
                 numericValue(adapter.integerValue(node));
-                break;                
+                break;
             }
             numericValue(adapter.decimalValue(node));
             break;
-        
+
         default:
-            throw new IllegalStateException();  //TODO
-            
+            throw new IllegalStateException(); // TODO
+
         }
     }
 }

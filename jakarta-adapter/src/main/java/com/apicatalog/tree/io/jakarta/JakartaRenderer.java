@@ -25,7 +25,7 @@ public class JakartaRenderer implements TreeRenderer {
 
     @Override
     public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
-        try (final JsonGenerator generator = factory.createGenerator(os)) {
+        try (final var generator = factory.createGenerator(os)) {
             (new JakartaGenerator(generator)).node(node, adapter);
         }
     }

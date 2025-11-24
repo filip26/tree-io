@@ -2,10 +2,7 @@ package com.apicatalog.tree.io.java;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +21,7 @@ import com.apicatalog.tree.io.TreeIOException;
 
 public class NativeAdapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = Set.of(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
@@ -33,13 +30,13 @@ public class NativeAdapter implements TreeAdapter {
             NodeType.FALSE,
             NodeType.TRUE,
             NodeType.NULL,
-            NodeType.TREE_IO));
+            NodeType.TREE_IO);
 
-    static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> KEYS = Set.of(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
-            NodeType.STRING));
+            NodeType.STRING);
 
     static final Features FEATURES = new Features(NODES, KEYS);
 
@@ -160,56 +157,56 @@ public class NativeAdapter implements TreeAdapter {
 
     @Override
     public int intValue(Object node) {
-        if (node instanceof Long) {
-            return Math.toIntExact((Long) node);
+        if (node instanceof Long number) {
+            return Math.toIntExact(number);
         }
-        if (node instanceof Integer) {
-            return (Integer) node;
+        if (node instanceof Integer number) {
+            return number;
         }
-        if (node instanceof BigInteger) {
-            return ((BigInteger) node).intValueExact();
+        if (node instanceof BigInteger number) {
+            return number.intValueExact();
         }
-        return (Integer) node;
+        return (int) node;
     }
 
     @Override
     public long longValue(Object node) {
-        if (node instanceof Long) {
-            return (Long) node;
+        if (node instanceof Long number) {
+            return number;
         }
-        if (node instanceof Integer) {
-            return (Integer) node;
+        if (node instanceof Integer number) {
+            return number;
         }
-        if (node instanceof BigInteger) {
-            return ((BigInteger) node).longValueExact();
+        if (node instanceof BigInteger number) {
+            return number.longValueExact();
         }
-        throw new IllegalArgumentException();
+        return (long) node;
     }
 
     @Override
     public BigInteger integerValue(Object node) {
-        if (node instanceof Long) {
-            return BigInteger.valueOf((Long) node);
+        if (node instanceof Long number) {
+            return BigInteger.valueOf(number);
         }
-        if (node instanceof Integer) {
-            return BigInteger.valueOf((Integer) node);
+        if (node instanceof Integer number) {
+            return BigInteger.valueOf(number);
         }
-        if (node instanceof BigInteger) {
-            return (BigInteger) node;
+        if (node instanceof BigInteger number) {
+            return number;
         }
         throw new IllegalArgumentException();
     }
 
     @Override
     public double doubleValue(Object node) {
-        if (node instanceof BigDecimal) {
-            return ((BigDecimal) node).doubleValue();
+        if (node instanceof BigDecimal number) {
+            return number.doubleValue();
         }
-        if (node instanceof Double) {
-            return (Double) node;
+        if (node instanceof Double number) {
+            return number;
         }
-        if (node instanceof Float) {
-            return (Float) node;
+        if (node instanceof Float number) {
+            return number;
         }
         throw new IllegalArgumentException();
     }
@@ -237,7 +234,7 @@ public class NativeAdapter implements TreeAdapter {
     @Override
     public Iterable<? extends Object> asIterable(Object node) {
         if (node == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         if (node instanceof Collection) {
             return (Collection) node;
@@ -245,28 +242,26 @@ public class NativeAdapter implements TreeAdapter {
         if (node instanceof Stream) {
             return ((Stream<Object>) node).collect(Collectors.toList());
         }
-        return Collections.singleton(node);
+        return List.of(node);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Stream<? extends Object> asStream(Object node) {
         if (node == null) {
             return Stream.empty();
         }
-        if (node instanceof Stream) {
-            return (Stream) node;
+        if (node instanceof Stream<?> stream) {
+            return stream;
         }
-        if (node instanceof Collection) {
-            return ((Collection) node).stream();
+        if (node instanceof Collection<?> collection) {
+            return collection.stream();
         }
         return Stream.of(node);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isNull(Object node) {
-        return node == null || ((node instanceof Optional) && !((Optional) node).isPresent());
+        return node == null || (node instanceof Optional opt && opt.isEmpty());
     }
 
     @Override
@@ -323,57 +318,55 @@ public class NativeAdapter implements TreeAdapter {
         return node != null && node instanceof byte[];
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public boolean isEmpty(Object node) {
-        if (node instanceof Map) {
-            return ((Map) node).isEmpty();
+        if (node instanceof Map map) {
+            return map.isEmpty();
         }
-        if (node instanceof Collection) {
-            return ((Collection) node).isEmpty();
+        if (node instanceof Collection col) {
+            return col.isEmpty();
         }
         throw new IllegalArgumentException();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public int size(Object node) {
-        if (node instanceof Map) {
-            return ((Map) node).size();
+        if (node instanceof Map map) {
+            return map.size();
         }
-        if (node instanceof Collection) {
-            return ((Collection) node).size();
+        if (node instanceof Collection col) {
+            return col.size();
         }
         throw new IllegalArgumentException();
     }
 
     @Override
     public String asString(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
         return Objects.toString(node);
     }
 
     @Override
     public BigDecimal asDecimal(Object node) {
-        if (node instanceof BigDecimal) {
-            return ((BigDecimal) node);
+        if (node instanceof BigDecimal number) {
+            return number;
         }
-        if (node instanceof Double) {
-            return BigDecimal.valueOf((double) node);
+        if (node instanceof Double number) {
+            return BigDecimal.valueOf(number);
         }
-        if (node instanceof Float) {
-            return BigDecimal.valueOf((float) node);
+        if (node instanceof Float number) {
+            return BigDecimal.valueOf(number);
         }
-        if (node instanceof Integer) {
-            return BigDecimal.valueOf((int) node);
+        if (node instanceof Integer number) {
+            return BigDecimal.valueOf(number);
         }
-        if (node instanceof Long) {
-            return BigDecimal.valueOf((long) node);
+        if (node instanceof Long number) {
+            return BigDecimal.valueOf(number);
         }
-        if (node instanceof BigInteger) {
-            return BigDecimal.valueOf(((BigInteger) node).longValueExact());
+        if (node instanceof BigInteger number) {
+            return BigDecimal.valueOf(number.longValueExact());
         }
         throw new IllegalArgumentException();
     }
@@ -404,19 +397,21 @@ public class NativeAdapter implements TreeAdapter {
 
         case COLLECTION:
             if (adapter.isEmpty(value)) {
-                return Collections.emptyList();
+                return List.of();
             }
 
-            return adapter.elementStream(value)
+            return adapter
+                    .elementStream(value)
                     .map(item -> adapt(item, adapter))
                     .collect(Collectors.toList());
 
         case MAP:
             if (adapter.isEmpty(value)) {
-                return Collections.emptyMap();
+                return Map.of();
             }
 
-            return adapter.entryStream(value)
+            return adapter
+                    .entryStream(value)
                     .reduce(new LinkedHashMap<>(),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));
@@ -441,10 +436,10 @@ public class NativeAdapter implements TreeAdapter {
     }
 
     public static Collection<?> asCollection(Object node) {
-        return node instanceof Collection
-                ? (Collection<?>) node
+        return node instanceof Collection col
+                ? col
                 : node != null
-                        ? Collections.singleton(node)
-                        : Collections.emptyList();
+                        ? List.of(node)
+                        : List.of();
     }
 }

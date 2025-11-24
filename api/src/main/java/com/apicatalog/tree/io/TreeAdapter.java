@@ -249,7 +249,7 @@ public interface TreeAdapter {
 
     default boolean isSingleElement(Object node) {
         if (isCollection(node)) {
-            final Iterator<?> it = elements(node).iterator();
+            final var it = elements(node).iterator();
             if (it.hasNext()) {
                 it.next();
                 return !it.hasNext();
