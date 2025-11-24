@@ -43,16 +43,16 @@ import jakarta.json.JsonValue.ValueType;
  */
 public class JakartaAdapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
+    static final Set<NodeType> NODES = Set.of(
             NodeType.COLLECTION,
             NodeType.MAP,
             NodeType.NUMBER,
             NodeType.STRING,
             NodeType.FALSE,
             NodeType.TRUE,
-            NodeType.NULL));
+            NodeType.NULL);
 
-    static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
+    static final Set<NodeType> KEYS = Set.of(NodeType.STRING);
 
     static final Features FEATURES = new Features(NODES, KEYS);
 
