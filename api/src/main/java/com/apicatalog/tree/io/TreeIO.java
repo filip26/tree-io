@@ -94,7 +94,7 @@ public class TreeIO {
 //        if (leftType == NodeType.TREE_IO) {
 //            return deepEquals((((TreeIO)leftType), null)
 //        }
-        
+
         if (leftType != rightType) {
             return false;
         }
@@ -160,9 +160,9 @@ public class TreeIO {
     }
 
     protected static boolean deepEqualsCollection(
-            final Iterable<? extends Object> left, 
-            final TreeAdapter leftAdapter, 
-            final Iterable<? extends Object> right, 
+            final Iterable<? extends Object> left,
+            final TreeAdapter leftAdapter,
+            final Iterable<? extends Object> right,
             final TreeAdapter rightAdapter) {
 
         final Iterator<? extends Object> leftIterator = left.iterator();

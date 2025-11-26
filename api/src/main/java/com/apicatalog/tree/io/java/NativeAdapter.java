@@ -42,6 +42,7 @@ public class NativeAdapter implements TreeAdapter {
 
     static final NativeAdapter INSTANCE = new NativeAdapter();
 
+    //TODO rename to of()
     public static final NativeAdapter instance() {
         return INSTANCE;
     }

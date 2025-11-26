@@ -8,7 +8,6 @@ import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeRenderer;
 
 import jakarta.json.Json;
-import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonGeneratorFactory;
 
 public class JakartaRenderer implements TreeRenderer {
