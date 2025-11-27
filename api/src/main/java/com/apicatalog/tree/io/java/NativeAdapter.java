@@ -287,7 +287,7 @@ public class NativeAdapter implements TreeAdapter {
 
     @Override
     public boolean isSet(Object node) {
-        return node != null && node instanceof Collection;
+        return node != null && node instanceof Set;
     }
 
     @Override
@@ -372,6 +372,7 @@ public class NativeAdapter implements TreeAdapter {
         throw new IllegalArgumentException();
     }
 
+    @Deprecated
     public static final Object adapt(Object value, TreeAdapter adapter) {
 
         if (value == null) {

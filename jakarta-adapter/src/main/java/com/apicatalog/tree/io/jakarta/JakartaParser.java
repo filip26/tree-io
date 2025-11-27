@@ -2,7 +2,7 @@ package com.apicatalog.tree.io.jakarta;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Collections;
+import java.util.Map;
 
 import com.apicatalog.tree.io.TreeIO;
 import com.apicatalog.tree.io.TreeIOException;
@@ -17,7 +17,7 @@ public final class JakartaParser implements TreeParser {
     private final JsonReaderFactory factory;
 
     public JakartaParser() {
-        this(Json.createReaderFactory(Collections.emptyMap()));
+        this(Json.createReaderFactory(Map.of()));
     }
 
     public JakartaParser(JsonReaderFactory factory) {

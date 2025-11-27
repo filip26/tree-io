@@ -92,6 +92,6 @@ public enum NodeType {
      * @return {@code true} if the node is structural (non-scalar)
      */
     public boolean isStructure() {
-        return !scalar;
+        return !scalar && this != TREE_IO;
     }
 }

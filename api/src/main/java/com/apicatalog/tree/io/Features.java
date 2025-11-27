@@ -2,14 +2,14 @@ package com.apicatalog.tree.io;
 
 import java.util.Set;
 
-public class Features {
+public record Features(
+        Set<NodeType> keys,
+        Set<NodeType> nodes
+        ) {
 
-    final Set<NodeType> nodes;
-    final Set<NodeType> keys;
-
-    public Features(Set<NodeType> nodes, Set<NodeType> keys) {
-        this.nodes = nodes;
-        this.keys = keys;
+    public Features {
+        keys = keys == null ? Set.of() : Set.copyOf(keys);
+        nodes = nodes == null ? Set.of() : Set.copyOf(nodes);
     }
 
     public boolean contains(Features features) {

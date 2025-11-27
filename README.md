@@ -37,10 +37,10 @@ The most common use case is a full transformation from a source to a destination
 ```javascript
 var source = Map.of("hello", "world");
 
-var renderer = new Jackson2Rendered(objectMapper);
+var renderer = new Jackson2Renderer(objectMapper);
 
-// prints the Map as JSON Object
-renderer.render(source, NativeAdapter.instance(), outputStream);
+// prints the Java Map as JSON Object
+renderer.render(source, JavaNode.adapter(), outputStream);
 
 ```
 

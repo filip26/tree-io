@@ -5,13 +5,14 @@ import java.util.Map;
 
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.TreeIOException;
 
 public class JavaNode {
 
     public static TreeAdapter adapter() {
         return NativeAdapter.instance();
     }
-    
+
     public static TreeIO of(Map<?, ?> map) {
         return new TreeIO(map, NativeAdapter.instance());
     }
@@ -20,13 +21,41 @@ public class JavaNode {
         return new TreeIO(collection, NativeAdapter.instance());
     }
 
-    public static Object adapt(Object node, TreeAdapter adapter) {
-        return NativeAdapter.adapt(node, adapter);
+    public static TreeIO of(TreeIO node) throws TreeIOException {
+        if (NativeAdapter.instance().isCompatibleWith(node.adapter())) {
+            return node;
+        }
+        return new TreeIO(adapt(node.node(), node.adapter()), NativeAdapter.instance());
     }
 
-    //TODO ?!?
-    public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-        return (Map<K, V>)map;
+    public static Object of(Object node, TreeAdapter adapter) throws TreeIOException {
+        if (NativeAdapter.instance().isCompatibleWith(adapter)) {
+            return new TreeIO(node, NativeAdapter.instance());
+        }
+        return new TreeIO(adapt(node, adapter), NativeAdapter.instance());
     }
-    
+
+    public static Object adapt(TreeIO node) throws TreeIOException {
+        return NativeMaterializer.node(node);
+    }
+
+    public static Object adapt(Object node, TreeAdapter adapter) throws TreeIOException {
+        if (NativeAdapter.instance().isCompatibleWith(adapter)) {
+            return node;
+        }
+        return NativeMaterializer.node(node, adapter);
+    }
+
+//    public static Object node(TreeIO node) throws TreeIOException {
+//        return node(node.node(), node.adapter());
+//    }
+//
+//    public static Object node(Object node, TreeAdapter adapter) throws TreeIOException {
+//
+//    
+//    //TODO ?!?
+//    public static <K, V> Map<K, V> cast(Map<?, ?> map) {
+//        return (Map<K, V>)map;
+//    }
+
 }

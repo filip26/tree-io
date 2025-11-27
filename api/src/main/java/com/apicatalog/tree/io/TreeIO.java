@@ -3,7 +3,6 @@ package com.apicatalog.tree.io;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -24,10 +23,9 @@ import java.util.stream.Stream;
  * </p>
  *
  */
-public class TreeIO {
-
-    protected final TreeAdapter adapter;
-    protected final Object node;
+public record TreeIO(
+        Object node,
+        TreeAdapter adapter) {
 
     /**
      * Creates a new immutable tree with the given root node and adapter.
@@ -80,6 +78,14 @@ public class TreeIO {
             final Object right,
             final TreeAdapter rightAdapter) {
 
+        if (left instanceof TreeIO(Object node, TreeAdapter adapter)) {
+            return deepEquals(node, adapter, right, rightAdapter);
+        }
+
+        if (right instanceof TreeIO(Object node, TreeAdapter adapter)) {
+            return deepEquals(left, leftAdapter, node, adapter);
+        }
+
         if (leftAdapter.isNull(left)) {
             return rightAdapter.isNull(right);
 
@@ -89,11 +95,6 @@ public class TreeIO {
 
         final NodeType leftType = leftAdapter.type(left);
         final NodeType rightType = rightAdapter.type(right);
-
-//TODO polynode!!
-//        if (leftType == NodeType.TREE_IO) {
-//            return deepEquals((((TreeIO)leftType), null)
-//        }
 
         if (leftType != rightType) {
             return false;
@@ -128,21 +129,30 @@ public class TreeIO {
                     rightAdapter);
 
         case MAP:
-            final Iterator<Entry<?, ?>> leftEntries = leftAdapter.entryStream(left)
+            final var leftEntries = leftAdapter.entryStream(left)
                     .sorted(TreeIO.comparingEntry(e -> leftAdapter.asString(e.getKey())))
                     .iterator();
 
-            final Iterator<Entry<?, ?>> rightEntries = rightAdapter.entryStream(right)
+            final var rightEntries = rightAdapter.entryStream(right)
                     .sorted(TreeIO.comparingEntry(e -> rightAdapter.asString(e.getKey())))
                     .iterator();
 
             while (leftEntries.hasNext() && rightEntries.hasNext()) {
 
-                final Entry<?, ?> leftEntry = leftEntries.next();
-                final Entry<?, ?> rightEntry = rightEntries.next();
+                final var leftEntry = leftEntries.next();
+                final var rightEntry = rightEntries.next();
 
-                if (!deepEquals(leftEntry.getKey(), leftAdapter, rightEntry.getKey(), rightAdapter)
-                        || !deepEquals(leftEntry.getValue(), leftAdapter, rightEntry.getValue(), rightAdapter)) {
+                if (!deepEquals( // compare keys
+                        leftEntry.getKey(),
+                        leftAdapter,
+                        rightEntry.getKey(),
+                        rightAdapter)
+                        ||
+                        !deepEquals( // compare values
+                                leftEntry.getValue(),
+                                leftAdapter,
+                                rightEntry.getValue(),
+                                rightAdapter)) {
                     return false;
                 }
             }
@@ -165,8 +175,8 @@ public class TreeIO {
             final Iterable<? extends Object> right,
             final TreeAdapter rightAdapter) {
 
-        final Iterator<? extends Object> leftIterator = left.iterator();
-        final Iterator<? extends Object> rightIterator = right.iterator();
+        final var leftIterator = left.iterator();
+        final var rightIterator = right.iterator();
 
         while (leftIterator.hasNext() && rightIterator.hasNext()) {
             if (!deepEquals(
@@ -202,56 +212,31 @@ public class TreeIO {
     }
 
     public boolean isEmptyOrNull() {
-        return isEmptyOrNull(this);
-    }
-
-    public static final boolean isEmptyOrNull(TreeIO node) {
         return node == null
-                || node.node == null
-                || node.adapter.isNull(node.node)
-                || node.adapter.isEmpty(node.node);
+                || adapter.isNull(node)
+                || adapter.isEmpty(node);
     }
 
     public boolean isMap() {
-        return isMap(this);
-    }
-
-    public static final boolean isMap(TreeIO node) {
-        return node != null && node.adapter().isMap(node.node);
+        return node != null && adapter.isMap(node);
     }
 
     public Object property(String key) {
-        return property(key, this);
-    }
-
-    public static final Object property(Object key, TreeIO node) {
         return node != null
-                ? node.adapter().property(key, node.node)
+                ? adapter.property(key, node)
                 : null;
     }
 
     public boolean isCollection() {
-        return isCollection(this);
-    }
-
-    public static final boolean isCollection(TreeIO node) {
-        return node != null && node.adapter().isCollection(node.node);
+        return node != null && adapter.isCollection(node);
     }
 
     public NodeType type() {
-        return type(this);
-    }
-
-    public static final NodeType type(TreeIO node) {
-        return node.adapter().type(node.node);
+        return adapter.type(node);
     }
 
     public boolean isSingleElement() {
-        return isSingleElement(this);
-    }
-
-    public boolean isSingleElement(TreeIO node) {
-        return node.adapter().isSingleElement(node.node);
+        return adapter.isSingleElement(node);
     }
 
     public Object singleElement() {
@@ -263,11 +248,7 @@ public class TreeIO {
     }
 
     public boolean isSingleEntry() {
-        return isSingleEntry(this);
-    }
-
-    public boolean isSingleEntry(TreeIO node) {
-        return node.adapter().isSingleEntry(node.node);
+        return adapter.isSingleEntry(node);
     }
 
     public Entry<?, ?> singleEntry() {
