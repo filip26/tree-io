@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-jakarta</artifactId>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.14.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/filip26/tree-io</url>
     <scm>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.apicatalog</groupId>
             <artifactId>tree-io-api</artifactId>
-            <version>0.13.0-SNAPSHOT</version>
+            <version>0.14.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -150,7 +150,10 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
-            </plugin>
+<!--                <configuration>
+                    <useModulePath>false</useModulePath>   tests use classpath 
+                </configuration>                
+-->            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.5.4</version>

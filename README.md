@@ -99,7 +99,7 @@ TreeAdapter adapter = ... ;
 var traversal = new TreeTraversal().root(source, adapter);
 
 // 2. Loop step-by-step through every node in the tree.
-while (visitor.step()) {
+while (visitor.next()) {
 
     // 3. Inspect the visitor's state after each step.
     Object node = visitor.currentNode();

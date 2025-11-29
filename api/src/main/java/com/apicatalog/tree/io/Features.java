@@ -2,6 +2,7 @@ package com.apicatalog.tree.io;
 
 import java.util.Set;
 
+//TODO rename to TreeFeatures
 public record Features(
         Set<NodeType> keys,
         Set<NodeType> nodes

@@ -165,7 +165,7 @@ public class TreeTraversal {
                 if (adapter().isIntegral(currentNode)) {
                     generator.numericValue(adapter().integerValue(currentNode));
                 } else {
-                    generator.numericValue(adapter().asDecimal(currentNode));
+                    generator.numericValue(adapter().decimalValue(currentNode));
                 }
                 break;
                 
@@ -210,8 +210,8 @@ public class TreeTraversal {
             throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
         }
 
-        TreeAdapter nodeAdapter = adapters.peek();
-        Object item = stack.peek();
+        var nodeAdapter = adapters.peek();
+        var item = stack.peek();
 
         if (NodeType.TREE_IO.equals(item)) {
             adapters.pop();

@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.jakarta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,9 +22,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.apicatalog.tree.io.jakarta.JakartaAdapter;
-import com.apicatalog.tree.io.jakarta.JakartaGenerator;
-import com.apicatalog.tree.io.jakarta.JakartaMaterializer;
+import com.apicatalog.tree.io.TreeIOException;
 
 import jakarta.json.Json;
 import jakarta.json.JsonReader;

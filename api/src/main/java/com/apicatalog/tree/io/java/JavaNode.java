@@ -36,6 +36,9 @@ public class JavaNode {
     }
 
     public static Object adapt(TreeIO node) throws TreeIOException {
+        if (NativeAdapter.instance().isCompatibleWith(node.adapter())) {
+            return node.node();
+        }
         return NativeMaterializer.node(node);
     }
 
@@ -45,17 +48,4 @@ public class JavaNode {
         }
         return NativeMaterializer.node(node, adapter);
     }
-
-//    public static Object node(TreeIO node) throws TreeIOException {
-//        return node(node.node(), node.adapter());
-//    }
-//
-//    public static Object node(Object node, TreeAdapter adapter) throws TreeIOException {
-//
-//    
-//    //TODO ?!?
-//    public static <K, V> Map<K, V> cast(Map<?, ?> map) {
-//        return (Map<K, V>)map;
-//    }
-
 }

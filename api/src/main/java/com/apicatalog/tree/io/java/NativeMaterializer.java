@@ -243,7 +243,7 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
             if (structures.peek() instanceof String key) {
                 structures.pop();
                 ((Map) structures.peek()).put(key, object);
-                
+
             } else if (structures.peek() instanceof List list) {
                 list.add(object);
             }
@@ -265,7 +265,7 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
             return;
 
         case COLLECTION_ELEMENT:
-            ((List) structures.peek()).add(value);
+            ((List<Object>) structures.peek()).add(value);
             return;
 
         case ROOT:
@@ -273,7 +273,9 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
             return;
 
         default:
-            throw new IllegalStateException("Cannot add a value in the current context: " + currentNodeContext + ", value: " + value);
+            throw new IllegalStateException(
+                    "Cannot add a value in the current context=%s, value=%s"
+                            .formatted(currentNodeContext, value));
         }
     }
 }
