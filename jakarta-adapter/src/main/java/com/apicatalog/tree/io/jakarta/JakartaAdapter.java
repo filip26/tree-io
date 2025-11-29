@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
 
@@ -42,18 +43,20 @@ import jakarta.json.JsonValue.ValueType;
  */
 public class JakartaAdapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = Set.of(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING,
-            NodeType.FALSE,
-            NodeType.TRUE,
-            NodeType.NULL);
-
-    static final Set<NodeType> KEYS = Set.of(NodeType.STRING);
-
-    static final Features FEATURES = new Features(NODES, KEYS);
+    static final Features FEATURES = new Features(
+            // keys
+            Set.of(NodeType.STRING),
+            // nodes
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.FALSE,
+                    NodeType.TRUE,
+                    NodeType.NULL),
+            // capabilities
+            Set.of(Capability.OBJECT_DEEP_EQUALS));
 
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 

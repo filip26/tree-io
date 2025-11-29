@@ -21,28 +21,30 @@ import com.apicatalog.tree.io.TreeIOException;
 
 public class JavaAdapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = Set.of(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING,
-            NodeType.BINARY,
-            NodeType.FALSE,
-            NodeType.TRUE,
-            NodeType.NULL,
-            NodeType.TREE_IO);
-
-    static final Set<NodeType> KEYS = Set.of(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING);
-
-    static final Features FEATURES = new Features(NODES, KEYS);
+    static final Features FEATURES = new Features(
+            // keys
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING),
+            // nodes
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.BINARY,
+                    NodeType.FALSE,
+                    NodeType.TRUE,
+                    NodeType.NULL,
+                    NodeType.TREE_IO),
+            // capabilities
+            null);
 
     static final JavaAdapter INSTANCE = new JavaAdapter();
 
-    //TODO rename to of()
+    // TODO rename to of()
     public static final JavaAdapter instance() {
         return INSTANCE;
     }
@@ -414,7 +416,8 @@ public class JavaAdapter implements TreeAdapter {
 
             return adapter
                     .entryStream(value)
-                    .reduce(new LinkedHashMap<>(),
+                    .reduce(
+                            new LinkedHashMap<>(),
                             (map, entry) -> {
                                 map.put(entry.getKey(), adapt(entry.getValue(), adapter));
                                 return map;

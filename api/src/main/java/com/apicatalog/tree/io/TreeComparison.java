@@ -17,6 +17,15 @@ public interface TreeComparison {
     boolean isomorphic();
 
     public static TreeComparison of(Tree left, Tree right) {
+        if (left == null) {
+            return right == null
+                    ? ComparsionResult.TRUE
+                    : ComparsionResult.FALSE;
+
+        } else if (right == null) {
+            return ComparsionResult.FALSE;
+        }
+
         return of(
                 left.node(),
                 left.adapter(),
@@ -29,10 +38,17 @@ public interface TreeComparison {
             TreeAdapter leftAdapter,
             Object right,
             TreeAdapter rightAdapter) {
-        return ComparisonStack.of(left, leftAdapter, right, rightAdapter);
+        return DepthFirstComparison.of(left, leftAdapter, right, rightAdapter);
     }
 
     public static boolean deepEquals(Tree left, Tree right) {
+        if (left == null) {
+            return right == null;
+
+        } else if (right == null) {
+            return false;
+        }
+
         return of(left, right).isomorphic();
     }
 
@@ -64,14 +80,13 @@ public interface TreeComparison {
     }
 
     static record ComparsionResult(boolean isomorphic) implements TreeComparison {
-
         static final TreeComparison TRUE = new ComparsionResult(true);
         static final TreeComparison FALSE = new ComparsionResult(false);
     }
 
-    static class ComparisonStack implements TreeComparison {
+    static class DepthFirstComparison implements TreeComparison {
 
-        static record Structure(
+        private static record Structure(
                 NodeType type,
                 Object left,
                 TreeAdapter leftAdapter,
@@ -82,7 +97,7 @@ public interface TreeComparison {
         private Deque<Structure> stack;
         private Boolean result;
 
-        protected ComparisonStack(Deque<Structure> stack) {
+        protected DepthFirstComparison(Deque<Structure> stack) {
             this.stack = stack;
             this.result = null;
         }
@@ -105,7 +120,7 @@ public interface TreeComparison {
             if (result instanceof Structure structure) {
                 var stack = new ArrayDeque<Structure>();
                 stack.push(structure);
-                return new ComparisonStack(stack);
+                return new DepthFirstComparison(stack);
 
             } else if (result instanceof Boolean status) {
                 return status
@@ -151,7 +166,7 @@ public interface TreeComparison {
             return result;
         }
 
-        final Boolean mapEquals() {
+        private final Boolean mapEquals() {
 
             var struct = (Structure) stack.peek();
             @SuppressWarnings("unchecked")
@@ -184,7 +199,7 @@ public interface TreeComparison {
             return true;
         }
 
-        final Boolean arrayEquals() {
+        private final Boolean arrayEquals() {
 
             var struct = stack.peek();
 
@@ -216,7 +231,7 @@ public interface TreeComparison {
             return !leftIterator.hasNext() && !rightIterator.hasNext();
         }
 
-        static final Object nodeEquals(
+        private static final Object nodeEquals(
                 final Object left,
                 final TreeAdapter leftAdapter,
                 final Object right,

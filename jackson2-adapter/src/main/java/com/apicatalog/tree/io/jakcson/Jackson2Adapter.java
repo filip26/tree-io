@@ -3,10 +3,8 @@ package com.apicatalog.tree.io.jakcson;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,9 +13,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,18 +36,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class Jackson2Adapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING,
-            NodeType.FALSE,
-            NodeType.TRUE,
-            NodeType.NULL));
-
-    static final Set<NodeType> KEYS = Collections.singleton(NodeType.STRING);
-
-    static final Features FEATURES = new Features(NODES, KEYS);
+    static final Features FEATURES = new Features(
+            // keys
+            Set.of(NodeType.STRING),
+            // nodes
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.FALSE,
+                    NodeType.TRUE,
+                    NodeType.NULL),
+            // capabilities
+            null
+    );
 
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 

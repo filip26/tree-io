@@ -340,29 +340,25 @@ public record Tree(
         }
     }
 
+    public enum Capability {
+        OBJECT_DEEP_EQUALS
+    }
+    
     public static final record Features(
             Set<NodeType> keys,
-            Set<NodeType> nodes) {
-
+            Set<NodeType> nodes,
+            Set<Capability> capabilities) {
+        
         public Features {
             keys = keys == null ? Set.of() : Set.copyOf(keys);
             nodes = nodes == null ? Set.of() : Set.copyOf(nodes);
+            capabilities = capabilities == null ? Set.of() : Set.copyOf(capabilities);
         }
 
-        public boolean contains(Features features) {
-            return keys.containsAll(features.keys)
-                    && nodes.containsAll(features.nodes);
-        }
-
-        /**
-         * Returns the complete set of node types that this adapter is capable of
-         * representing.
-         *
-         * @return an immutable set of supported {@link NodeType}s.
-         */
-        public Set<NodeType> nodes() {
-            return nodes;
-        }
+//        public boolean contains(Features features) {
+//            return keys.containsAll(features.keys)
+//                    && nodes.containsAll(features.nodes);
+//        }
 
         /**
          * Returns the set of scalar types that are supported as keys in map nodes. For
@@ -373,6 +369,16 @@ public record Tree(
          */
         public Set<NodeType> keys() {
             return keys;
+        }
+        
+        /**
+         * Returns the complete set of node types that this adapter is capable of
+         * representing.
+         *
+         * @return an immutable set of supported {@link NodeType}s.
+         */
+        public Set<NodeType> nodes() {
+            return nodes;
         }
     }
 }

@@ -3,10 +3,8 @@ package com.apicatalog.tree.io.cbor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -14,9 +12,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 
 import co.nstant.in.cbor.model.Array;
@@ -49,24 +47,26 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  */
 public class CborAdapter implements TreeAdapter {
 
-    static final Set<NodeType> NODES = new HashSet<>(Arrays.asList(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING,
-            NodeType.BINARY,
-            NodeType.FALSE,
-            NodeType.TRUE,
-            NodeType.NULL));
-
-    static final Set<NodeType> KEYS = new HashSet<>(Arrays.asList(
-            NodeType.COLLECTION,
-            NodeType.MAP,
-            NodeType.NUMBER,
-            NodeType.STRING,
-            NodeType.BINARY));
-
-    static final Features FEATURES = new Features(NODES, KEYS);
+    static final Features FEATURES = new Features(
+            // keys
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.BINARY),
+            // nodes
+            Set.of(
+                    NodeType.COLLECTION,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.BINARY,
+                    NodeType.FALSE,
+                    NodeType.TRUE,
+                    NodeType.NULL),
+            // capabilities
+            null);
 
     static final CborAdapter INSTANCE = new CborAdapter();
 
