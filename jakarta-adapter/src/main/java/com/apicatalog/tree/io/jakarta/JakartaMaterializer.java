@@ -5,10 +5,10 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.Tree;
+import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 
@@ -65,7 +65,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
         this.json = null;
     }
 
-    public JsonValue node(TreeIO node) throws TreeIOException {
+    public JsonValue node(Tree node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
 

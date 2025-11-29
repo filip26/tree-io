@@ -10,11 +10,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.Tree;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 
@@ -33,13 +33,13 @@ import com.apicatalog.tree.io.TreeTraversal;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
+public class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
     protected final Deque<Object> structures;
 
     protected Object object;
 
-    public NativeMaterializer() {
+    public JavaMaterializer() {
         super(new ArrayDeque<>(), null);
         this.structures = new ArrayDeque<>();
         this.object = null;
@@ -47,16 +47,16 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
 
     @Override
     public Features features() {
-        return NativeAdapter.FEATURES;
+        return JavaAdapter.FEATURES;
     }
 
-    public static Object node(TreeIO node) throws TreeIOException {
+    public static Object node(Tree node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
 
     public static Object node(Object node, TreeAdapter adapter) throws TreeIOException {
 
-        if (NativeAdapter.instance().isCompatibleWith(adapter)) {
+        if (JavaAdapter.instance().isCompatibleWith(adapter)) {
             return node;
         }
 
@@ -66,7 +66,7 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
             return scalar(node, adapter);
         }
 
-        return new NativeMaterializer().structure(node, adapter);
+        return new JavaMaterializer().structure(node, adapter);
     }
 
     public static Object scalar(Object node, TreeAdapter adapter) throws TreeIOException {
@@ -119,7 +119,7 @@ public class NativeMaterializer extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public NativeMaterializer reset() {
+    public JavaMaterializer reset() {
         this.structures.clear();
         this.object = null;
         super.reset();

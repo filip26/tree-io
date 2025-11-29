@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -10,18 +11,17 @@ import java.util.stream.Stream;
  * Immutable representation of a tree node where the node and its descendants
  * are accessed through a {@link TreeAdapter}.
  * <p>
- * A {@link TreeIO} instance binds a node with its adapter, providing a uniform
+ * A {@link Tree} instance binds a node with its adapter, providing a uniform
  * way to traverse or compare trees of arbitrary underlying object models.
  * </p>
  * <p>
- * Pass a {@link TreeIO} from JSON, YAML, or CBOR into the tree to create
+ * Pass a {@link Tree} from JSON, YAML, or CBOR into the tree to create
  * polyformic tree composed of various different serializations, libraries, in
  * order to uniformly prosses such a tree.
  * </p>
  *
  */
-//TODO rename to plain Tree
-public record TreeIO(
+public record Tree(
         Object node,
         TreeAdapter adapter) {
 
@@ -34,7 +34,7 @@ public record TreeIO(
      * @throws NullPointerException if {@code root} or {@code adapter} is
      *                              {@code null}
      */
-    public TreeIO {
+    public Tree {
         node = Objects.requireNonNull(node);
         adapter = Objects.requireNonNull(adapter);
     }
@@ -64,6 +64,16 @@ public record TreeIO(
         (new TreeTraversal()).root(node, adapter).traverse(generator);
     }
 
+    public boolean isIsomorphicTo(Tree other) {
+        return isIsomorphicTo(other);
+    }
+    
+    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter) {
+//FIXME
+        return TreeComparison.deepEquals(node, adapter, other, otherAdapter);
+    }
+
+    
     // TODO
 //    boolean isIsomorphic(Tree other);      // exact structural/value match
 //    boolean isSubtreeOf(Tree other);     // this ⊆ other
@@ -238,5 +248,138 @@ public record TreeIO(
 
     public boolean isEmptyCollection() {
         return node != null && adapter.isEmptyCollection(node);
+    }
+    
+    /**
+     * Enumeration of supported node types within a {@code PolyMorph} tree
+     * structure.
+     * <p>
+     * A {@code NodeType} describes the semantic kind of a node, distinguishing
+     * between scalar values (e.g. string, number, boolean) and structural
+     * containers (e.g. map, collection, or polymorphic wrapper).
+     * </p>
+     * <p>
+     * {@link #TREE_IO} represents an ad-hoc, heterogeneous wrapper node that can
+     * encapsulate another node originating from a different data model or library.
+     * This enables uniform traversal and comparison of mixed-format trees.
+     * </p>
+     *
+     * @see TreeAdapter
+     * @see com.apicatalog.tree.io.Tree
+     */
+    public enum NodeType {
+
+        /**
+         * Polymorphic wrapper node enabling heterogeneous access across formats.
+         * <p>
+         * An adapted node acts as an adapter-level bridge between different
+         * underlying object models, allowing a mixed tree to be processed uniformly.
+         * </p>
+         */
+        TREE_IO(false),
+
+        /**
+         * Mapping structure of key-value pairs, such as a JSON object or
+         * dictionary-like node. Each key is typically a string associated with a nested
+         * node.
+         */
+        MAP(false),
+
+        /**
+         * Ordered sequence of elements, such as a JSON array or list. Elements may be
+         * scalar or structural nodes.
+         */
+        COLLECTION(false),
+
+        /**
+         * Textual scalar value. Represents a string node within the tree.
+         */
+        STRING(true),
+
+        /**
+         * Numeric scalar value. Represents an integer or decimal number node.
+         */
+        NUMBER(true),
+
+        /**
+         * Binary scalar value, typically a byte sequence or encoded binary content.
+         */
+        BINARY(true),
+
+        /**
+         * Boolean literal {@code true}.
+         */
+        TRUE(true),
+
+        /**
+         * Boolean literal {@code false}.
+         */
+        FALSE(true),
+
+        /**
+         * Null literal value.
+         */
+        NULL(true);
+
+        private final boolean scalar;
+
+        NodeType(boolean scalar) {
+            this.scalar = scalar;
+        }
+
+        /**
+         * Returns whether this node type represents a scalar value.
+         *
+         * @return {@code true} if the node is scalar; {@code false} otherwise
+         */
+        public boolean isScalar() {
+            return scalar;
+        }
+
+        /**
+         * Returns whether this node type represents a structural container.
+         *
+         * @return {@code true} if the node is structural (non-scalar)
+         */
+        public boolean isStructure() {
+            return !scalar && this != TREE_IO;
+        }
+    }
+    
+    public static final record Features(
+            Set<NodeType> keys,
+            Set<NodeType> nodes
+            ) {
+
+        public Features {
+            keys = keys == null ? Set.of() : Set.copyOf(keys);
+            nodes = nodes == null ? Set.of() : Set.copyOf(nodes);
+        }
+
+        public boolean contains(Features features) {
+            return keys.containsAll(features.keys)
+                    && nodes.containsAll(features.nodes);
+        }
+
+        /**
+         * Returns the complete set of node types that this adapter is capable of
+         * representing.
+         *
+         * @return an immutable set of supported {@link NodeType}s.
+         */
+        public Set<NodeType> nodes() {
+            return nodes;
+        }
+
+        /**
+         * Returns the set of scalar types that are supported as keys in map nodes. For
+         * example, a JSON-based adapter would return only {@link NodeType#STRING},
+         * whereas a CBOR-based adapter might return multiple scalar types.
+         *
+         * @return an immutable set of supported key {@link NodeType}s.
+         */
+        public Set<NodeType> keys() {
+            return keys;
+        }
     }
 }

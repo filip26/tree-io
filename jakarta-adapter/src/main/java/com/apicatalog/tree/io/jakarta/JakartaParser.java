@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 
@@ -25,9 +25,9 @@ public final class JakartaParser implements TreeParser {
     }
 
     @Override
-    public TreeIO parse(InputStream is) throws TreeIOException {
+    public Tree parse(InputStream is) throws TreeIOException {
         try (final var reader = factory.createReader(is, Charset.defaultCharset())) {
-            return new TreeIO(reader.readValue(), JakartaAdapter.instance());
+            return new Tree(reader.readValue(), JakartaAdapter.instance());
         } catch (JsonException | IllegalStateException e) {
             throw new TreeIOException(e);
         }

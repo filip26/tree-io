@@ -10,9 +10,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;

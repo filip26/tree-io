@@ -6,12 +6,14 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.apicatalog.tree.io.Tree.NodeType;
+
 public class TreeComparison {
 
     //TODO use stack instead of recursion
 
     // TODO rename to just isomorphic?
-    public static final boolean deepEquals(TreeIO left, TreeIO right) {
+    public static final boolean deepEquals(Tree left, Tree right) {
         if (left == null) {
             return right == null;
 
@@ -27,11 +29,11 @@ public class TreeComparison {
             final Object right,
             final TreeAdapter rightAdapter) {
 
-        if (left instanceof TreeIO(Object node, TreeAdapter adapter)) {
+        if (left instanceof Tree(Object node, TreeAdapter adapter)) {
             return deepEquals(node, adapter, right, rightAdapter);
         }
 
-        if (right instanceof TreeIO(Object node, TreeAdapter adapter)) {
+        if (right instanceof Tree(Object node, TreeAdapter adapter)) {
             return deepEquals(left, leftAdapter, node, adapter);
         }
 

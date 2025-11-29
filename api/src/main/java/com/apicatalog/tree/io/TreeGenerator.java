@@ -3,6 +3,8 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.apicatalog.tree.io.Tree.Features;
+
 /**
  * Provides a uniform, event-based abstraction for constructing tree-like data
  * structures. This interface decouples the process of describing a tree from

@@ -5,9 +5,9 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.function.Function;
 
-import com.apicatalog.tree.io.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 

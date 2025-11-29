@@ -5,10 +5,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
 
-import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 import com.fasterxml.jackson.core.JsonGenerator;

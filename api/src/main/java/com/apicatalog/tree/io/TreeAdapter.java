@@ -7,6 +7,9 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
+
 /**
  * Provides a uniform, read-only abstraction for navigating tree-like data
  * structures. This interface acts as a "wrapper" or "view" over an existing,

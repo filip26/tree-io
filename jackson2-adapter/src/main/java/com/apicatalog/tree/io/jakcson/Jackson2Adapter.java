@@ -15,9 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

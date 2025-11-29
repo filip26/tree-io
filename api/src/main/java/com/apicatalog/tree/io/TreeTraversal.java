@@ -9,6 +9,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Tree.NodeType;
+
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
@@ -274,7 +276,7 @@ public class TreeTraversal {
         switch (currentNodeType) {
         case TREE_IO:
             stack.push(NodeType.TREE_IO);
-            final TreeIO adaptedNode = (TreeIO) currentNode;
+            final Tree adaptedNode = (Tree) currentNode;
             root(adaptedNode.node(), adaptedNode.adapter());
             return next(currentNodeContext);
 

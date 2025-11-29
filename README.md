@@ -40,7 +40,7 @@ var source = Map.of("hello", "world");
 var renderer = new Jackson2Renderer(objectMapper);
 
 // prints the Java Map as JSON Object
-renderer.render(source, JavaNode.adapter(), outputStream);
+renderer.render(source, JavaAdapter.instance(), outputStream);
 
 ```
 

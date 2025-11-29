@@ -13,13 +13,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.Features;
-import com.apicatalog.tree.io.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
-import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.Tree;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
 
-public class NativeAdapter implements TreeAdapter {
+public class JavaAdapter implements TreeAdapter {
 
     static final Set<NodeType> NODES = Set.of(
             NodeType.COLLECTION,
@@ -40,10 +40,10 @@ public class NativeAdapter implements TreeAdapter {
 
     static final Features FEATURES = new Features(NODES, KEYS);
 
-    static final NativeAdapter INSTANCE = new NativeAdapter();
+    static final JavaAdapter INSTANCE = new JavaAdapter();
 
     //TODO rename to of()
-    public static final NativeAdapter instance() {
+    public static final JavaAdapter instance() {
         return INSTANCE;
     }
 
@@ -66,7 +66,7 @@ public class NativeAdapter implements TreeAdapter {
                 || node instanceof Map
                 || node instanceof Collection
                 || node instanceof byte[]
-                || node instanceof TreeIO;
+                || node instanceof Tree;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class NativeAdapter implements TreeAdapter {
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
-        if (node instanceof TreeIO) {
+        if (node instanceof Tree) {
             return NodeType.TREE_IO;
         }
 
@@ -120,7 +120,7 @@ public class NativeAdapter implements TreeAdapter {
     @Override
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
         try {
-            return ((Map) node).get(NativeMaterializer.node(key, keyAdapter));
+            return ((Map) node).get(JavaMaterializer.node(key, keyAdapter));
 
         } catch (TreeIOException e) {
             throw new IllegalStateException(e);

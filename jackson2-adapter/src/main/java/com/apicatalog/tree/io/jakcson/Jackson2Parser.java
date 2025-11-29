@@ -3,7 +3,7 @@ package com.apicatalog.tree.io.jakcson;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.apicatalog.tree.io.TreeIO;
+import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,10 +18,10 @@ public final class Jackson2Parser implements TreeParser {
     }
 
     @Override
-    public TreeIO parse(InputStream is) throws TreeIOException {
+    public Tree parse(InputStream is) throws TreeIOException {
         try {
             final JsonNode tree = mapper.readTree(is);
-            return new TreeIO(tree, Jackson2Adapter.instance());
+            return new Tree(tree, Jackson2Adapter.instance());
         } catch (IOException e) {
             throw new TreeIOException(e);
         }

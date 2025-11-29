@@ -5,7 +5,7 @@ import java.io.OutputStream;
 @FunctionalInterface
 public interface TreeRenderer {
 
-    default void render(TreeIO tree, OutputStream os) throws TreeIOException {
+    default void render(Tree tree, OutputStream os) throws TreeIOException {
         render(tree.node(), tree.adapter(), os);
     }
 

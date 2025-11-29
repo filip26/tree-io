@@ -5,5 +5,5 @@ import java.io.InputStream;
 @FunctionalInterface
 public interface TreeParser {
 
-    TreeIO parse(InputStream is) throws TreeIOException;
+    Tree parse(InputStream is) throws TreeIOException;
 }
