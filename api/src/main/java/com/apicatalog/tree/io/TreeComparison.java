@@ -18,6 +18,10 @@ public interface TreeComparison {
     boolean isomorphic();
 
     public static TreeComparison of(Tree left, Tree right) {
+        return of(left, right, -1);
+    }
+
+    public static TreeComparison of(Tree left, Tree right, int maxDepth) {
         if (left == null) {
             return right == null
                     ? ComparsionResult.TRUE
@@ -31,7 +35,8 @@ public interface TreeComparison {
                 left.node(),
                 left.adapter(),
                 right.node(),
-                right.adapter());
+                right.adapter(),
+                maxDepth);
     }
 
     public static TreeComparison of(
@@ -39,7 +44,16 @@ public interface TreeComparison {
             TreeAdapter leftAdapter,
             Object right,
             TreeAdapter rightAdapter) {
-        return DepthFirstComparison.of(left, leftAdapter, right, rightAdapter);
+        return DepthFirstComparison.of(left, leftAdapter, right, rightAdapter, -1);
+    }
+
+    public static TreeComparison of(
+            Object left,
+            TreeAdapter leftAdapter,
+            Object right,
+            TreeAdapter rightAdapter,
+            int maxDepth) {
+        return DepthFirstComparison.of(left, leftAdapter, right, rightAdapter, maxDepth);
     }
 
     public static boolean deepEquals(Tree left, Tree right) {
@@ -50,7 +64,18 @@ public interface TreeComparison {
             return false;
         }
 
-        return of(left, right).isomorphic();
+        return of(left, right, -1).isomorphic();
+    }
+
+    public static boolean deepEquals(Tree left, Tree right, int maxDepth) {
+        if (left == null) {
+            return right == null;
+
+        } else if (right == null) {
+            return false;
+        }
+
+        return of(left, right, maxDepth).isomorphic();
     }
 
     public static boolean deepEquals(
@@ -58,7 +83,16 @@ public interface TreeComparison {
             TreeAdapter leftAdapter,
             Object right,
             TreeAdapter rightAdapter) {
-        return of(left, leftAdapter, right, rightAdapter).isomorphic();
+        return deepEquals(left, leftAdapter, right, rightAdapter, -1);
+    }
+
+    public static boolean deepEquals(
+            Object left,
+            TreeAdapter leftAdapter,
+            Object right,
+            TreeAdapter rightAdapter,
+            int maxDepth) {
+        return of(left, leftAdapter, right, rightAdapter, maxDepth).isomorphic();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -95,11 +129,14 @@ public interface TreeComparison {
                 TreeAdapter rightAdapter) {
         };
 
+        private final int maxDepth;
+
         private Deque<Structure> stack;
         private Boolean result;
 
-        protected DepthFirstComparison(Deque<Structure> stack) {
+        protected DepthFirstComparison(Deque<Structure> stack, int maxDepth) {
             this.stack = stack;
+            this.maxDepth = maxDepth;
             this.result = null;
         }
 
@@ -107,7 +144,8 @@ public interface TreeComparison {
                 Object left,
                 TreeAdapter leftAdapter,
                 Object right,
-                TreeAdapter rightAdapter) {
+                TreeAdapter rightAdapter,
+                int maxDepth) {
 
             if (left == null) {
                 return right == null
@@ -123,13 +161,13 @@ public interface TreeComparison {
             if (result instanceof Structure structure) {
                 var stack = new ArrayDeque<Structure>();
                 stack.push(structure);
-                return new DepthFirstComparison(stack);
+                return new DepthFirstComparison(stack, maxDepth);
 
             } else if (result instanceof Boolean status) {
                 return status
                         ? ComparsionResult.TRUE
                         : ComparsionResult.FALSE;
-            } 
+            }
 
             throw new IllegalStateException();
         }
@@ -139,7 +177,7 @@ public interface TreeComparison {
             if (result != null) {
                 return result;
             }
-            // TODO max depth
+
             while (!stack.isEmpty()) {
 
                 var structure = stack.peek();
@@ -159,6 +197,10 @@ public interface TreeComparison {
                         return false;
                     }
                     stack.pop();
+                }
+
+                if (maxDepth > 0 && stack.size() > maxDepth) {
+                    throw new IllegalStateException();
                 }
             }
 
@@ -254,8 +296,15 @@ public interface TreeComparison {
             } else if (rightAdapter.isNull(right)) {
                 return false;
             }
-            
-            if (leftAdapter.equals(rightAdapter)
+
+            final var leftType = leftAdapter.type(left);
+            final var rightType = rightAdapter.type(right);
+
+            if (leftType != rightType) {
+                return false;
+            }
+
+            if (leftAdapter.isEqualTo(rightAdapter)
                     && leftAdapter
                             .features()
                             .capabilities()
@@ -263,20 +312,13 @@ public interface TreeComparison {
 
                 return left.equals(right);
             }
-            
-            final NodeType leftType = leftAdapter.type(left);
-            final NodeType rightType = rightAdapter.type(right);
 
-            if (leftType != rightType) {
-                return false;
-            }
-
-            final var scalarEquals = leftAdapter.equals(rightAdapter)
+            final var scalarEquals = leftAdapter.isEqualTo(rightAdapter)
                     && leftAdapter
-                    .features()
-                    .capabilities()
-                    .contains(Capability.SCALAR_OBJECT_EQUALS);
-            
+                            .features()
+                            .capabilities()
+                            .contains(Capability.SCALAR_OBJECT_EQUALS);
+
             switch (leftType) {
             case FALSE:
             case TRUE:
@@ -297,14 +339,14 @@ public interface TreeComparison {
                 if (scalarEquals) {
                     return left.equals(right);
                 }
-                
+
                 if (leftAdapter.isIntegral(left)) {
                     return rightAdapter.isIntegral(right)
                             && Objects.equals(
                                     leftAdapter.integerValue(left),
                                     rightAdapter.integerValue(right));
                 }
-                
+
                 return !rightAdapter.isIntegral(right)
                         && Objects.equals(
                                 leftAdapter.decimalValue(left),

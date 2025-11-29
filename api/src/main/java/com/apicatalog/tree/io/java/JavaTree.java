@@ -22,28 +22,28 @@ public class JavaTree {
     }
 
     public static Tree of(Tree node) throws TreeIOException {
-        if (JavaAdapter.instance().isCompatibleWith(node.adapter())) {
+        if (JavaAdapter.instance().isEqualTo(node.adapter())) {
             return node;
         }
         return new Tree(adapt(node.node(), node.adapter()), JavaAdapter.instance());
     }
 
     public static Tree of(Object node, TreeAdapter adapter) throws TreeIOException {
-        if (JavaAdapter.instance().isCompatibleWith(adapter)) {
+        if (JavaAdapter.instance().isEqualTo(adapter)) {
             return new Tree(node, JavaAdapter.instance());
         }
         return new Tree(adapt(node, adapter), JavaAdapter.instance());
     }
 
     public static Object adapt(Tree node) throws TreeIOException {
-        if (JavaAdapter.instance().isCompatibleWith(node.adapter())) {
+        if (JavaAdapter.instance().isEqualTo(node.adapter())) {
             return node.node();
         }
         return JavaMaterializer.node(node);
     }
 
     public static Object adapt(Object node, TreeAdapter adapter) throws TreeIOException {
-        if (JavaAdapter.instance().isCompatibleWith(adapter)) {
+        if (JavaAdapter.instance().isEqualTo(adapter)) {
             return node;
         }
         return JavaMaterializer.node(node, adapter);

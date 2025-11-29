@@ -69,8 +69,16 @@ public record Tree(
         return isIsomorphicTo(other.node, other.adapter);
     }
 
+    public boolean isIsomorphicTo(Tree other, int maxDepth) {
+        return isIsomorphicTo(other.node, other.adapter, maxDepth);
+    }
+
     public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter) {
         return TreeComparison.deepEquals(node, adapter, other, otherAdapter);
+    }
+
+    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter, int maxDepth) {
+        return TreeComparison.deepEquals(node, adapter, other, otherAdapter, maxDepth);
     }
 
     public boolean isEmptyOrNull() {

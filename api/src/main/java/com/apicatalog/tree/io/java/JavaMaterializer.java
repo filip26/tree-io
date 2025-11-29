@@ -56,7 +56,7 @@ public class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
     public static Object node(Object node, TreeAdapter adapter) throws TreeIOException {
 
-        if (JavaAdapter.instance().isCompatibleWith(adapter)) {
+        if (JavaAdapter.instance().isEqualTo(adapter)) {
             return node;
         }
 

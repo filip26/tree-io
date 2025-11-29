@@ -48,7 +48,7 @@ public interface TreeAdapter {
 
     Features features();
 
-    default boolean isCompatibleWith(TreeAdapter adapter) {
+    default boolean isEqualTo(TreeAdapter adapter) {
         return adapter != null && this.getClass().equals(adapter.getClass());
     }
 
