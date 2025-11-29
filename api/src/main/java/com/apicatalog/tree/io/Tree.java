@@ -64,20 +64,14 @@ public record Tree(
         (new TreeTraversal()).root(node, adapter).traverse(generator);
     }
 
+    // exact structural/value match
     public boolean isIsomorphicTo(Tree other) {
-        return isIsomorphicTo(other);
-    }
-    
-    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter) {
-//FIXME
-        return TreeComparison.deepEquals(node, adapter, other, otherAdapter);
+        return isIsomorphicTo(other.node, other.adapter);
     }
 
-    
-    // TODO
-//    boolean isIsomorphic(Tree other);      // exact structural/value match
-//    boolean isSubtreeOf(Tree other);     // this ⊆ other
-//    boolean isSupertreeOf(Tree other);   // this ⊇ other
+    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter) {
+        return TreeComparison.deepEquals(node, adapter, other, otherAdapter);
+    }
 
     public boolean isEmptyOrNull() {
         return node == null
@@ -249,7 +243,7 @@ public record Tree(
     public boolean isEmptyCollection() {
         return node != null && adapter.isEmptyCollection(node);
     }
-    
+
     /**
      * Enumeration of supported node types within a {@code PolyMorph} tree
      * structure.
@@ -272,8 +266,8 @@ public record Tree(
         /**
          * Polymorphic wrapper node enabling heterogeneous access across formats.
          * <p>
-         * An adapted node acts as an adapter-level bridge between different
-         * underlying object models, allowing a mixed tree to be processed uniformly.
+         * An adapted node acts as an adapter-level bridge between different underlying
+         * object models, allowing a mixed tree to be processed uniformly.
          * </p>
          */
         TREE_IO(false),
@@ -345,11 +339,10 @@ public record Tree(
             return !scalar && this != TREE_IO;
         }
     }
-    
+
     public static final record Features(
             Set<NodeType> keys,
-            Set<NodeType> nodes
-            ) {
+            Set<NodeType> nodes) {
 
         public Features {
             keys = keys == null ? Set.of() : Set.copyOf(keys);
