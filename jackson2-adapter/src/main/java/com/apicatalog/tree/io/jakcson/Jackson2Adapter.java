@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
@@ -49,8 +50,7 @@ public class Jackson2Adapter implements TreeAdapter {
                     NodeType.TRUE,
                     NodeType.NULL),
             // capabilities
-            null
-    );
+            Set.of(Capability.SCALAR_OBJECT_EQUALS));
 
     static final Jackson2Adapter INSTANCE = new Jackson2Adapter();
 

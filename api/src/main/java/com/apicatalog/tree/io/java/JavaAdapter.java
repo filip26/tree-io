@@ -13,10 +13,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.Tree;
+import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 
 public class JavaAdapter implements TreeAdapter {
@@ -40,7 +41,7 @@ public class JavaAdapter implements TreeAdapter {
                     NodeType.NULL,
                     NodeType.TREE_IO),
             // capabilities
-            null);
+            Set.of(Capability.SCALAR_OBJECT_EQUALS));
 
     static final JavaAdapter INSTANCE = new JavaAdapter();
 

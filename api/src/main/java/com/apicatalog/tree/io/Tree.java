@@ -341,7 +341,8 @@ public record Tree(
     }
 
     public enum Capability {
-        OBJECT_DEEP_EQUALS
+        DEEP_OBJECT_EQUALS,
+        SCALAR_OBJECT_EQUALS,
     }
     
     public static final record Features(

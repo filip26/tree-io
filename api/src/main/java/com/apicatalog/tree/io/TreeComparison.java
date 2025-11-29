@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.NodeType;
 
 public interface TreeComparison {
@@ -109,7 +110,9 @@ public interface TreeComparison {
                 TreeAdapter rightAdapter) {
 
             if (left == null) {
-                return right == null ? ComparsionResult.TRUE : ComparsionResult.FALSE;
+                return right == null
+                        ? ComparsionResult.TRUE
+                        : ComparsionResult.FALSE;
 
             } else if (right == null) {
                 return ComparsionResult.FALSE;
@@ -126,7 +129,7 @@ public interface TreeComparison {
                 return status
                         ? ComparsionResult.TRUE
                         : ComparsionResult.FALSE;
-            }
+            } 
 
             throw new IllegalStateException();
         }
@@ -251,7 +254,16 @@ public interface TreeComparison {
             } else if (rightAdapter.isNull(right)) {
                 return false;
             }
+            
+            if (leftAdapter.equals(rightAdapter)
+                    && leftAdapter
+                            .features()
+                            .capabilities()
+                            .contains(Capability.DEEP_OBJECT_EQUALS)) {
 
+                return left.equals(right);
+            }
+            
             final NodeType leftType = leftAdapter.type(left);
             final NodeType rightType = rightAdapter.type(right);
 
@@ -259,6 +271,12 @@ public interface TreeComparison {
                 return false;
             }
 
+            final var scalarEquals = leftAdapter.equals(rightAdapter)
+                    && leftAdapter
+                    .features()
+                    .capabilities()
+                    .contains(Capability.SCALAR_OBJECT_EQUALS);
+            
             switch (leftType) {
             case FALSE:
             case TRUE:
@@ -266,18 +284,27 @@ public interface TreeComparison {
                 return true;
 
             case BINARY:
-                return Arrays.equals(leftAdapter.binaryValue(left), rightAdapter.binaryValue(right));
+                return scalarEquals
+                        ? left.equals(right)
+                        : Arrays.equals(leftAdapter.binaryValue(left), rightAdapter.binaryValue(right));
 
             case STRING:
-                return Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
+                return scalarEquals
+                        ? left.equals(right)
+                        : Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
 
             case NUMBER:
+                if (scalarEquals) {
+                    return left.equals(right);
+                }
+                
                 if (leftAdapter.isIntegral(left)) {
                     return rightAdapter.isIntegral(right)
                             && Objects.equals(
                                     leftAdapter.integerValue(left),
                                     rightAdapter.integerValue(right));
                 }
+                
                 return !rightAdapter.isIntegral(right)
                         && Objects.equals(
                                 leftAdapter.decimalValue(left),

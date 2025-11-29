@@ -56,7 +56,9 @@ public class JakartaAdapter implements TreeAdapter {
                     NodeType.TRUE,
                     NodeType.NULL),
             // capabilities
-            Set.of(Capability.OBJECT_DEEP_EQUALS));
+            Set.of(
+                    Capability.DEEP_OBJECT_EQUALS,
+                    Capability.SCALAR_OBJECT_EQUALS));
 
     static final JakartaAdapter INSTANCE = new JakartaAdapter();
 
