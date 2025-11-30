@@ -136,21 +136,11 @@ public interface TreeGenerator {
      *
      * @throws TreeIOException if an I/O error occurs during construction.
      */
-    void beginList() throws TreeIOException;
-
-    /**
-     * Begins a new set structure. An unordered collection of unique elements. After
-     * this call, subsequent calls are expected to be the elements of the set. Every
-     * call to this method must be matched by a corresponding call to
-     * {@link #end()}.
-     *
-     * @throws TreeIOException if an I/O error occurs during construction.
-     */
-    void beginSet() throws TreeIOException;
+    void beginSequence() throws TreeIOException;
 
     /**
      * Ends the current map or collection structure. This call must match a
-     * preceding {@link #beginMap()} or {@link #beginList()}.
+     * preceding {@link #beginMap()} or {@link #beginSequence()}.
      *
      * @throws TreeIOException if an I/O error occurs during construction.
      */

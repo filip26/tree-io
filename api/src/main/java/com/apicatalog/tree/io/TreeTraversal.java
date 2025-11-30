@@ -56,7 +56,7 @@ public class TreeTraversal {
         PROPERTY_VALUE,
 
         /** The current node is an element within a collection structure. */
-        COLLECTION_ELEMENT,
+        ELEMENT,
 
         /**
          * A synthetic marker indicating the end of a map or collection has been
@@ -139,8 +139,8 @@ public class TreeTraversal {
                 generator.beginMap();
                 break;
 
-            case COLLECTION:
-                generator.beginList();
+            case SEQUENCE:
+                generator.beginSequence();
                 break;
 
             case NULL:
@@ -215,7 +215,7 @@ public class TreeTraversal {
         var nodeAdapter = adapters.peek();
         var item = stack.peek();
 
-        if (NodeType.TREE_IO.equals(item)) {
+        if (NodeType.TREE.equals(item)) {
             adapters.pop();
             nodeAdapter = adapters.peek();
             stack.pop();
@@ -254,7 +254,7 @@ public class TreeTraversal {
 
             } else {
                 // process collection element
-                currentNodeContext = Context.COLLECTION_ELEMENT;
+                currentNodeContext = Context.ELEMENT;
                 currentNode = item;
             }
 
@@ -274,14 +274,14 @@ public class TreeTraversal {
         currentNodeType = nodeAdapter.type(currentNode);
 
         switch (currentNodeType) {
-        case TREE_IO:
-            stack.push(NodeType.TREE_IO);
+        case TREE:
+            stack.push(NodeType.TREE);
             final Tree adaptedNode = (Tree) currentNode;
             root(adaptedNode.node(), adaptedNode.adapter());
             return next(currentNodeContext);
 
-        case COLLECTION:
-            stack.push(NodeType.COLLECTION);
+        case SEQUENCE:
+            stack.push(NodeType.SEQUENCE);
             stack.push(currentNode);
             stack.push(nodeAdapter.asIterable(currentNode).iterator());
             depth += 1;

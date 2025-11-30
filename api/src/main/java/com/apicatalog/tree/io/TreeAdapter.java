@@ -28,9 +28,9 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * from a native tree representation (e.g., an in-memory JSON object model)
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
- * <li><b>Data Transformation:</b> Serve as the input for a {@link TreeTraversal},
- * which walks the tree exposed by this adapter and drives a
- * {@link TreeGenerator}. This powerful pattern is the foundation for
+ * <li><b>Data Transformation:</b> Serve as the input for a
+ * {@link TreeTraversal}, which walks the tree exposed by this adapter and
+ * drives a {@link TreeGenerator}. This powerful pattern is the foundation for
  * converting between different data formats (e.g., from a YAML document to a
  * binary CBOR representation).</li>
  * </ol>
@@ -107,7 +107,7 @@ public interface TreeAdapter {
     /**
      * Returns the number of entries in a map or elements in a collection. This
      * method is intended for nodes where {@link #isMap(Object)} or
-     * {@link #isCollection(Object)} returns {@code true}.
+     * {@link #isSequence(Object)} returns {@code true}.
      *
      * @param node the structure node to inspect.
      * @return the number of entries (for a map) or elements (for a collection).
@@ -125,7 +125,7 @@ public interface TreeAdapter {
      * @throws UnsupportedOperationException if the node is not a map or collection.
      */
     default boolean isEmpty(Object node) {
-        return isCollection(node) && !elements(node).iterator().hasNext()
+        return isSequence(node) && !elements(node).iterator().hasNext()
                 || isMap(node) && !entries(node).iterator().hasNext();
     }
 
@@ -212,25 +212,7 @@ public interface TreeAdapter {
      * @return {@code true} if the node represents a collection, {@code false}
      *         otherwise.
      */
-    boolean isCollection(Object node);
-
-    /**
-     * Checks if the adapted collection node is a list (an ordered collection that
-     * allows duplicates).
-     *
-     * @param node the collection node to check.
-     * @return {@code true} if the node is a list, {@code false} otherwise.
-     */
-    boolean isList(Object node);
-
-    /**
-     * Checks if the adapted collection node is a set (an unordered collection of
-     * unique elements).
-     *
-     * @param node the collection node to check.
-     * @return {@code true} if the node is a set, {@code false} otherwise.
-     */
-    boolean isSet(Object node);
+    boolean isSequence(Object node);
 
     /**
      * Returns the elements of a collection node as an {@link Iterable}.
@@ -251,7 +233,7 @@ public interface TreeAdapter {
     Stream<?> elementStream(Object node);
 
     default boolean isSingleElement(Object node) {
-        if (isCollection(node)) {
+        if (isSequence(node)) {
             final var it = elements(node).iterator();
             if (it.hasNext()) {
                 it.next();
@@ -427,7 +409,7 @@ public interface TreeAdapter {
         return isMap(node) && !entries(node).iterator().hasNext();
     }
 
-    default boolean isEmptyCollection(Object node) {
-        return isCollection(node) && !elements(node).iterator().hasNext();
+    default boolean isEmptySequence(Object node) {
+        return isSequence(node) && !elements(node).iterator().hasNext();
     }
 }

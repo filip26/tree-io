@@ -48,7 +48,7 @@ public class JakartaAdapter implements TreeAdapter {
             Set.of(NodeType.STRING),
             // nodes
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING,
@@ -115,7 +115,7 @@ public class JakartaAdapter implements TreeAdapter {
         case FALSE -> NodeType.FALSE;
         case STRING -> NodeType.STRING;
         case NUMBER -> NodeType.NUMBER;
-        case ARRAY -> NodeType.COLLECTION;
+        case ARRAY -> NodeType.SEQUENCE;
         case OBJECT -> NodeType.MAP;
         default -> throw new IllegalArgumentException("Unsupported JsonValue type=" + ((JsonValue) node).getValueType());
         };
@@ -307,27 +307,7 @@ public class JakartaAdapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public boolean isCollection(Object node) {
-        return node instanceof JsonArray;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Always returns {@code false} as {@link JsonArray} does not enforce element
-     * uniqueness.
-     * </p>
-     */
-    @Override
-    public boolean isSet(Object node) {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isList(Object node) {
+    public boolean isSequence(Object node) {
         return node instanceof JsonArray;
     }
 
@@ -373,11 +353,11 @@ public class JakartaAdapter implements TreeAdapter {
      */
     @Override
     public boolean isEmpty(Object node) {
-        return isEmptyCollection(node) || isEmptyMap(node);
+        return isEmptySequence(node) || isEmptyMap(node);
     }
 
     @Override
-    public boolean isEmptyCollection(Object node) {
+    public boolean isEmptySequence(Object node) {
         return node instanceof JsonArray array
                 && array.isEmpty();
     }

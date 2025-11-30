@@ -173,7 +173,7 @@ public interface TreeComparison {
 
                 var structure = stack.peek();
 
-                if (structure.type == NodeType.COLLECTION) {
+                if (structure.type == NodeType.SEQUENCE) {
                     result = arrayEquals();
 
                 } else if (structure.type == NodeType.MAP) {
@@ -334,28 +334,16 @@ public interface TreeComparison {
                         leftAdapter.numericValue(left),
                         rightAdapter.numericValue(right));
 
-//                if (leftAdapter.isIntegral(left)) {
-//                    return rightAdapter.isIntegral(right)
-//                            && Objects.equals(
-//                                    leftAdapter.integerValue(left),
-//                                    rightAdapter.integerValue(right));
-//                }
-//
-//                return !rightAdapter.isIntegral(right)
-//                        && Objects.equals(
-//                                leftAdapter.decimalValue(left),
-//                                rightAdapter.decimalValue(right));
+            case SEQUENCE:
+                if (leftAdapter.isEmptySequence(left)) {
+                    return rightAdapter.isEmptySequence(right);
 
-            case COLLECTION:
-                if (leftAdapter.isEmptyCollection(left)) {
-                    return rightAdapter.isEmptyCollection(right);
-
-                } else if (rightAdapter.isEmptyCollection(right)) {
+                } else if (rightAdapter.isEmptySequence(right)) {
                     return false;
                 }
 
                 return new Structure(
-                        NodeType.COLLECTION,
+                        NodeType.SEQUENCE,
                         leftAdapter.elements(left).iterator(),
                         leftAdapter,
                         rightAdapter.elements(right).iterator(),

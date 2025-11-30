@@ -87,20 +87,12 @@ public class Jackson2Generator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginList() throws TreeIOException {
+    public void beginSequence() throws TreeIOException {
         try {
             writer.writeStartArray();
         } catch (IOException e) {
             throw new TreeIOException(e);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beginSet() throws TreeIOException {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -117,7 +109,7 @@ public class Jackson2Generator extends TreeTraversal implements TreeGenerator {
                 writer.writeEndObject();
                 return;
             }
-            if (NodeType.COLLECTION == currentNodeType) {
+            if (NodeType.SEQUENCE == currentNodeType) {
                 writer.writeEndArray();
                 return;
             }

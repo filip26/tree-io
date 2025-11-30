@@ -213,16 +213,8 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
      * {@inheritDoc}
      */
     @Override
-    public void beginList() throws TreeIOException {
+    public void beginSequence() throws TreeIOException {
         structures.push(new ArrayList<>());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beginSet() throws TreeIOException {
-        structures.push(new LinkedHashSet<>());
     }
 
     /**
@@ -264,7 +256,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
             ((Map) structures.peek()).put(key, value);
             return;
 
-        case COLLECTION_ELEMENT:
+        case ELEMENT:
             ((List<Object>) structures.peek()).add(value);
             return;
 

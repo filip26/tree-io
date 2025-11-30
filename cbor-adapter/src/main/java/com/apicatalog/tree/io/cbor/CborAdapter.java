@@ -50,14 +50,14 @@ public class CborAdapter implements TreeAdapter {
     static final Features FEATURES = new Features(
             // keys
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING,
                     NodeType.BINARY),
             // nodes
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING,
@@ -110,7 +110,7 @@ public class CborAdapter implements TreeAdapter {
             return NodeType.MAP;
 
         case ARRAY:
-            return NodeType.COLLECTION;
+            return NodeType.SEQUENCE;
 
         case BYTE_STRING:
             return NodeType.BINARY;
@@ -350,27 +350,7 @@ public class CborAdapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public boolean isCollection(Object node) {
-        return node != null && (node instanceof Array);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Always returns {@code false} because CBOR arrays do not enforce uniqueness of
-     * elements.
-     * </p>
-     */
-    @Override
-    public boolean isSet(Object node) {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isList(Object node) {
+    public boolean isSequence(Object node) {
         return node != null && (node instanceof Array);
     }
 

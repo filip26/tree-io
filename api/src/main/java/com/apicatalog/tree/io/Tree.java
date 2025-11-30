@@ -87,10 +87,6 @@ public record Tree(
                 || adapter.isEmpty(node);
     }
 
-    public boolean isCollection() {
-        return node != null && adapter.isCollection(node);
-    }
-
     /**
      * Determines the {@link NodeType} of the given native node.
      *
@@ -190,7 +186,7 @@ public record Tree(
      *         otherwise.
      */
     public boolean isSequence() {
-        return node != null && adapter.isCollection(node);
+        return node != null && adapter.isSequence(node);
     }
 
     /**
@@ -249,7 +245,7 @@ public record Tree(
     }
 
     public boolean isEmptyCollection() {
-        return node != null && adapter.isEmptyCollection(node);
+        return node != null && adapter.isEmptySequence(node);
     }
 
     /**
@@ -261,7 +257,7 @@ public record Tree(
      * containers (e.g. map, collection, or polymorphic wrapper).
      * </p>
      * <p>
-     * {@link #TREE_IO} represents an ad-hoc, heterogeneous wrapper node that can
+     * {@link #TREE} represents an ad-hoc, heterogeneous wrapper node that can
      * encapsulate another node originating from a different data model or library.
      * This enables uniform traversal and comparison of mixed-format trees.
      * </p>
@@ -278,7 +274,7 @@ public record Tree(
          * object models, allowing a mixed tree to be processed uniformly.
          * </p>
          */
-        TREE_IO(false),
+        TREE(false),
 
         /**
          * Mapping structure of key-value pairs, such as a JSON object or
@@ -291,7 +287,7 @@ public record Tree(
          * Ordered sequence of elements, such as a JSON array or list. Elements may be
          * scalar or structural nodes.
          */
-        COLLECTION(false),
+        SEQUENCE(false),
 
         /**
          * Textual scalar value. Represents a string node within the tree.
@@ -344,7 +340,7 @@ public record Tree(
          * @return {@code true} if the node is structural (non-scalar)
          */
         public boolean isStructure() {
-            return !scalar && this != TREE_IO;
+            return !scalar && this != TREE;
         }
     }
 

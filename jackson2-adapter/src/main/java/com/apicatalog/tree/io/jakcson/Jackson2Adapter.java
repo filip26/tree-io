@@ -42,7 +42,7 @@ public class Jackson2Adapter implements TreeAdapter {
             Set.of(NodeType.STRING),
             // nodes
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING,
@@ -107,7 +107,7 @@ public class Jackson2Adapter implements TreeAdapter {
         case NUMBER:
             return NodeType.NUMBER;
         case ARRAY:
-            return NodeType.COLLECTION;
+            return NodeType.SEQUENCE;
         case OBJECT:
             return NodeType.MAP;
         case BINARY:
@@ -327,30 +327,10 @@ public class Jackson2Adapter implements TreeAdapter {
      * {@inheritDoc}
      */
     @Override
-    public boolean isCollection(Object node) {
+    public boolean isSequence(Object node) {
         return node != null
                 && node instanceof JsonNode
                 && ((JsonNode) node).isArray();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Always returns {@code false} as JSON arrays do not enforce element
-     * uniqueness.
-     * </p>
-     */
-    @Override
-    public boolean isSet(Object node) {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isList(Object node) {
-        return isCollection(node);
     }
 
     /**

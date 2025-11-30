@@ -25,13 +25,13 @@ public final class JavaAdapter implements TreeAdapter {
     static final Features FEATURES = new Features(
             // keys
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING),
             // nodes
             Set.of(
-                    NodeType.COLLECTION,
+                    NodeType.SEQUENCE,
                     NodeType.MAP,
                     NodeType.NUMBER,
                     NodeType.STRING,
@@ -39,7 +39,7 @@ public final class JavaAdapter implements TreeAdapter {
                     NodeType.FALSE,
                     NodeType.TRUE,
                     NodeType.NULL,
-                    NodeType.TREE_IO),
+                    NodeType.TREE),
             // capabilities
             Set.of(Capability.SCALAR_OBJECT_EQUALS));
 
@@ -98,13 +98,13 @@ public final class JavaAdapter implements TreeAdapter {
             return NodeType.MAP;
         }
         if (node instanceof Collection) {
-            return NodeType.COLLECTION;
+            return NodeType.SEQUENCE;
         }
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
         if (node instanceof Tree) {
-            return NodeType.TREE_IO;
+            return NodeType.TREE;
         }
 
         throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
@@ -282,18 +282,8 @@ public final class JavaAdapter implements TreeAdapter {
     }
 
     @Override
-    public boolean isCollection(Object node) {
+    public boolean isSequence(Object node) {
         return node != null && node instanceof Collection;
-    }
-
-    @Override
-    public boolean isList(Object node) {
-        return node != null && node instanceof List;
-    }
-
-    @Override
-    public boolean isSet(Object node) {
-        return node != null && node instanceof Set;
     }
 
     @Override
@@ -403,7 +393,7 @@ public final class JavaAdapter implements TreeAdapter {
         case FALSE:
             return false;
 
-        case COLLECTION:
+        case SEQUENCE:
             if (adapter.isEmpty(value)) {
                 return List.of();
             }

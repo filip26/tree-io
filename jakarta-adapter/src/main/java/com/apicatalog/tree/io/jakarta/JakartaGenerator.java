@@ -244,20 +244,7 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * @throws TreeIOException 
      */
     @Override
-    public void beginList() throws TreeIOException {
-        try {
-            writer.writeStartArray();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     * @throws TreeIOException 
-     */
-    @Override
-    public void beginSet() throws TreeIOException {
+    public void beginSequence() throws TreeIOException {
         try {
             writer.writeStartArray();
         } catch (JsonException e) {

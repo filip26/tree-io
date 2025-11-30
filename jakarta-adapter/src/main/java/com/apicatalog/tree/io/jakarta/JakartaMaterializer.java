@@ -231,16 +231,8 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
      * </p>
      */
     @Override
-    public void beginList() throws TreeIOException {
+    public void beginSequence() throws TreeIOException {
         builders.push(provider.createArrayBuilder());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beginSet() throws TreeIOException {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -295,7 +287,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
             ((JsonObjectBuilder) builders.peek()).add(key, value);
             return;
 
-        case COLLECTION_ELEMENT:
+        case ELEMENT:
             ((JsonArrayBuilder) builders.peek()).add(value);
             return;
 

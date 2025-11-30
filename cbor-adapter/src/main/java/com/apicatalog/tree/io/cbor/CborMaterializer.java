@@ -107,16 +107,8 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginList() {
+    public void beginSequence() {
         builders.push(new Array());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beginSet() throws TreeIOException {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -255,7 +247,7 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
             ((Map) builders.peek()).put(key, node);
             break;
 
-        case COLLECTION_ELEMENT:
+        case ELEMENT:
             ((Array) builders.peek()).add(node);
             break;
 
