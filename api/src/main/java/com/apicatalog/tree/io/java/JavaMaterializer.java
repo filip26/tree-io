@@ -33,7 +33,7 @@ import com.apicatalog.tree.io.TreeTraversal;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class JavaMaterializer extends TreeTraversal implements TreeGenerator {
+class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
     protected final Deque<Object> structures;
 

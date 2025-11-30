@@ -20,7 +20,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 
-public class JavaAdapter implements TreeAdapter {
+public final class JavaAdapter implements TreeAdapter {
 
     static final Features FEATURES = new Features(
             // keys
@@ -43,9 +43,12 @@ public class JavaAdapter implements TreeAdapter {
             // capabilities
             Set.of(Capability.SCALAR_OBJECT_EQUALS));
 
-    static final JavaAdapter INSTANCE = new JavaAdapter();
+    private static final JavaAdapter INSTANCE = new JavaAdapter();
 
-    // TODO rename to of()
+    private JavaAdapter() {
+        // static
+    }
+    
     public static final JavaAdapter instance() {
         return INSTANCE;
     }

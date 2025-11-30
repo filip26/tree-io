@@ -96,22 +96,13 @@ public interface TreeComparison {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Comparator<Entry<?, ?>> comparingEntry(Function<Entry<?, ?>, Comparable> keyExtractor) {
-        return (Entry<?, ?> arg0, Entry<?, ?> arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    public static Comparator<Entry<?, ?>> comparingEntryKey(Function<Object, Comparable> comparable) {
+        return (Entry<?, ?> arg0, Entry<?, ?> arg1) -> comparable.apply(arg0.getKey()).compareTo(comparable.apply(arg1.getKey()));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Comparator<?> comparingNode(Function<Object, Comparable> keyExtractor) {
-        return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
-    }
-
-    public static Comparator<Entry<?, ?>> comparingStringKeys(TreeAdapter adapter) {
-        return comparingEntry(e -> adapter.asString(e.getKey()));
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static Comparator<Object> comparingElement(Function<Object, Comparable> keyExtractor) {
-        return (Object arg0, Object arg1) -> keyExtractor.apply(arg0).compareTo(keyExtractor.apply(arg1));
+    public static Comparator<Object> comparingNode(Function<Object, Comparable> comparable) {
+        return (Object arg0, Object arg1) -> comparable.apply(arg0).compareTo(comparable.apply(arg1));
     }
 
     static record ComparsionResult(boolean isomorphic) implements TreeComparison {
@@ -327,30 +318,33 @@ public interface TreeComparison {
 
             case BINARY:
                 return scalarEquals
-                        ? left.equals(right)
+                        ? Objects.equals(left, right)
                         : Arrays.equals(leftAdapter.binaryValue(left), rightAdapter.binaryValue(right));
 
             case STRING:
                 return scalarEquals
-                        ? left.equals(right)
+                        ? Objects.equals(left, right)
                         : Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
 
             case NUMBER:
                 if (scalarEquals) {
-                    return left.equals(right);
+                    return Objects.equals(left, right);
                 }
+                return Objects.equals(
+                        leftAdapter.numericValue(left),
+                        rightAdapter.numericValue(right));
 
-                if (leftAdapter.isIntegral(left)) {
-                    return rightAdapter.isIntegral(right)
-                            && Objects.equals(
-                                    leftAdapter.integerValue(left),
-                                    rightAdapter.integerValue(right));
-                }
-
-                return !rightAdapter.isIntegral(right)
-                        && Objects.equals(
-                                leftAdapter.decimalValue(left),
-                                rightAdapter.decimalValue(right));
+//                if (leftAdapter.isIntegral(left)) {
+//                    return rightAdapter.isIntegral(right)
+//                            && Objects.equals(
+//                                    leftAdapter.integerValue(left),
+//                                    rightAdapter.integerValue(right));
+//                }
+//
+//                return !rightAdapter.isIntegral(right)
+//                        && Objects.equals(
+//                                leftAdapter.decimalValue(left),
+//                                rightAdapter.decimalValue(right));
 
             case COLLECTION:
                 if (leftAdapter.isEmptyCollection(left)) {
