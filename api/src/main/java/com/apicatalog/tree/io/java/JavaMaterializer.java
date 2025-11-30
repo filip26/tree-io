@@ -32,11 +32,11 @@ import com.apicatalog.tree.io.TreeTraversal;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-class JavaMaterializer extends TreeTraversal implements TreeGenerator {
+final class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
-    protected final Deque<Object> structures;
+    private final Deque<Object> structures;
 
-    protected Object object;
+    private Object object;
 
     public JavaMaterializer() {
         super(new ArrayDeque<>(), null);
@@ -247,7 +247,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
      * @param value the {@link Object} to place
      */
     @SuppressWarnings("unchecked")
-    protected void value(final Object value) {
+    private void value(final Object value) {
 
         switch (currentNodeContext) {
         case PROPERTY_VALUE:

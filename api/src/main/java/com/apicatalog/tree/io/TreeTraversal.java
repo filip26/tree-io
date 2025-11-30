@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Tree.NodeType;
 
@@ -92,11 +91,11 @@ public class TreeTraversal {
         this(new ArrayDeque<>(), null);
     }
 
-    public TreeTraversal(final Deque<Object> stack) {
-        this(stack, null);
+    public TreeTraversal(Comparator<Entry<?, ?>> entryComparator) {
+        this(new ArrayDeque<>(), entryComparator);
     }
 
-    public TreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    protected TreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
@@ -290,7 +289,7 @@ public class TreeTraversal {
         case MAP:
             stack.push(NodeType.MAP);
             stack.push(currentNode);
-            Stream<Entry<?, ?>> entryStream = nodeAdapter.entryStream(currentNode);
+            var entryStream = nodeAdapter.entryStream(currentNode);
             if (entryComparator != null) {
                 entryStream = entryStream.sorted(entryComparator);
             }

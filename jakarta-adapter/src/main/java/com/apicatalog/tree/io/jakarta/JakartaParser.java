@@ -19,7 +19,7 @@ public final class JakartaParser implements TreeParser {
     public JakartaParser() {
         this(Json.createReaderFactory(Map.of()));
     }
-
+    
     public JakartaParser(JsonReaderFactory factory) {
         this.factory = factory;
     }

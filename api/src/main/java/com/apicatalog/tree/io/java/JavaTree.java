@@ -7,7 +7,11 @@ import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 
-public class JavaTree {
+public final class JavaTree {
+
+    private JavaTree() {
+        // protected
+    }
 
     public static TreeAdapter adapter() {
         return JavaAdapter.instance();

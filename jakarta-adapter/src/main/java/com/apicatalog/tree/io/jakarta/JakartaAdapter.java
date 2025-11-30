@@ -3,17 +3,16 @@ package com.apicatalog.tree.io.jakarta;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
 
 import jakarta.json.JsonArray;
 import jakarta.json.JsonNumber;
@@ -117,7 +116,10 @@ public class JakartaAdapter implements TreeAdapter {
         case NUMBER -> NodeType.NUMBER;
         case ARRAY -> NodeType.SEQUENCE;
         case OBJECT -> NodeType.MAP;
-        default -> throw new IllegalArgumentException("Unsupported JsonValue type=" + ((JsonValue) node).getValueType());
+        default -> throw new IllegalStateException(
+                """
+                Unsupported JsonValue type=%s
+                """.formatted(((JsonValue) node).getValueType()));
         };
     }
 
@@ -190,6 +192,11 @@ public class JakartaAdapter implements TreeAdapter {
         return ((JsonString) node).getString();
     }
 
+    @Override
+    public Number numericValue(Object node) {
+        return ((JsonNumber) node).numberValue();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -250,7 +257,7 @@ public class JakartaAdapter implements TreeAdapter {
     @Override
     public Collection<JsonValue> asIterable(Object node) {
         if (node == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         if (node instanceof JsonArray array) {
             return array;
@@ -269,10 +276,7 @@ public class JakartaAdapter implements TreeAdapter {
         if (node instanceof JsonArray array) {
             return array.stream();
         }
-        if (node instanceof JsonValue value) {
-            return Stream.of(value);
-        }
-        throw new ClassCastException();
+        return Stream.of((JsonValue) node);
     }
 
     /**
@@ -391,7 +395,7 @@ public class JakartaAdapter implements TreeAdapter {
         if (node instanceof JsonArray array) {
             return array.size();
         }
-        throw new ClassCastException("Node must be a JsonObject or a JsonArray.");
+        throw new ClassCastException("Node must be a JsonObject or a JsonArray, node=" + node);
     }
 
     /**
@@ -416,6 +420,6 @@ public class JakartaAdapter implements TreeAdapter {
         if (node instanceof JsonNumber jsonNumber) {
             return jsonNumber.bigDecimalValue();
         }
-        throw new IllegalArgumentException("Node must be a JsonNumber.");
+        throw new ClassCastException("Node must be a JsonNumber, node=" + node);
     }
 }

@@ -327,12 +327,11 @@ public interface TreeComparison {
                         : Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
 
             case NUMBER:
-                if (scalarEquals) {
-                    return Objects.equals(left, right);
-                }
-                return Objects.equals(
-                        leftAdapter.numericValue(left),
-                        rightAdapter.numericValue(right));
+                return scalarEquals
+                        ? Objects.equals(left, right)
+                        : Objects.equals(
+                                leftAdapter.numericValue(left),
+                                rightAdapter.numericValue(right));
 
             case SEQUENCE:
                 if (leftAdapter.isEmptySequence(left)) {

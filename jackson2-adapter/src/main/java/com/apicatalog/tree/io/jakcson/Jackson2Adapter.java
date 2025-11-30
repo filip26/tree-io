@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -96,25 +97,25 @@ public class Jackson2Adapter implements TreeAdapter {
         }
 
         // all other values
-        switch (((JsonNode) node).getNodeType()) {
-        case NULL:
-        case MISSING:
-            return NodeType.NULL;
-        case BOOLEAN:
-            return ((JsonNode) node).asBoolean() ? NodeType.TRUE : NodeType.FALSE;
-        case STRING:
-            return NodeType.STRING;
-        case NUMBER:
-            return NodeType.NUMBER;
-        case ARRAY:
-            return NodeType.SEQUENCE;
-        case OBJECT:
-            return NodeType.MAP;
-        case BINARY:
-            return NodeType.BINARY;
-        default:
-            throw new IllegalArgumentException("Unsupported JsonNode type.");
-        }
+        return switch (((JsonNode) node).getNodeType()) {
+        case NULL, MISSING -> NodeType.NULL;
+
+        case BOOLEAN -> ((JsonNode) node).asBoolean()
+                ? NodeType.TRUE
+                : NodeType.FALSE;
+
+        case STRING -> NodeType.STRING;
+
+        case NUMBER -> NodeType.NUMBER;
+
+        case ARRAY -> NodeType.SEQUENCE;
+
+        case OBJECT -> NodeType.MAP;
+
+        case BINARY -> NodeType.BINARY;
+
+        default -> throw new IllegalArgumentException("Unsupported JsonNode type, node=" + node);
+        };
     }
 
     /**
@@ -185,8 +186,8 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public String stringValue(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
         return ((JsonNode) node).textValue();
     }
@@ -259,13 +260,13 @@ public class Jackson2Adapter implements TreeAdapter {
         if (node instanceof Collection) {
             return (Collection<JsonNode>) node;
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).valueStream().collect(Collectors.toList());
+        if (node instanceof ArrayNode array) {
+            return array.valueStream().collect(Collectors.toList());
         }
-        if (node instanceof Stream) {
-            return ((Stream<JsonNode>) node).collect(Collectors.toList());
+        if (node instanceof Stream stream) {
+            return ((Stream<JsonNode>) stream).collect(Collectors.toList());
         }
-        return Collections.singleton((JsonNode) node);
+        return List.of((JsonNode) node);
     }
 
     /**
@@ -277,14 +278,14 @@ public class Jackson2Adapter implements TreeAdapter {
         if (node == null) {
             return Stream.empty();
         }
-        if (node instanceof Collection) {
-            return ((Collection<JsonNode>) node).stream();
+        if (node instanceof Collection col) {
+            return ((Collection<JsonNode>) col).stream();
         }
-        if (node instanceof Stream) {
-            return (Stream<JsonNode>) node;
+        if (node instanceof Stream stream) {
+            return (Stream<JsonNode>) stream;
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).valueStream();
+        if (node instanceof ArrayNode array) {
+            return array.valueStream();
         }
         return Stream.of((JsonNode) node);
     }
@@ -298,8 +299,8 @@ public class Jackson2Adapter implements TreeAdapter {
     @Override
     public boolean isNull(Object node) {
         return node == null
-                || (node instanceof JsonNode
-                        && (((JsonNode) node).isNull()));
+                || (node instanceof JsonNode json
+                        && json.isNull());
 //                                || ((JsonNode) node).isMissingNode()));
     }
 
@@ -308,9 +309,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isBoolean(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isBoolean();
+        return node instanceof JsonNode json && json.isBoolean();
     }
 
     /**
@@ -318,9 +317,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isMap(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isObject();
+        return node instanceof JsonNode json && json.isObject();
     }
 
     /**
@@ -328,9 +325,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isSequence(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isArray();
+        return node instanceof JsonNode json && json.isArray();
     }
 
     /**
@@ -338,10 +333,9 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isString(Object node) {
-        return node != null
-                && (node instanceof String
-                        || (node instanceof JsonNode
-                                && ((JsonNode) node).isTextual()));
+        return node instanceof String
+                || (node instanceof JsonNode json
+                        && json.isTextual());
     }
 
     /**
@@ -349,9 +343,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isNumber(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isNumber();
+        return node instanceof JsonNode json && json.isNumber();
     }
 
     /**
@@ -359,9 +351,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isIntegral(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isIntegralNumber();
+        return node instanceof JsonNode json && json.isIntegralNumber();
     }
 
     /**
@@ -369,9 +359,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isBinary(Object node) {
-        return node != null
-                && node instanceof JsonNode
-                && ((JsonNode) node).isBinary();
+        return node instanceof JsonNode json && json.isBinary();
     }
 
     /**
@@ -387,7 +375,7 @@ public class Jackson2Adapter implements TreeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).isEmpty();
         }
-        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
+        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode, node=" + node);
     }
 
     /**
@@ -403,7 +391,7 @@ public class Jackson2Adapter implements TreeAdapter {
         if (node instanceof ArrayNode) {
             return ((ArrayNode) node).size();
         }
-        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode.");
+        throw new ClassCastException("Node must be an ObjectNode or an ArrayNode, node=" + node);
     }
 
     /**
