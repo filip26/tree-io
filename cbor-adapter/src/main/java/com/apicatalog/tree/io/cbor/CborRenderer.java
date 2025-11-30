@@ -1,0 +1,38 @@
+package com.apicatalog.tree.io.cbor;
+
+import java.io.OutputStream;
+import java.util.List;
+
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeRenderer;
+
+import co.nstant.in.cbor.CborEncoder;
+import co.nstant.in.cbor.CborException;
+import co.nstant.in.cbor.model.DataItem;
+
+public class CborRenderer implements TreeRenderer {
+
+    @Override
+    public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
+
+        try {
+            if (node instanceof DataItem item) {
+                new CborEncoder(os).encode(item);
+                return;
+            }
+
+            if (CborAdapter.instance().isEqualTo(adapter)
+                    && node instanceof List list) {
+                new CborEncoder(os).encode((List<DataItem>) list);
+                return;
+            }
+            
+            new CborEncoder(os).encode(CborMaterializer.node(node, adapter));
+
+        } catch (CborException e) {
+            throw new TreeIOException(e);
+        }
+    }
+
+}

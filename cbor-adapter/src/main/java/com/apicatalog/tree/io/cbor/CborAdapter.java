@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -92,7 +91,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isNode(Object node) {
-        return node != null && node instanceof DataItem;
+        return node != null && (node instanceof DataItem || node instanceof List);
     }
 
     /**
@@ -104,6 +103,12 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public NodeType type(Object node) {
+
+        // root List
+        if (node instanceof List) {
+            return NodeType.SEQUENCE;
+        }
+
         switch (((DataItem) node).getMajorType()) {
 
         case MAP:
@@ -143,7 +148,7 @@ public class CborAdapter implements TreeAdapter {
         default:
         }
 
-        throw new IllegalStateException("Unknown or unsupported CBOR data item type.");
+        throw new IllegalStateException("Unknown or unsupported CBOR data item type, node=" + node);
     }
 
     /**
@@ -206,22 +211,30 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
-        return keys(node).stream().map(key -> new SimpleEntry<>(key, property(key, node)));
+        return keys(node).stream().map(key -> java.util.Map.entry(key, property(key, node)));
     }
 
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
-    public List<DataItem> elements(Object node) {
+    public Collection<DataItem> elements(Object node) {
+        if (node instanceof List root) {
+            return (List<DataItem>) root;
+        }
         return ((Array) node).getDataItems();
     }
 
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Stream<DataItem> elementStream(Object node) {
+        if (node instanceof List root) {
+            return ((List<DataItem>) root).stream();
+        }
         return ((Array) node).getDataItems().stream();
     }
 
@@ -262,11 +275,11 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public double doubleValue(Object node) {
-        if (node instanceof HalfPrecisionFloat) {
-            return ((HalfPrecisionFloat) node).getValue();
+        if (node instanceof HalfPrecisionFloat halfFloat) {
+            return halfFloat.getValue();
         }
-        if (node instanceof SinglePrecisionFloat) {
-            return ((SinglePrecisionFloat) node).getValue();
+        if (node instanceof SinglePrecisionFloat singleFloat) {
+            return singleFloat.getValue();
         }
         return ((DoublePrecisionFloat) node).getValue();
     }
@@ -290,15 +303,19 @@ public class CborAdapter implements TreeAdapter {
     /**
      * {@inheritDoc}
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Collection<DataItem> asIterable(Object node) {
         if (node == null) {
-            return Collections.emptyList();
+            return List.of();
         }
-        if (node instanceof Array) {
-            return ((Array) node).getDataItems();
+        if (node instanceof Array array) {
+            return array.getDataItems();
         }
-        return Collections.singleton((DataItem) node);
+        if (node instanceof List list) {
+            return (List<DataItem>)list;
+        }
+        return List.of((DataItem) node);
     }
 
     /**
@@ -309,8 +326,8 @@ public class CborAdapter implements TreeAdapter {
         if (node == null) {
             return Stream.empty();
         }
-        if (node instanceof Array) {
-            return ((Array) node).getDataItems().stream();
+        if (node instanceof Array array) {
+            return array.getDataItems().stream();
         }
         return Stream.of((DataItem) node);
     }
@@ -320,10 +337,9 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isNull(Object node) {
-        return node == null
-                || (node instanceof Special
-                        && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
-                        && SimpleValue.NULL.equals(node));
+        return node instanceof Special special
+                && SpecialType.SIMPLE_VALUE == special.getSpecialType()
+                && SimpleValue.NULL.equals(node);
     }
 
     /**
@@ -331,11 +347,9 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isBoolean(Object node) {
-        return node != null
-                && (node instanceof Special)
-                && SpecialType.SIMPLE_VALUE.equals(((Special) node).getSpecialType())
-                && (SimpleValue.TRUE.equals(node)
-                        || SimpleValue.FALSE.equals(node));
+        return node instanceof Special special
+                && SpecialType.SIMPLE_VALUE == special.getSpecialType()
+                && (SimpleValue.TRUE.equals(node) || SimpleValue.FALSE.equals(node));
     }
 
     /**
@@ -343,7 +357,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isMap(Object node) {
-        return node != null && (node instanceof Map);
+        return node instanceof Map;
     }
 
     /**
@@ -351,7 +365,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isSequence(Object node) {
-        return node != null && (node instanceof Array);
+        return node instanceof Array || node instanceof List;
     }
 
     /**
@@ -359,7 +373,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isString(Object node) {
-        return node != null && (node instanceof UnicodeString);
+        return node instanceof UnicodeString;
     }
 
     /**
@@ -367,13 +381,12 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isNumber(Object node) {
-        return node != null
-                && ((node instanceof UnsignedInteger)
-                        || (node instanceof NegativeInteger)
-                        || ((node instanceof Special)
-                                && (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT == (((Special) node).getSpecialType())
-                                        || SpecialType.IEEE_754_HALF_PRECISION_FLOAT == (((Special) node).getSpecialType())
-                                        || SpecialType.IEEE_754_SINGLE_PRECISION_FLOAT == (((Special) node).getSpecialType()))));
+        return ((node instanceof UnsignedInteger)
+                || (node instanceof NegativeInteger)
+                || ((node instanceof Special special)
+                        && (SpecialType.IEEE_754_DOUBLE_PRECISION_FLOAT == special.getSpecialType()
+                                || SpecialType.IEEE_754_HALF_PRECISION_FLOAT == special.getSpecialType()
+                                || SpecialType.IEEE_754_SINGLE_PRECISION_FLOAT == special.getSpecialType())));
     }
 
     /**
@@ -381,9 +394,8 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isIntegral(Object node) {
-        return node != null
-                && ((node instanceof UnsignedInteger)
-                        || (node instanceof NegativeInteger));
+        return ((node instanceof UnsignedInteger)
+                || (node instanceof NegativeInteger));
     }
 
     /**
@@ -391,7 +403,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isBinary(Object node) {
-        return node != null && (node instanceof ByteString);
+        return node instanceof ByteString;
     }
 
     /**
@@ -399,13 +411,16 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isEmpty(Object node) {
-        if (node instanceof Map) {
-            return ((Map) node).getKeys().isEmpty();
+        if (node instanceof Map map) {
+            return map.getKeys().isEmpty();
         }
-        if (node instanceof Array) {
-            return ((Array) node).getDataItems().isEmpty();
+        if (node instanceof Array array) {
+            return array.getDataItems().isEmpty();
         }
-        throw new ClassCastException("Node must be a Map or an Array.");
+        if (node instanceof List list) {
+            return list.isEmpty();
+        }
+        throw new ClassCastException("Node must be a Map or an Array, node=" + node);
     }
 
     /**
@@ -413,13 +428,16 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public int size(Object node) {
-        if (node instanceof Map) {
-            return ((Map) node).getKeys().size();
+        if (node instanceof Map map) {
+            return map.getKeys().size();
         }
-        if (node instanceof Array) {
-            return ((Array) node).getDataItems().size();
+        if (node instanceof Array array) {
+            return array.getDataItems().size();
         }
-        throw new ClassCastException("Node must be a Map or an Array.");
+        if (node instanceof List list) {
+            return list.size();
+        }        
+        throw new ClassCastException("Node must be a Map or an Array, node=" + node);
     }
 
     /**
@@ -427,11 +445,11 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public String asString(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
-        if (node instanceof UnicodeString) {
-            return ((UnicodeString) node).getString();
+        if (node instanceof UnicodeString unicode) {
+            return unicode.getString();
         }
         return Objects.toString(node);
     }

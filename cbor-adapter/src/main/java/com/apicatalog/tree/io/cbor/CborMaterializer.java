@@ -56,9 +56,12 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
     }
 
 
-    public static DataItem node(Object key, TreeAdapter keyAdapter) throws TreeIOException {
+    public static DataItem node(Object node, TreeAdapter adapter) throws TreeIOException {
         // TODO Auto-generated method stub
-        return null;
+        
+        //TODO is scalar?
+        
+        return new CborMaterializer().structure(node, adapter);
     }
     
     /**
