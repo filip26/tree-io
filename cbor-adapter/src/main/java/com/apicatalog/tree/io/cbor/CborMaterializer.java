@@ -71,7 +71,7 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
      * @throws TreeIOException if an error occurs during generation
      */
     public DataItem structure(Object node, TreeAdapter adapter) throws TreeIOException {
-        root(node, adapter).traverse(this);
+        root(node, adapter).generate(this);
         return cbor;
     }
 

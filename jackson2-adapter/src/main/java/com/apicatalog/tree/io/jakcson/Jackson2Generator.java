@@ -59,7 +59,7 @@ public class Jackson2Generator extends TreeTraversal implements TreeGenerator {
      * @throws TreeIOException if an error occurs during writing
      */
     public JsonGenerator node(Object node, TreeAdapter adapter) throws TreeIOException {
-        root(node, adapter).traverse(this);
+        root(node, adapter).generate(this);
         return writer;
     }
 

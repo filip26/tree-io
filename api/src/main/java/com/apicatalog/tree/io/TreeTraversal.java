@@ -23,7 +23,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
  * in a loop, you can process each node individually, allowing for complex logic
  * like searching, validation, or conditional processing.</li>
- * <li><b>Automated Transformation:</b> The {@link #traverse(TreeGenerator)}
+ * <li><b>Automated Transformation:</b> The {@link #generate(TreeGenerator)}
  * method provides a high-level utility to walk the entire tree and drive a
  * {@link TreeGenerator}, effectively translating or transforming one tree
  * representation into another.</li>
@@ -108,11 +108,11 @@ public class TreeTraversal {
         this.currentNodeContext = null;
         this.currentNodeType = null;
     }
-    
+
     public void traverse(final Consumer<TreeTraversal> consumer) {
         while (next()) {
             consumer.accept(this);
-        }        
+        }
     }
 
     /**
@@ -122,11 +122,11 @@ public class TreeTraversal {
      * node using {@link #next()} and emits a corresponding event to the generator.
      *
      * @param generator the generator that will receive construction events.
-     * @throws TreeIOException           if the generator encounters an I/O error.
+     * @throws TreeIOException       if the generator encounters an I/O error.
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public void traverse(final TreeGenerator generator) throws TreeIOException {
+    public void generate(final TreeGenerator generator) throws TreeIOException {
         while (next()) {
 
             if (Context.END == currentNodeContext) {
@@ -170,7 +170,7 @@ public class TreeTraversal {
                     generator.numericValue(adapter().decimalValue(currentNode));
                 }
                 break;
-                
+
             default:
                 throw new IllegalStateException("Unexpected node type: " + currentNodeType);
             }
@@ -209,7 +209,7 @@ public class TreeTraversal {
             throw new IllegalStateException("The maximum number [" + maxVisited + "] of visited nodes has been reached.");
         }
         if (maxDepth > 0 && maxDepth < depth) {
-            throw new IllegalStateException("The maximum traversal depth [" +maxDepth + "] has been reached.");
+            throw new IllegalStateException("The maximum traversal depth [" + maxDepth + "] has been reached.");
         }
 
         var nodeAdapter = adapters.peek();

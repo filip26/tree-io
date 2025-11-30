@@ -6,15 +6,14 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import com.apicatalog.tree.io.TreeAdapter;
-import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeAdapter;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 
@@ -80,9 +79,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
         case STRING -> adapter.stringValue(node);
 
-        case NUMBER -> adapter.isIntegral(node)
-                ? adapter.integerValue(node)
-                : adapter.decimalValue(node);
+        case NUMBER -> adapter.numericValue(node);
 
         default -> throw new IllegalArgumentException();
         };
@@ -97,7 +94,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
      * @throws TreeIOException if an error occurs during generation
      */
     public Object structure(Object node, TreeAdapter adapter) throws TreeIOException {
-        root(node, adapter).traverse(this);
+        root(node, adapter).generate(this);
         return object;
     }
 
@@ -226,6 +223,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
      * one exists.
      * </p>
      */
+    @SuppressWarnings({ "unchecked" })
     @Override
     public void end() throws TreeIOException {
 
@@ -234,7 +232,7 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
         if (!structures.isEmpty()) {
             if (structures.peek() instanceof String key) {
                 structures.pop();
-                ((Map) structures.peek()).put(key, object);
+                ((Map<String, Object>) structures.peek()).put(key, object);
 
             } else if (structures.peek() instanceof List list) {
                 list.add(object);
@@ -248,12 +246,13 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
      *
      * @param value the {@link Object} to place
      */
+    @SuppressWarnings("unchecked")
     protected void value(final Object value) {
 
         switch (currentNodeContext) {
         case PROPERTY_VALUE:
             String key = (String) structures.pop();
-            ((Map) structures.peek()).put(key, value);
+            ((Map<String, Object>) structures.peek()).put(key, value);
             return;
 
         case ELEMENT:
@@ -266,8 +265,9 @@ class JavaMaterializer extends TreeTraversal implements TreeGenerator {
 
         default:
             throw new IllegalStateException(
-                    "Cannot add a value in the current context=%s, value=%s"
-                            .formatted(currentNodeContext, value));
+                    """
+                    Cannot add a value in the current context=%s, value=%s
+                    """.formatted(currentNodeContext, value));
         }
     }
 }

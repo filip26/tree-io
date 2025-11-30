@@ -85,7 +85,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
             return json;
         }
 
-        root(node, adapter).traverse(this);
+        root(node, adapter).generate(this);
         return json;
     }
 

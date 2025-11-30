@@ -61,7 +61,7 @@ public record Tree(
     }
 
     public void generate(TreeGenerator generator) throws TreeIOException {
-        (new TreeTraversal()).root(node, adapter).traverse(generator);
+        (new TreeTraversal()).root(node, adapter).generate(generator);
     }
 
     // exact structural/value match
@@ -244,7 +244,7 @@ public record Tree(
         return node != null && adapter.isEmptyMap(node);
     }
 
-    public boolean isEmptyCollection() {
+    public boolean isEmptySequence() {
         return node != null && adapter.isEmptySequence(node);
     }
 
