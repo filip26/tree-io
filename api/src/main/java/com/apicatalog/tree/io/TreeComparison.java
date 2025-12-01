@@ -304,12 +304,6 @@ public interface TreeComparison {
                 return left.equals(right);
             }
 
-            final var scalarEquals = leftAdapter.isEqualTo(rightAdapter)
-                    && leftAdapter
-                            .features()
-                            .capabilities()
-                            .contains(Capability.SCALAR_OBJECT_EQUALS);
-
             switch (leftType) {
             case FALSE:
             case TRUE:
@@ -317,21 +311,34 @@ public interface TreeComparison {
                 return true;
 
             case BINARY:
-                return scalarEquals
-                        ? Objects.equals(left, right)
-                        : Arrays.equals(leftAdapter.binaryValue(left), rightAdapter.binaryValue(right));
+                return leftAdapter.isEqualTo(rightAdapter)
+                        && leftAdapter
+                                .features()
+                                .capabilities()
+                                .contains(Capability.SCALAR_OBJECT_EQUALS)
+                                        ? Objects.equals(left, right)
+                                        : Arrays.equals(leftAdapter.binaryValue(left), rightAdapter.binaryValue(right));
 
             case STRING:
-                return scalarEquals
-                        ? Objects.equals(left, right)
-                        : Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
+                return leftAdapter.isEqualTo(rightAdapter)
+                        && leftAdapter
+                                .features()
+                                .capabilities()
+                                .contains(Capability.SCALAR_OBJECT_EQUALS)
+                                        ? Objects.equals(left, right)
+                                        : Objects.equals(leftAdapter.stringValue(left), rightAdapter.stringValue(right));
 
             case NUMBER:
-                return scalarEquals
-                        ? Objects.equals(left, right)
-                        : Objects.equals(
-                                leftAdapter.numericValue(left),
-                                rightAdapter.numericValue(right));
+                return leftAdapter.isIntegral(left)
+                        && rightAdapter.isIntegral(right)
+                        && Objects.equals(
+                                leftAdapter.integerValue(left),
+                                rightAdapter.integerValue(right))
+                        || !leftAdapter.isIntegral(left)
+                                && !rightAdapter.isIntegral(right)
+                                && Objects.equals(
+                                        leftAdapter.decimalValue(left),
+                                        rightAdapter.decimalValue(right));
 
             case SEQUENCE:
                 if (leftAdapter.isEmptySequence(left)) {

@@ -161,6 +161,11 @@ public final class JavaAdapter implements TreeAdapter {
     public String stringValue(Object node) {
         return (String) node;
     }
+    
+    @Override
+    public Number numericValue(Object node) {
+        return (Number)node;
+    }
 
     @Override
     public int intValue(Object node) {
