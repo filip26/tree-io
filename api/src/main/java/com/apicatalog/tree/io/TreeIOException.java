@@ -16,4 +16,8 @@ public class TreeIOException extends Exception {
         super(e);
     }
 
+    public TreeIOException(String message) {
+        super(message);
+    }
+
 }

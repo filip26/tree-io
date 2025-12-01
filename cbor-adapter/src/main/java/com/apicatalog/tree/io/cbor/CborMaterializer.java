@@ -55,15 +55,43 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
         return CborAdapter.FEATURES;
     }
 
-
     public static DataItem node(Object node, TreeAdapter adapter) throws TreeIOException {
-        // TODO Auto-generated method stub
-        
-        //TODO is scalar?
-        
+
+        if (node instanceof DataItem dataItem) {
+            return dataItem;
+        }
+
+        if (adapter.type(node).isScalar()) {
+            return scalar(node, adapter);
+        }
+
         return new CborMaterializer().structure(node, adapter);
     }
-    
+
+    public static DataItem scalar(Object node, TreeAdapter adapter) throws TreeIOException {
+        return switch (adapter.type(node)) {
+        case NULL -> SimpleValue.NULL;
+        case TRUE -> SimpleValue.TRUE;
+        case FALSE -> SimpleValue.FALSE;
+        case STRING -> new UnicodeString(adapter.stringValue(node));
+        case BINARY -> new ByteString(adapter.binaryValue(node));
+        case NUMBER -> number(node, adapter);
+        default -> throw new TreeIOException("Node is not scalar, node=" + node);
+        };
+    }
+
+    private static DataItem number(Object node, TreeAdapter adapter) throws TreeIOException {
+        if (adapter.isIntegral(node)) {
+            var integer = adapter.integerValue(node);
+            if (integer.signum() < 0) {
+                return new NegativeInteger(integer);
+            }
+            return new UnsignedInteger(integer);
+        }
+        var decimal = adapter.doubleValue(node);
+        return new DoublePrecisionFloat(decimal);
+    }
+
     /**
      * The primary entry point for materialization. Traverses the given source node
      * and returns the resulting CBOR {@link DataItem}.
