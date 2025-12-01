@@ -5,9 +5,10 @@ import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import com.apicatalog.tree.io.Tree;
+import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 
@@ -55,10 +56,15 @@ public class CborMaterializer extends TreeTraversal implements TreeGenerator {
         return CborAdapter.FEATURES;
     }
 
+    public static DataItem node(Tree tree) throws TreeIOException {
+        return node(tree.node(), tree.adapter());
+    }
+    
     public static DataItem node(Object node, TreeAdapter adapter) throws TreeIOException {
 
-        if (node instanceof DataItem dataItem) {
-            return dataItem;
+        if (CborAdapter.instance().isEqualTo(adapter)
+                && node instanceof DataItem item) {
+            return item;
         }
 
         if (adapter.type(node).isScalar()) {

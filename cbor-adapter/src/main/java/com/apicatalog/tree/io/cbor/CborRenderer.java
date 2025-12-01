@@ -17,17 +17,12 @@ public class CborRenderer implements TreeRenderer {
     public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
 
         try {
-            if (node instanceof DataItem item) {
-                new CborEncoder(os).encode(item);
-                return;
-            }
-
             if (CborAdapter.instance().isEqualTo(adapter)
                     && node instanceof List list) {
                 new CborEncoder(os).encode((List<DataItem>) list);
                 return;
             }
-            
+
             new CborEncoder(os).encode(CborMaterializer.node(node, adapter));
 
         } catch (CborException e) {
