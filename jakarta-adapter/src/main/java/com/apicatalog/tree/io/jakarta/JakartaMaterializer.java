@@ -12,8 +12,10 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeTraversal;
 
+import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonStructure;
 import jakarta.json.JsonValue;
 import jakarta.json.spi.JsonProvider;
 
@@ -37,7 +39,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
     protected final JsonProvider provider;
     protected final Deque<Object> builders;
 
-    protected JsonValue json;
+    protected JsonStructure json;
 
     /**
      * Constructs a new materializer using the default {@link JsonProvider}.
@@ -65,7 +67,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
         this.json = null;
     }
 
-    public JsonValue node(Tree node) throws TreeIOException {
+    public static JsonValue node(Tree node) throws TreeIOException {
         return node(node.node(), node.adapter());
     }
 
@@ -78,13 +80,21 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
      * @return the fully materialized {@link JsonValue}
      * @throws TreeIOException if an error occurs during generation
      */
-    public JsonValue node(Object node, TreeAdapter adapter) throws TreeIOException {
+    public static JsonValue node(Object node, TreeAdapter adapter) throws TreeIOException {
 
-        if (adapter.type(node).isScalar()) {
-            scalar(node, adapter);
+        if (JakartaAdapter.instance().isEqualTo(adapter)
+                && node instanceof JsonValue json) {
             return json;
         }
 
+        if (adapter.type(node).isScalar()) {
+            return scalar(node, adapter);
+        }
+
+        return new JakartaMaterializer().structure(node, adapter);
+    }
+
+    public JsonStructure structure(Object node, TreeAdapter adapter) throws TreeIOException {
         root(node, adapter).generate(this);
         return json;
     }
@@ -249,16 +259,20 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
 
         final var builder = builders.pop();
 
-        if (builder instanceof JsonArrayBuilder array) {
+        switch (builder) {
+        case JsonArrayBuilder array:
             json = array.build();
+            break;
 
-        } else if (builder instanceof JsonObjectBuilder object) {
+        case JsonObjectBuilder object:
             json = object.build();
+            break;
 
-        } else if (builder instanceof JsonValue value) {
-            json = value;
+        case JsonStructure struct:
+            json = struct;
+            break;
 
-        } else {
+        default:
             throw new IllegalStateException("Internal builder stack is in an inconsistent state [" + builder + "].");
         }
 
@@ -292,7 +306,7 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
             return;
 
         case ROOT:
-            json = value;
+            json = (JsonStructure) value;
             return;
 
         default:
@@ -300,38 +314,23 @@ public class JakartaMaterializer extends TreeTraversal implements TreeGenerator 
         }
     }
 
-    protected void scalar(final Object node, final TreeAdapter adapter) throws TreeIOException {
+    public static JsonValue scalar(final Object node, final TreeAdapter adapter) throws TreeIOException {
 
-        currentNodeContext = Context.ROOT;
+        return switch (adapter.type(node)) {
 
-        switch (adapter.type(node)) {
-        case FALSE:
-            booleanValue(false);
-            break;
+        case NULL -> JsonValue.NULL;
 
-        case TRUE:
-            booleanValue(true);
-            break;
+        case TRUE -> JsonValue.TRUE;
 
-        case STRING:
-            stringValue(adapter.stringValue(node));
-            break;
+        case FALSE -> JsonValue.FALSE;
 
-        case NULL:
-            nullValue();
-            break;
+        case STRING -> Json.createValue(adapter.stringValue(node));
 
-        case NUMBER:
-            if (adapter.isIntegral(node)) {
-                numericValue(adapter.integerValue(node));
-                break;
-            }
-            numericValue(adapter.decimalValue(node));
-            break;
+        case NUMBER -> adapter.isIntegral(node)
+                ? Json.createValue(adapter.integerValue(node))
+                : Json.createValue(adapter.decimalValue(node));
 
-        default:
-            throw new IllegalStateException(); // TODO
-
-        }
+        default -> throw new IllegalStateException(); // TODO
+        };
     }
 }

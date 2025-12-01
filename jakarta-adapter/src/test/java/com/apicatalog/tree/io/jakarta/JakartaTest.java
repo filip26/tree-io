@@ -60,9 +60,8 @@ class JakartaTest {
     @MethodSource({ "resources" })
     @Order(1)
     void testMaterialize(String name) throws TreeIOException {
-        JakartaMaterializer materializer = new JakartaMaterializer();
-        materializer.node(getJsonResource(name), JakartaAdapter.instance());
-        assertEquals(getJsonResource(name), materializer.json());
+        var result = JakartaMaterializer.node(getJsonResource(name), JakartaAdapter.instance());
+        assertEquals(getJsonResource(name), result);
     }
 
     static final Stream<String> resources() throws TreeIOException {
