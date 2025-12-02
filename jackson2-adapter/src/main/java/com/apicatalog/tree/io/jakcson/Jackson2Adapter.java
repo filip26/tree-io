@@ -78,7 +78,7 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public boolean isNode(Object node) {
-        return node != null && (node instanceof JsonNode || node instanceof String);
+        return node instanceof JsonNode || node instanceof String;
     }
 
     /**
@@ -123,7 +123,9 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public Set<String> keys(Object node) {
-        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey).collect(Collectors.toCollection(LinkedHashSet::new));
+        return ((ObjectNode) node).propertyStream()
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -131,7 +133,8 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public Stream<String> keyStream(Object node) {
-        return ((ObjectNode) node).propertyStream().map(Map.Entry::getKey);
+        return ((ObjectNode) node).propertyStream()
+                .map(Map.Entry::getKey);
     }
 
     /**
@@ -190,6 +193,11 @@ public class Jackson2Adapter implements TreeAdapter {
             return stringValue;
         }
         return ((JsonNode) node).textValue();
+    }
+
+    @Override
+    public Number numericValue(Object node) {
+        return ((JsonNode) node).numberValue();
     }
 
     /**
@@ -257,8 +265,8 @@ public class Jackson2Adapter implements TreeAdapter {
         if (node == null) {
             return Collections.emptySet();
         }
-        if (node instanceof Collection) {
-            return (Collection<JsonNode>) node;
+        if (node instanceof Collection col) {
+            return (Collection<JsonNode>) col;
         }
         if (node instanceof ArrayNode array) {
             return array.valueStream().collect(Collectors.toList());
@@ -369,11 +377,11 @@ public class Jackson2Adapter implements TreeAdapter {
     public boolean isEmpty(Object node) {
         Objects.requireNonNull(node);
 
-        if (node instanceof ObjectNode) {
-            return ((ObjectNode) node).isEmpty();
+        if (node instanceof ObjectNode object) {
+            return object.isEmpty();
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).isEmpty();
+        if (node instanceof ArrayNode array) {
+            return array.isEmpty();
         }
         throw new ClassCastException("Node must be an ObjectNode or an ArrayNode, node=" + node);
     }
@@ -385,11 +393,11 @@ public class Jackson2Adapter implements TreeAdapter {
     public int size(Object node) {
         Objects.requireNonNull(node);
 
-        if (node instanceof ObjectNode) {
-            return ((ObjectNode) node).size();
+        if (node instanceof ObjectNode object) {
+            return object.size();
         }
-        if (node instanceof ArrayNode) {
-            return ((ArrayNode) node).size();
+        if (node instanceof ArrayNode array) {
+            return array.size();
         }
         throw new ClassCastException("Node must be an ObjectNode or an ArrayNode, node=" + node);
     }
@@ -399,11 +407,11 @@ public class Jackson2Adapter implements TreeAdapter {
      */
     @Override
     public String asString(Object node) {
-        if (node instanceof String) {
-            return (String) node;
+        if (node instanceof String stringValue) {
+            return stringValue;
         }
-        if (node instanceof JsonNode) {
-            return ((JsonNode) node).asText();
+        if (node instanceof JsonNode jsonNode) {
+            return jsonNode.asText();
         }
         return Objects.toString(node);
     }
