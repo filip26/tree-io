@@ -1,11 +1,14 @@
 package com.apicatalog.tree.io;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import com.apicatalog.tree.io.java.JavaTree;
 
 /**
  * Immutable representation of a tree node where the node and its descendants
@@ -39,6 +42,14 @@ public record Tree(
         adapter = Objects.requireNonNull(adapter);
     }
 
+    public static Tree of(Map<?, ?> map) {
+        return JavaTree.of(map);
+    }
+
+    public static Tree of(Collection<?> collection) {
+        return JavaTree.of(collection);
+    }
+    
     public Features features() {
         return adapter.features();
     }
