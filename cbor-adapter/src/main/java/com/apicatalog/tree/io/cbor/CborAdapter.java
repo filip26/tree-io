@@ -91,7 +91,7 @@ public class CborAdapter implements TreeAdapter {
      */
     @Override
     public boolean isNode(Object node) {
-        return node != null && (node instanceof DataItem || node instanceof List);
+        return node instanceof DataItem || node instanceof List;
     }
 
     /**
@@ -194,7 +194,7 @@ public class CborAdapter implements TreeAdapter {
                     @Override
                     public Entry<?, ?> next() {
                         final DataItem key = kit.next();
-                        return new SimpleEntry<>(key, property(key, node));
+                        return java.util.Map.entry(key, property(key, node));
                     }
 
                     @Override
@@ -244,6 +244,20 @@ public class CborAdapter implements TreeAdapter {
     @Override
     public String stringValue(Object node) {
         return ((UnicodeString) node).getString();
+    }
+
+    @Override
+    public Number numericValue(Object node) {
+        if (node instanceof HalfPrecisionFloat decimal) {
+            return decimal.getValue();
+        }
+        if (node instanceof SinglePrecisionFloat decimal) {
+            return decimal.getValue();
+        }
+        if (node instanceof DoublePrecisionFloat decimal) {
+            return decimal.getValue();
+        }
+        return ((co.nstant.in.cbor.model.Number) node).getValue();
     }
 
     /**
@@ -313,7 +327,7 @@ public class CborAdapter implements TreeAdapter {
             return array.getDataItems();
         }
         if (node instanceof List list) {
-            return (List<DataItem>)list;
+            return (List<DataItem>) list;
         }
         return List.of((DataItem) node);
     }
@@ -436,7 +450,7 @@ public class CborAdapter implements TreeAdapter {
         }
         if (node instanceof List list) {
             return list.size();
-        }        
+        }
         throw new ClassCastException("Node must be a Map or an Array, node=" + node);
     }
 

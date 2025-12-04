@@ -295,14 +295,14 @@ public interface TreeComparison {
                 return false;
             }
 
-            if (leftAdapter.isEqualTo(rightAdapter)
-                    && leftAdapter
-                            .features()
-                            .capabilities()
-                            .contains(Capability.DEEP_OBJECT_EQUALS)) {
-
-                return left.equals(right);
-            }
+//            if (leftAdapter.isEqualTo(rightAdapter)
+//                    && leftAdapter
+//                            .features()
+//                            .capabilities()
+//                            .contains(Capability.DEEP_OBJECT_EQUALS)) {
+//
+//                return left.equals(right);
+//            }
 
             switch (leftType) {
             case FALSE:
