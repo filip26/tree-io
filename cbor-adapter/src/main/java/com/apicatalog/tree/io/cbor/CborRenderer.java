@@ -13,14 +13,20 @@ import co.nstant.in.cbor.model.DataItem;
 
 public class CborRenderer implements TreeRenderer {
 
+    @SuppressWarnings("unchecked")
     @Override
     public void render(Object node, TreeAdapter adapter, OutputStream os) throws TreeIOException {
 
         try {
-            if (CborAdapter.instance().isEqualTo(adapter)
-                    && node instanceof List list) {
-                new CborEncoder(os).encode((List<DataItem>) list);
-                return;
+            if (CborAdapter.instance().isEqualTo(adapter)) {
+                if (node instanceof List list) {
+                    new CborEncoder(os).encode((List<DataItem>) list);
+                    return;
+                }
+                if (node instanceof DataItem item) {
+                    new CborEncoder(os).encode(item);
+                    return;
+                }
             }
 
             new CborEncoder(os).encode(CborMaterializer.node(node, adapter));

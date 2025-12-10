@@ -2,7 +2,6 @@ package com.apicatalog.tree.io.cbor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
