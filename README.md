@@ -12,7 +12,8 @@
 - 🗂️ Multi-format support
 - 🔌 Works with Jackson, Gson, Jakarta, and other libraries
 - 🛠️ Extensible model for adding new formats and libraries
-- ⚙️ Unified traversal and transformation - apply visitors, filters, or mappers across heterogeneous trees  
+- ⚙️ Unified traversal 
+- Composable data transformations over an immutable source
 
 ## 🏗️ Use Cases
 
