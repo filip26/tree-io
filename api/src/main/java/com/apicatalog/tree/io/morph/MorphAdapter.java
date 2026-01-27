@@ -10,9 +10,13 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 
-class MorphAdapter implements TreeAdapter {
+public class MorphAdapter implements TreeAdapter {
 
-    private TreeAdapter base;
+    protected final TreeAdapter base;
+    
+    public MorphAdapter(TreeAdapter base) {
+        this.base = base;
+    }
 
     @Override
     public boolean isEqualTo(TreeAdapter adapter) {
@@ -51,7 +55,7 @@ class MorphAdapter implements TreeAdapter {
     @Override
     public int size(Object node) {
         if (node instanceof MapOverlay map) {
-            return map.keys().size();
+            return map.keys(base).size();
         }
         return base.size(node);
     }
@@ -64,15 +68,23 @@ class MorphAdapter implements TreeAdapter {
     @Override
     public Collection<?> keys(Object node) {
         if (node instanceof MapOverlay map) {
-            return map.keys();
+            return map.keys(base);
         }
         return base.keys(node);
+    }
+    
+    @Override
+    public Stream<?> keyStream(Object node) {
+        if (node instanceof MapOverlay map) {
+            return map.keyStream(base);
+        }
+        return base.keyStream(node);
     }
 
     @Override
     public Object property(Object key, Object node) {
         if (node instanceof MapOverlay map) {
-            return map.property(key);
+            return map.property(key, base);
         }
         return base.property(key, node);
     }
@@ -80,7 +92,7 @@ class MorphAdapter implements TreeAdapter {
     @Override
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
         if (node instanceof MapOverlay map) {
-            return map.property(key, keyAdapter);
+            return map.property(key, keyAdapter, base);
         }
         return base.property(key, keyAdapter, node);
     }
@@ -88,7 +100,7 @@ class MorphAdapter implements TreeAdapter {
     @Override
     public Iterable<Entry<?, ?>> entries(Object node) {
         if (node instanceof MapOverlay map) {
-            return map.entries();
+            return map.entries(base);
         }
         return base.entries(node);
     }
@@ -96,7 +108,7 @@ class MorphAdapter implements TreeAdapter {
     @Override
     public Stream<Entry<?, ?>> entryStream(Object node) {
         if (node instanceof MapOverlay map) {
-            return map.entryStream();
+            return map.entryStream(base);
         }
         return base.entryStream(node);
     }
@@ -185,5 +197,4 @@ class MorphAdapter implements TreeAdapter {
     public BigDecimal asDecimal(Object node) {
         return base.asDecimal(node);
     }
-
 }
