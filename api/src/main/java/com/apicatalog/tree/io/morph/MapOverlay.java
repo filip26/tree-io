@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io.morph;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -18,7 +19,7 @@ public class MapOverlay {
 
     private final Map<Object, Object> overlay;
 
-    MapOverlay(Object base, Map<Object, Object> overlay) {
+    private MapOverlay(Object base, Map<Object, Object> overlay) {
         this.base = base;
         this.overlay = overlay;
     }
@@ -75,14 +76,22 @@ public class MapOverlay {
     }
 
     public static Builder newBuilder(Map<Object, Object> map) {
-        return new Builder(map, JavaAdapter.instance());
+        return new Builder(map, JavaAdapter.instance(), new LinkedHashMap<>());
     }
 
     public static Builder newBuilder(Object map, TreeAdapter adapter) {
-        if (adapter instanceof MorphAdapter morph) {
-            return new Builder(map, morph.base);
+        if (map instanceof MapOverlay overlay) {
+            return new Builder(overlay.base,
+                    adapter instanceof MorphAdapter morph
+                            ? morph.base
+                            : adapter,
+                    new LinkedHashMap<>(overlay.overlay));
         }
-        return new Builder(map, adapter);
+        return new Builder(map,
+                adapter instanceof MorphAdapter morph
+                        ? morph.base
+                        : adapter,
+                new LinkedHashMap<>());
     }
 
     public static class Builder {
@@ -90,11 +99,12 @@ public class MapOverlay {
         private final Object base;
         private final TreeAdapter baseAdapter;
 
-        private Map<Object, Object> overlay;
+        private final Map<Object, Object> overlay;
 
-        private Builder(Object base, TreeAdapter baseAdapter) {
+        private Builder(Object base, TreeAdapter baseAdapter, Map<Object, Object> overlay) {
             this.base = base;
             this.baseAdapter = baseAdapter;
+            this.overlay = overlay;
         }
 
         public Builder remove(Object key) {
@@ -124,7 +134,8 @@ public class MapOverlay {
                 overlay.put(key, tree.node());
                 return this;
             }
-            return put(key, tree);
+            overlay.put(key, tree);
+            return this;
         }
 
         public MapOverlay build() {
