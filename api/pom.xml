@@ -10,15 +10,6 @@
   </parent>
   <artifactId>tree-io-api</artifactId>
   <packaging>jar</packaging>
-  <properties>
-    <maven.compiler.release>21</maven.compiler.release>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <argLine>-Dfile.encoding=UTF-8</argLine>
-    <!--  test resources -->
-    <junit.version>6.0.1</junit.version>
-  </properties>
 
   <name>Tree I/O - API</name>
 
