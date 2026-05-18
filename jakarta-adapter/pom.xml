@@ -1,200 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
     <groupId>com.apicatalog</groupId>
-    <artifactId>tree-io-jakarta</artifactId>
+    <artifactId>tree-io</artifactId>
     <version>0.15.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <url>https://github.com/filip26/tree-io</url>
-    <scm>
-        <connection>scm:git:git://github.com/filip26/tree-io.git</connection>
-        <developerConnection>
-            scm:git:git://github.com/filip26/tree-io.git</developerConnection>
-        <url>https://github.com/filip26/tree-io/tree/main</url>
-    </scm>
-    <properties>
-        <maven.compiler.release>21</maven.compiler.release>
+  </parent>
+  <artifactId>tree-io-jakarta</artifactId>
+  <packaging>jar</packaging>
 
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <argLine>-Dfile.encoding=UTF-8</argLine>
-        
-        <jakarta.json.version>2.0.1</jakarta.json.version>
+  <name>Tree I/O - Jakarta JSON API Adapter</name>
+  <description>
+    Adapter implementation for the Jakarta JSON API, providing tree access via Tree I/O API.
+  </description>
 
-        <!--  test resources -->
-        <junit.version>6.0.1</junit.version>
-    </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.apicatalog</groupId>
+      <artifactId>tree-io-api</artifactId>
+    </dependency>
 
-    <name>Tree I/O - Jakarta JSON API Adapter</name>
-    <description>
-        Adapter implementation for the Jakarta JSON API, providing tree access via Tree I/O API.
-    </description>
-    
-    <licenses>
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>http://apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
+    <dependency>
+      <groupId>jakarta.json</groupId>
+      <artifactId>jakarta.json-api</artifactId>
+      <version>${jakarta.json.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/filip26/tree-io/issues</url>
-    </issueManagement>
+    <!--  Tests -->
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>jakarta.json</artifactId>
+      <version>${jakarta.json.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-    <developers>
-        <developer>
-            <id>filip26</id>
-            <name>Filip Kolarik</name>
-            <email>filip26@gmail.com</email>
-            <roles>
-                <role>author</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <inceptionYear>2025</inceptionYear>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.apicatalog</groupId>
-            <artifactId>tree-io-api</artifactId>
-            <version>0.15.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <version>${jakarta.json.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!--  Tests -->
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <version>${jakarta.json.version}</version>
-            <scope>test</scope>
-        </dependency>        
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.5.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.4.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.12.0</version>
-                <configuration>
-                    <doclint>all,-missing</doclint>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.14</version>
-                <executions>
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.5</version>
-<!--                <configuration>
-                    <useModulePath>false</useModulePath>   tests use classpath 
-                </configuration>                
--->            </plugin>
-            <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.5.5</version>
-            </plugin>
-        </plugins>
-    </build>
-    
-    <profiles>
-        <profile>
-            <id>maven-central</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.8</version>
-                        <executions>
-                            <execution>
-                              <id>sign-artifacts</id>
-                              <phase>verify</phase>
-                              <goals>
-                                  <goal>sign</goal>
-                              </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-               <plugin>
-                  <groupId>org.sonatype.central</groupId>
-                  <artifactId>central-publishing-maven-plugin</artifactId>
-                  <version>0.10.0</version>
-                <extensions>true</extensions>
-                  <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                  </configuration>
-                </plugin>                    
-            </plugins>
-            </build>            
-        </profile>
-    </profiles>        
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <!--
+            <configuration>
+            <useModulePath>false</useModulePath>   tests use classpath
+            </configuration>
+        -->
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>
