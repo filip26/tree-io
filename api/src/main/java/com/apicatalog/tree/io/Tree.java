@@ -1,27 +1,22 @@
 package com.apicatalog.tree.io;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeGenerator.Context;
 import com.apicatalog.tree.io.java.NativeTreeGenerator;
 import com.apicatalog.tree.io.java.NativeTreeTraversal;
 
-/**
- * Immutable representation of a tree node where the node and its descendants
- * are accessed through a {@link TreeAdapter}.
- * <p>
- * A {@link Tree} instance binds a node with its adapter, providing a uniform
- * way to traverse or compare trees of arbitrary underlying object models.
- * </p>
- * <p>
- * Pass a {@link Tree} from JSON, YAML, or CBOR into the tree to create
- * polyformic tree composed of various different serializations, libraries, in
- * order to uniformly prosses such a tree.
- * </p>
- *
- */
-public class Tree {
+public final class Tree {
 
     public static Object read(TreeParser parser) throws TreeIOException {
         var generator = new NativeTreeGenerator();
@@ -178,6 +173,165 @@ public class Tree {
         if (stack.peek() != Context.ROOT) {
             throw new IllegalStateException();
         }
+    }
+    
+    // --- Convenience & Type Coercion Methods ---
+
+    /**
+     * Returns the node's contents as a universal {@link Iterable}. This is a
+     * convenience method that enables uniform iteration logic.
+     * <ul>
+     * <li>If the node is a collection, returns its elements.</li>
+     * <li>If the node is not a collection, wraps it in a single-element
+     * iterable.</li>
+     * <li>If the node is {@code null}, returns an empty iterable.</li>
+     * </ul>
+     *
+     * @param node the node to convert.
+     * @return a non-null {@link Iterable} representing the node's contents.
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Iterable<? extends Object> asIterable(Object node) {
+        if (node == null) {
+            return List.of();
+        }
+        if (node instanceof Collection) {
+            return (Collection) node;
+        }
+        if (node instanceof Stream) {
+            return ((Stream<Object>) node).collect(Collectors.toList());
+        }
+        return List.of(node);
+    }
+
+    /**
+     * Returns the node's contents as a universal {@link Stream}.
+     *
+     * @param node the node to convert.
+     * @return a non-null {@link Stream} representing the node's contents.
+     */
+    public static Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
+        if (node instanceof Stream<?> stream) {
+            return stream;
+        }
+        if (node instanceof Collection<?> collection) {
+            return collection.stream();
+        }
+        return Stream.of(node);
+    }
+    
+    /**
+     * Returns a string representation of the node, coercing non-string scalar types
+     * where applicable.
+     *
+     * @param node the node to convert.
+     * @return a string representation of the node's value.
+     */
+    public static String asString(Object node) {
+        if (node instanceof String stringValue) {
+            return stringValue;
+        }
+        return Objects.toString(node);
+    }
+
+    /**
+     * Converts a given node to a {@link BigDecimal}, if possible. This method can
+     * be used to treat both numeric and string nodes as decimal values.
+     *
+     * @param node the node to convert.
+     * @return the {@link BigDecimal} representation.
+     * @throws NumberFormatException if a string node cannot be parsed into a
+     *                               BigDecimal.
+     * @throws ClassCastException    if the node is neither a number nor a string.
+     */
+    public static BigDecimal asDecimal(Object node) {
+        if (node instanceof BigDecimal number) {
+            return number;
+        }
+        if (node instanceof Double number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Float number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Integer number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Long number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof BigInteger number) {
+            return BigDecimal.valueOf(number.longValueExact());
+        }
+        throw new IllegalArgumentException();
+    }
+
+
+    public static Collection<?> asCollection(Object node) {
+        return node instanceof Collection col
+                ? col
+                : node != null
+                        ? List.of(node)
+                        : List.of();
+    }
+    
+    public static boolean isIntegral(Object node) {
+        return node != null
+                && (node instanceof Integer
+                        || node instanceof Long
+                        || node instanceof BigInteger);
+    }
+    
+    public static boolean isNode(Object node) {
+        return node == null
+                || node instanceof String
+                || node instanceof Boolean
+                || node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || node instanceof Double
+                || node instanceof BigDecimal
+                || node instanceof Float
+                || node instanceof Map
+                || node instanceof Collection
+                || node instanceof byte[];
+    }
+
+    public static NodeType type(Object node) {
+        if (node == null) {
+            return NodeType.NULL;
+        }
+        if (node instanceof String) {
+            return NodeType.STRING;
+        }
+        if (node instanceof Boolean) {
+            return ((boolean) node) ? NodeType.TRUE : NodeType.FALSE;
+        }
+        if (node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || node instanceof Double
+                || node instanceof BigDecimal
+                || node instanceof Float) {
+            return NodeType.NUMBER;
+        }
+        if (node instanceof Map) {
+            return NodeType.MAP;
+        }
+        if (node instanceof Collection) {
+            return NodeType.SEQUENCE;
+        }
+        if (node instanceof byte[]) {
+            return NodeType.BINARY;
+        }
+        if (node instanceof Tree) {
+            return NodeType.TREE;
+        }
+
+        throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
     }
 
     /**

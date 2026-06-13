@@ -1,26 +1,9 @@
 package com.apicatalog.tree.io.cbor;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import com.apicatalog.tree.io.Tree;
-import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.java.NativeTreeTraversal;
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.java.NativeTreeTraversal;
 
-import co.nstant.in.cbor.model.Array;
-import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
-import co.nstant.in.cbor.model.DoublePrecisionFloat;
-import co.nstant.in.cbor.model.Map;
-import co.nstant.in.cbor.model.NegativeInteger;
-import co.nstant.in.cbor.model.SimpleValue;
-import co.nstant.in.cbor.model.UnicodeString;
-import co.nstant.in.cbor.model.UnsignedInteger;
 
 /**
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}

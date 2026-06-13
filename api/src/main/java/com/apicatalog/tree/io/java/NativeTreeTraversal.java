@@ -9,39 +9,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-import com.apicatalog.tree.io.TreeAdapter;
-import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeTraversal;
 import com.apicatalog.tree.io.TreeGenerator.Context;
 import com.apicatalog.tree.io.TreeParser.Token;
-import com.apicatalog.tree.io.TreeTraversal.Event;
+import com.apicatalog.tree.io.TreeTraversal;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
- * concrete representation of the tree by operating on the {@link TreeAdapter}
- * abstraction.
- * <p>
- * It can be used in two primary ways:
- * </p>
- * <ol>
- * <li><b>Manual Iteration:</b> By repeatedly calling the {@link #next()} method
- * in a loop, you can process each node individually, allowing for complex logic
- * like searching, validation, or conditional processing.</li>
- * <li><b>Automated Transformation:</b> The {@link #generate(TreeGenerator)}
- * method provides a high-level utility to walk the entire tree and drive a
- * {@link TreeGenerator}, effectively translating or transforming one tree
- * representation into another.</li>
- * </ol>
- * <p>
- * <b>Traversal Rules:</b>
- * </p>
- * <ul>
- * <li>When visiting a map, keys are visited before their corresponding values.
- * The order of keys can be controlled with a custom {@link Comparator}.</li>
- * <li>When visiting a collection, elements are visited in their natural
- * iteration order.</li>
- * </ul>
+ * tree.
  */
 public class NativeTreeTraversal implements TreeTraversal {
 

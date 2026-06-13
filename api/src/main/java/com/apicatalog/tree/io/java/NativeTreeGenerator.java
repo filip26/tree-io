@@ -8,8 +8,11 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
 
@@ -17,6 +20,28 @@ public class NativeTreeGenerator implements TreeGenerator {
 
     Deque<Object> stack;
 
+    static final Features FEATURES = new Features(
+            // keys
+            Set.of(
+                    NodeType.SEQUENCE,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING),
+            // nodes
+            Set.of(
+                    NodeType.SEQUENCE,
+                    NodeType.MAP,
+                    NodeType.NUMBER,
+                    NodeType.STRING,
+                    NodeType.BINARY,
+                    NodeType.FALSE,
+                    NodeType.TRUE,
+                    NodeType.NULL,
+                    NodeType.TREE),
+            // capabilities
+            Set.of(Capability.SCALAR_OBJECT_EQUALS));
+
+    
     @Override
     public Features features() {
         // TODO Auto-generated method stub

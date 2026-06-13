@@ -22,6 +22,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 
 import jakarta.json.Json;
@@ -51,7 +52,7 @@ class JakartaTest {
 
         try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
             JakartaGenerator writer = new JakartaGenerator(generator);
-//            writer.node(getJsonResource(name), JakartaAdapter.instance());
+            Tree.write(getJsonResource(name), writer);
         }
         assertEquals(getJsonResource(name), getJson(bos.toString()));
     }
@@ -59,9 +60,12 @@ class JakartaTest {
     @ParameterizedTest
     @MethodSource({ "resources" })
     @Order(1)
-    void testMaterialize(String name) throws TreeIOException {
-//        var result = JakartaMaterializer.node(getJsonResource(name), JakartaAdapter.instance());
-//        assertEquals(getJsonResource(name), result);
+    void testRead(String name) throws TreeIOException, IOException {
+        var parser = new JakartaParser(Json.createParser(new StringReader(getResource(name))));
+        var result = Tree.read(parser);
+
+//        var result = Tree.read(null)  JakartaMaterializer.node(getJsonResource(name), JakartaAdapter.instance());
+        assertEquals(getJsonResource(name), result);
     }
 
     static final Stream<String> resources() throws TreeIOException {
