@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
@@ -39,31 +40,6 @@ import com.apicatalog.tree.io.Tree.NodeType;
  */
 public class TreeTraversal {
 
-    /**
-     * Identifies the role of the current node within the tree structure during
-     * traversal.
-     */
-    public enum Context {
-
-        /** The current node is the root of the tree being traversed. */
-        ROOT,
-
-        /** The current node is a key within a map structure. */
-        PROPERTY_KEY,
-
-        /** The current node is a value associated with a key in a map structure. */
-        PROPERTY_VALUE,
-
-        /** The current node is an element within a collection structure. */
-        ELEMENT,
-
-        /**
-         * A synthetic marker indicating the end of a map or collection has been
-         * reached.
-         */
-        END,
-    }
-
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
 
@@ -72,7 +48,6 @@ public class TreeTraversal {
      */
     public static final int UNLIMITED_NODES = -1;
 
-    protected final Deque<TreeAdapter> adapters;
     protected final Deque<Object> stack;
 
     protected Comparator<Entry<?, ?>> entryComparator;
@@ -84,20 +59,20 @@ public class TreeTraversal {
     protected int visited;
 
     protected Object currentNode;
-    protected NodeType currentNodeType;
-    protected Context currentNodeContext;
+    protected NodeContext currentNodeContext;
 
-    public TreeTraversal() {
+    public TreeTraversal(Object tree) {
         this(new ArrayDeque<>(), null);
+        this.stack.push(tree);
     }
 
-    public TreeTraversal(Comparator<Entry<?, ?>> entryComparator) {
+    public TreeTraversal(Object tree, Comparator<Entry<?, ?>> entryComparator) {
         this(new ArrayDeque<>(), entryComparator);
+        this.stack.push(tree);
     }
 
     protected TreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
-        this.adapters = new ArrayDeque<>(5);
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
         this.maxDepth = UNLIMITED_DEPTH;
@@ -105,7 +80,6 @@ public class TreeTraversal {
         this.depth = 0;
         this.currentNode = null;
         this.currentNodeContext = null;
-        this.currentNodeType = null;
     }
 
     public void traverse(final Consumer<TreeTraversal> consumer) {
@@ -128,51 +102,26 @@ public class TreeTraversal {
     public void generate(final TreeGenerator generator) throws TreeIOException {
         while (next()) {
 
-            if (Context.END == currentNodeContext) {
-                generator.end();
-                continue;
-            }
-
-            switch (currentNodeType) {
-            case MAP:
-                generator.beginMap();
-                break;
-
-            case SEQUENCE:
-                generator.beginSequence();
-                break;
-
-            case NULL:
-                generator.nullValue();
-                break;
-
-            case TRUE:
-                generator.booleanValue(true);
-                break;
-
-            case FALSE:
-                generator.booleanValue(false);
-                break;
-
-            case STRING:
-                generator.stringValue(adapter().stringValue(currentNode));
-                break;
-
-            case BINARY:
-                generator.binaryValue(adapter().binaryValue(currentNode));
-                break;
-
-            case NUMBER:
-                if (adapter().isIntegral(currentNode)) {
-                    generator.numericValue(adapter().integerValue(currentNode));
-                } else {
-                    generator.numericValue(adapter().decimalValue(currentNode));
-                }
-                break;
-
-            default:
-                throw new IllegalStateException("Unexpected node type: " + currentNodeType);
-            }
+//            if (NodeContext.END == currentNodeContext) {
+//                generator.endMap();
+//                continue;
+//            }
+//
+//            switch (currentNode) {
+//            case Map<?, ?> map -> generator.beginMap();
+//            case Collection<?> col -> generator.beginSequence();
+//
+//            case null -> generator.nullValue();
+//            case Boolean bool -> generator.booleanValue(bool);
+//            case String string -> generator.stringValue(string);
+//            case Number number -> generator.numericValue(number);
+//            case byte[] bytes -> generator.binaryValue(bytes);
+//
+//            default -> throw new IllegalArgumentException(
+//                    """
+//                    Unexpected node type=%s, value=%s"
+//                    """.formatted(currentNode.getClass(), currentNode));
+//            }
         }
 
         if (depth > 0) {
@@ -195,56 +144,57 @@ public class TreeTraversal {
      *                               (e.g., maximum depth or node count).
      */
     public boolean next() {
-        return next(Context.ROOT);
+        return next(NodeContext.ROOT);
     }
 
-    protected boolean next(Context stepContext) {
+    protected boolean next(NodeContext stepContext) {
 
         if (stack.isEmpty()) {
             return false;
         }
 
         if (maxVisited > 0 && maxVisited <= visited) {
-            throw new IllegalStateException("The maximum number [" + maxVisited + "] of visited nodes has been reached.");
+            throw new IllegalStateException(
+                    """
+                    The maximum=%d visited nodes has been reached.
+                    """.formatted(maxVisited));
         }
         if (maxDepth > 0 && maxDepth < depth) {
-            throw new IllegalStateException("The maximum traversal depth [" + maxDepth + "] has been reached.");
+            throw new IllegalStateException(
+                    """
+                    The maximum traversal depth=%d has been reached.                        
+                    """.formatted(maxDepth)
+                    );
         }
 
-        var nodeAdapter = adapters.peek();
         var item = stack.peek();
 
-        if (NodeType.TREE.equals(item)) {
-            adapters.pop();
-            nodeAdapter = adapters.peek();
-            stack.pop();
-            item = stack.peek();
-        }
+//        if (NodeType.TREE.equals(item)) {
+//            stack.pop();
+//            item = stack.peek();
+//        }
 
         // map or collection
-        if (item instanceof Iterator) {
+        if (item instanceof Iterator<?> it) {
 
-            Iterator<?> it = (Iterator<?>) item;
             if (!it.hasNext()) {
                 stack.pop();
                 depth -= 1;
                 currentNode = stack.pop();
-                currentNodeType = (NodeType) stack.pop();
-                currentNodeContext = Context.END;
+                currentNodeContext = NodeContext.END;
                 return true;
             }
 
             item = it.next();
 
-            if (item instanceof Map.Entry) {
-                currentNodeContext = Context.PROPERTY_KEY;
-                Map.Entry<?, ?> entry = (Map.Entry<?, ?>) item;
+            if (item instanceof Map.Entry<?, ?> entry) {
+                // process map entry
+                currentNodeContext = NodeContext.PROPERTY_KEY;
 
                 stack.push(entry);
 
                 // process property key
                 currentNode = entry.getKey();
-                currentNodeType = nodeAdapter.type(currentNode);
 
                 visited++;
 
@@ -253,14 +203,14 @@ public class TreeTraversal {
 
             } else {
                 // process collection element
-                currentNodeContext = Context.ELEMENT;
+                currentNodeContext = NodeContext.ELEMENT;
                 currentNode = item;
             }
 
-        } else if (item instanceof Map.Entry) {
+        } else if (item instanceof Map.Entry<?, ?> entry) {
             // process property value
-            currentNodeContext = Context.PROPERTY_VALUE;
-            currentNode = ((Map.Entry<?, ?>) item).getValue();
+            currentNodeContext = NodeContext.PROPERTY_VALUE;
+            currentNode = entry.getValue();
             stack.pop();
 
         } else {
@@ -270,30 +220,31 @@ public class TreeTraversal {
             stack.pop();
         }
 
-        currentNodeType = nodeAdapter.type(currentNode);
+        switch (currentNode) {
+//        case TREE:
+//            stack.push(NodeType.TREE);
+//            final Tree adaptedNode = (Tree) currentNode;
+//            root(adaptedNode.node(), adaptedNode.adapter());
+//            return next(currentNodeContext);
 
-        switch (currentNodeType) {
-        case TREE:
-            stack.push(NodeType.TREE);
-            final Tree adaptedNode = (Tree) currentNode;
-            root(adaptedNode.node(), adaptedNode.adapter());
-            return next(currentNodeContext);
-
-        case SEQUENCE:
+        case Collection<?> col:
             stack.push(NodeType.SEQUENCE);
             stack.push(currentNode);
-            stack.push(nodeAdapter.asIterable(currentNode).iterator());
+            stack.push(col.iterator());
             depth += 1;
             break;
 
-        case MAP:
+        case Map<?, ?> map:
             stack.push(NodeType.MAP);
             stack.push(currentNode);
-            var entryStream = nodeAdapter.entryStream(currentNode);
+
             if (entryComparator != null) {
-                entryStream = entryStream.sorted(entryComparator);
+                stack.push(map.entrySet().stream().sorted(entryComparator).iterator());
+
+            } else {
+                stack.push(map.entrySet().iterator());
             }
-            stack.push(entryStream.iterator());
+
             depth += 1;
             break;
 
@@ -309,32 +260,30 @@ public class TreeTraversal {
      * Resets the visitor's internal state, clearing the traversal stack and
      * counters. The visitor can be reused after calling this method, but a new root
      * node must be set using {@link #root(Object, TreeAdapter)}.
-     *
+     * 
+     * @param node the new root node.
      * @return this instance, for chaining.
      */
-    public TreeTraversal reset() {
-        this.adapters.clear();
+    public TreeTraversal reset(Object node) {
         this.stack.clear();
+        this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
         this.currentNode = null;
         this.currentNodeContext = null;
-        this.currentNodeType = null;
         return this;
     }
 
-    /**
-     * Sets the root node for the traversal, initializing the visitor's stack.
-     *
-     * @param node    the new root node.
-     * @param adapter the adapter for interpreting the new tree structure.
-     * @return this instance, for chaining.
-     */
-    public TreeTraversal root(Object node, TreeAdapter adapter) {
-        this.adapters.push(adapter);
-        this.stack.push(node);
-        return this;
-    }
+//    /**
+//     * Sets the root node for the traversal, initializing the visitor's stack.
+//     *
+//     * @param node the new root node.
+//     * @return this instance, for chaining.
+//     */
+//    public TreeTraversal root(Object node) {
+//        this.stack.push(node);
+//        return this;
+//    }
 
     /** Gets the total number of nodes visited so far. */
     public long visited() {
@@ -381,23 +330,13 @@ public class TreeTraversal {
         return maxVisited;
     }
 
-    /** Gets the adapter to process the {@code #currentNode()}. */
-    public TreeAdapter adapter() {
-        return adapters.peek();
-    }
-
     /** Gets the current node being processed. */
     public Object node() {
         return currentNode;
     }
 
-    /** Gets the type of the current node. */
-    public NodeType nodeType() {
-        return currentNodeType;
-    }
-
     /** Gets the context of the current node. */
-    public Context nodeContext() {
+    public NodeContext nodeContext() {
         return currentNodeContext;
     }
 }

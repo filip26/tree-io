@@ -20,6 +20,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 
+@Deprecated
 public final class JavaAdapter implements TreeAdapter {
 
     static final Features FEATURES = new Features(
@@ -125,12 +126,13 @@ public final class JavaAdapter implements TreeAdapter {
     @SuppressWarnings("rawtypes")
     @Override
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
-        try {
-            return ((Map) node).get(JavaMaterializer.node(key, keyAdapter));
-
-        } catch (TreeIOException e) {
-            throw new IllegalStateException(e);
-        }
+//        try {
+//            return ((Map) node).get(JavaGenerator.node(key, keyAdapter));
+//
+//        } catch (TreeIOException e) {
+//            throw new IllegalStateException(e);
+//        }
+        return null;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

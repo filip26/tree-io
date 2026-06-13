@@ -42,6 +42,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * </p>
  *
  */
+@Deprecated
 public interface TreeAdapter {
 
     // --- Adapter Capabilities & Node Introspection ---

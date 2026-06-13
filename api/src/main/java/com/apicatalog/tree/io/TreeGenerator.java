@@ -3,146 +3,237 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.apicatalog.tree.io.Tree.Features;
-
 /**
- * Provides a uniform, event-based abstraction for constructing tree-like data
- * structures. This interface decouples the process of describing a tree from
- * its final representation.
+ * Provides a uniform, performant, event-based abstraction for generating
+ * tree-like data structures. This interface decouples the process of describing
+ * a tree from its final representation, making it suitable for both
+ * serialization and materialization.
  * <p>
- * It is the conceptual counterpart to {@link TreeAdapter}, which reads tree
- * structures.
+ * This interface is explicitly designed to enable completely stateless,
+ * stack-free generator implementations. To eliminate internal state tracking or
+ * stacks within the generator, the responsibility of tracking the structural
+ * hierarchy is shifted entirely to the caller. The {@link Context} passed into
+ * each method originates from the processing or traversal of a source tree
+ * structure (e.g., a tree reader, walker, or visitor). This allows the
+ * structural state to be piped directly from the source tracking mechanism into
+ * the generator, enabling a zero-allocation, stateless data transformation or
+ * rendering pipeline.
  * </p>
  * <p>
- * While this interface can be implemented and driven manually, it is often used
- * as a target for a {@link TreeTraversal}. The visitor traverses a source tree
- * (read via a {@link TreeAdapter}) and calls the appropriate methods on this
- * generator, effectively enabling powerful tree transformation and conversion
- * workflows.
- * </p>
- * <p>
- * Implementations can use this sequence of construction events for two main
- * purposes:
- * </p>
- * <ol>
- * <li><b>Serialization:</b> Writing the structure directly to an output stream
- * in a specific format (e.g., text-based JSON, XML, YAML, or binary formats
- * like CBOR).</li>
- * <li><b>Materialization:</b> Building a concrete, in-memory object model or
- * document tree.</li>
- * </ol>
- * <p>
- * This approach is analogous to streaming parsers like SAX or StAX, but for
- * generation rather than parsing. The generator is stateful and forward-only,
- * expecting methods to be called in a valid sequence.
+ * By leveraging this origin context per event, implementations can immediately
+ * determine the correct structural layout, delimiters, or object-graph
+ * placement deterministically without maintaining state records or looking up
+ * an internal nesting stack.
  * </p>
  */
-public interface TreeGenerator {
+public interface TreeGenerator extends TreeProcessor {
 
-    Features features();
-    
+    /**
+     * Defines the structural role of the token or value being emitted. Ordinarily
+     * originates from the structural state of the source tree during traversal,
+     * allowing a stack-free generator to map the incoming node accurately.
+     */
+    enum Context {
+        /**
+         * Indicates the node is the top-level root of the tree structure.
+         */
+        ROOT,
+
+        /**
+         * Indicates the node is an element within an ordered sequence or array.
+         */
+        ELEMENT,
+
+        /**
+         * Indicates the node functions as a key within a map or object structure.
+         */
+        ENTRY_KEY,
+
+        /**
+         * Indicates the node functions as a value associated with a key within a map or
+         * object structure.
+         */
+        ENTRY_VALUE
+    }
+
     // --- scalars ---
 
     /**
      * Adds a null value to the current context.
      *
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
     void nullValue() throws TreeIOException;
 
     /**
-     * Adds a boolean value to the current context.
+     * Adds a boolean value to the tree.
      *
-     * @param value the boolean value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the boolean value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void booleanValue(boolean value) throws TreeIOException;
+    void booleanValue(Context context, boolean value) throws TreeIOException;
 
     /**
-     * Adds a string value. Depending on the context, this could represent a map
-     * key, a value associated with a key, or an element in a collection.
+     * Adds a string value to the tree.
      *
-     * @param value the non-null string value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the non-null string value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void stringValue(String value) throws TreeIOException;
+    void stringValue(Context context, String value) throws TreeIOException;
 
     /**
-     * Adds a long integer value. Depending on the context, this could represent a
-     * map key (in formats like CBOR), a value, or a collection element.
+     * Adds a generic numeric value by routing it to the appropriate typed method.
      *
-     * @param value the long value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the non-null numeric value to add.
+     * @throws TreeIOException          if an I/O error occurs during serialization
+     *                                  or materialization.
+     * @throws IllegalArgumentException if the underlying numeric type is not
+     *                                  supported.
+     * @throws IllegalStateException
      */
-    void numericValue(long value) throws TreeIOException;
+    default void numericValue(Context context, Number value) throws TreeIOException {
+        switch (value) {
+        case Short s -> numericValue(context, (long) s);
+        case Integer i -> numericValue(context, (long) i);
+        case Long l -> numericValue(context, l);
+        case BigInteger bi -> numericValue(context, bi);
+
+        case Float f -> numericValue(context, (double) f);
+        case Double d -> numericValue(context, d);
+        case BigDecimal bd -> numericValue(context, bd);
+
+        default -> throw new IllegalArgumentException(
+                """
+                Unsupported numeric type=%s, value=%s"
+                """.formatted(value.getClass(), value));
+        }
+    }
 
     /**
-     * Adds an arbitrary-precision integer value. Depending on the context, this
-     * could represent a map key, a value, or a collection element.
+     * Adds an arbitrary-precision integer value.
      *
-     * @param value the non-null BigInteger value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the non-null BigInteger value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void numericValue(BigInteger value) throws TreeIOException;
+    void numericValue(Context context, BigInteger value) throws TreeIOException;
 
     /**
-     * Adds a double-precision floating-point value to the current context.
+     * Adds a long integer value.
      *
-     * @param value the double value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the long value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void numericValue(double value) throws TreeIOException;
+    default void numericValue(Context context, long value) throws TreeIOException {
+        numericValue(context, BigInteger.valueOf(value));
+    }
 
     /**
-     * Adds an arbitrary-precision decimal value to the current context.
+     * Adds a double-precision floating-point value to the specified context.
      *
-     * @param value the non-null BigDecimal value to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the double value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void numericValue(BigDecimal value) throws TreeIOException;
+    default void numericValue(Context context, double value) throws TreeIOException {
+        numericValue(context, BigDecimal.valueOf(value));
+    }
 
     /**
-     * Adds a binary data value to the current context. The specific encoding (e.g.,
-     * Base64 for JSON, or direct bytes for CBOR) is determined by the underlying
-     * implementation.
+     * Adds an arbitrary-precision decimal value to the specified context.
      *
-     * @param value the non-null byte array to add.
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the non-null BigDecimal value to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void binaryValue(byte[] value) throws TreeIOException;
+    void numericValue(Context context, BigDecimal value) throws TreeIOException;
+
+    /**
+     * Adds a binary data value to the specified context.
+     *
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @param value   the non-null byte array to add.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
+     */
+    void binaryValue(Context context, byte[] value) throws TreeIOException;
 
     // --- structures --
 
     /**
-     * Begins a new map (or object) structure. After this call, the generator
-     * expects a sequence of key-value pairs.
-     * <p>
-     * The type of a key is determined by the target format. For formats like JSON,
-     * keys are strings added via {@link #stringValue(String)}. For others, like
-     * CBOR, keys can also be other types.
-     * </p>
+     * Begins a new map (or object) structure within the given context. Every call
+     * to this method must be matched by a corresponding call to
+     * {@link #endMap(Context)}.
+     *
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
+     */
+    void beginMap(Context context) throws TreeIOException;
+
+    /**
+     * Ends the current map structure. This call must close the scope opened by the
+     * corresponding {@link #beginMap(Context)} call.
+     *
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
+     */
+    void endMap(Context context) throws TreeIOException;
+
+    /**
+     * Begins a new list, array, or sequence structure within the given context.
      * Every call to this method must be matched by a corresponding call to
-     * {@link #end()}.
+     * {@link #endSequence(Context)}.
      *
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void beginMap() throws TreeIOException;
+    void beginSequence(Context context) throws TreeIOException;
 
     /**
-     * Begins a new list (or array) structure. An ordered collection that allows
-     * duplicates. After this call, subsequent calls are expected to be the elements
-     * of the list. Every call to this method must be matched by a corresponding
-     * call to {@link #end()}.
+     * Ends the current sequence structure. This call must close the scope opened by
+     * the corresponding {@link #beginSequence(Context)} call.
      *
-     * @throws TreeIOException if an I/O error occurs during construction.
+     * @param context the structural context originating from the source tree
+     *                traversal.
+     * @throws TreeIOException       if an I/O error occurs during serialization or
+     *                               materialization.
+     * @throws IllegalStateException
      */
-    void beginSequence() throws TreeIOException;
-
-    /**
-     * Ends the current map or collection structure. This call must match a
-     * preceding {@link #beginMap()} or {@link #beginSequence()}.
-     *
-     * @throws TreeIOException if an I/O error occurs during construction.
-     */
-    void end() throws TreeIOException;
+    void endSequence(Context context) throws TreeIOException;
 }

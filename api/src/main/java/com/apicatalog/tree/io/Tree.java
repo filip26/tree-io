@@ -24,6 +24,7 @@ import com.apicatalog.tree.io.java.JavaTree;
  * </p>
  *
  */
+@Deprecated
 public record Tree(
         Object node,
         TreeAdapter adapter) {
@@ -66,14 +67,14 @@ public record Tree(
     public Object node() {
         return node;
     }
-
-    public void traverse(Consumer<TreeTraversal> visitor) {
-        (new TreeTraversal()).root(node, adapter).traverse(visitor);
-    }
-
-    public void generate(TreeGenerator generator) throws TreeIOException {
-        (new TreeTraversal()).root(node, adapter).generate(generator);
-    }
+//
+//    public void traverse(Consumer<TreeTraversal> visitor) {
+//        (new TreeTraversal()).root(node).traverse(visitor);
+//    }
+//
+//    public void generate(TreeGenerator generator) throws TreeIOException {
+//        (new TreeTraversal()).root(node).generate(generator);
+//    }
 
     // exact structural/value match
     public boolean isIsomorphicTo(Tree other) {
@@ -276,6 +277,7 @@ public record Tree(
      * @see TreeAdapter
      * @see com.apicatalog.tree.io.Tree
      */
+    @Deprecated
     public enum NodeType {
 
         /**

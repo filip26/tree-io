@@ -7,6 +7,7 @@ import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeRenderer;
 
+import co.nstant.in.cbor.CborBuilder;
 import co.nstant.in.cbor.CborEncoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
@@ -29,7 +30,7 @@ public class CborRenderer implements TreeRenderer {
                 }
             }
 
-            new CborEncoder(os).encode(CborMaterializer.node(node, adapter));
+//            new CborEncoder(os).encode(CborMaterializer.node(node, adapter));
 
         } catch (CborException e) {
             throw new TreeIOException(e);

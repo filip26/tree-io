@@ -40,6 +40,7 @@ import jakarta.json.JsonValue.ValueType;
  * {@link #instance()} method.
  * </p>
  */
+@Deprecated
 public class JakartaAdapter implements TreeAdapter {
 
     static final Features FEATURES = new Features(

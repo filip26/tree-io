@@ -3,6 +3,7 @@ package com.apicatalog.tree.io;
 import java.io.OutputStream;
 
 @FunctionalInterface
+@Deprecated
 public interface TreeRenderer {
 
     default void render(Tree tree, OutputStream os) throws TreeIOException {

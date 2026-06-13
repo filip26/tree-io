@@ -42,7 +42,7 @@ class Jackson2Test {
 
         try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
             Jackson2Generator writer = new Jackson2Generator(generator);
-            writer.node(getJsonResource(name), Jackson2Adapter.instance());
+//            writer.node(getJsonResource(name), Jackson2Adapter.instance());
         }
         assertEquals(getJsonResource(name), getJson(bos.toString()));
     }

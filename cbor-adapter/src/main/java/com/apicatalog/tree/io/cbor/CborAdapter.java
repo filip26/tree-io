@@ -168,11 +168,12 @@ public class CborAdapter implements TreeAdapter {
 
     @Override
     public Object property(Object key, TreeAdapter keyAdapter, Object node) {
-        try {
-            return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
-        } catch (TreeIOException e) {
-            throw new IllegalArgumentException(e);
-        }
+//        try {
+////            return ((Map) node).get(CborMaterializer.node(key, keyAdapter));
+//        } catch (TreeIOException e) {
+//            throw new IllegalArgumentException(e);
+//        }
+        return null;
     }
 
     /**
