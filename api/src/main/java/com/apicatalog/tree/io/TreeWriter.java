@@ -11,8 +11,9 @@ import java.io.Writer;
  * structures.
  * </p>
  */
+@FunctionalInterface
 public interface TreeWriter {
 
-    void writeNode(Object node, Writer writer) throws TreeIOException;
+    void write(Writer writer, Object node) throws TreeIOException;
 
 }

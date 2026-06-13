@@ -4,7 +4,7 @@ package com.apicatalog.tree.io;
  * Provides a uniform, performant, pull-based streaming abstraction for parsing
  * tree-like data structures. This interface decouples the process of reading a
  * tree from its underlying representation, making it suitable for both
- * deserialization and dematerialization.
+ * deserialization and re-materialization.
  * <p>
  * The parser is forward-only and token-driven, maintaining the internal state
  * of the current position in the input stream. It emits fine-grained structural
@@ -14,13 +14,13 @@ package com.apicatalog.tree.io;
  * element) during traversal.
  * </p>
  */
-public interface TreeParser extends TreeProcessor {
+public interface TreeParser {
 
     /**
      * Represents the structural and scalar components encountered during the
      * parsing of a tree structure.
      */
-    enum Token {
+    public enum Token {
         /**
          * Indicates the start of a map structure.
          */
@@ -77,22 +77,44 @@ public interface TreeParser extends TreeProcessor {
      *
      * @return the next structural or scalar {@link Token} in the sequence, or null
      *         if the end of the input (EOF) has been reached.
-     * @throws TreeIOException 
+     * @throws TreeIOException
      */
     Token nextToken() throws TreeIOException;
 
     /**
-     * Returns the scalar value associated with the current token position.
+     * Returns the numeric value associated with the current token position.
      * <p>
      * This method is intended to be called when the parser is positioned on a
-     * scalar token (e.g., NUMBER, STRING, BINARY). Calling this method when the
-     * parser is positioned on structural boundaries (e.g., BEGIN_MAP, END_MAP)
-     * yields a null result.
+     * NUMBER token.
      * </p>
      *
-     * @return the Java Object mapping to the current scalar token value, or null if
-     *         the current token holds no scalar data.
-     * @throws TreeIOException 
+     * @return the Number mapping to the current numeric token
+     * @throws TreeIOException if an I/O error occurs while retrieving the value.
      */
-    Object getScalar() throws TreeIOException;
+    Number getNumber() throws TreeIOException;
+
+    /**
+     * Returns the string value associated with the current token position.
+     * <p>
+     * This method is intended to be called when the parser is positioned on a
+     * STRING token.
+     * </p>
+     *
+     * @return the String mapping to the current text token
+     * @throws TreeIOException if an I/O error occurs while retrieving the value.
+     */
+    String getString() throws TreeIOException;
+
+    /**
+     * Returns the binary data associated with the current token position.
+     * <p>
+     * This method is intended to be called when the parser is positioned on a
+     * BINARY token.
+     * </p>
+     *
+     * @return a byte array containing the binary payload
+     * @throws TreeIOException if an I/O error occurs while retrieving the value.
+     */
+    byte[] getBinary() throws TreeIOException;
+
 }

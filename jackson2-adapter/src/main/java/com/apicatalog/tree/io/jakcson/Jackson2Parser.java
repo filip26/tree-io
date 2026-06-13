@@ -1,18 +1,14 @@
 package com.apicatalog.tree.io.jakcson;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import com.apicatalog.tree.io.NodeContext;
-import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
+import com.apicatalog.tree.io.TreeProcessor;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-public final class Jackson2Parser implements TreeParser {
+public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     private final JsonParser parser;
 
@@ -52,23 +48,33 @@ public final class Jackson2Parser implements TreeParser {
     }
 
     @Override
-    public Object getScalar() throws TreeIOException {
+    public Number getNumber() throws TreeIOException {
         try {
             return switch (parser.currentToken()) {
-            case VALUE_STRING -> parser.getText();
             case VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
             case VALUE_NUMBER_INT -> parser.getLongValue();
-            case VALUE_TRUE -> Boolean.TRUE;
-            case VALUE_FALSE -> Boolean.FALSE;
-            case VALUE_NULL -> null;
-
             default -> throw new IllegalStateException(
                     """
-                    Expected scalar, but have=%s
+                    Expected number token, but have=%s
                     """.formatted(parser.currentToken()));
             };
+
         } catch (IOException e) {
             throw new TreeIOException(e);
         }
+    }
+
+    @Override
+    public String getString() throws TreeIOException {
+        try {
+            return parser.getText();
+        } catch (IOException e) {
+            throw new TreeIOException(e);
+        }
+    }
+
+    @Override
+    public byte[] getBinary() throws TreeIOException {
+        throw new UnsupportedOperationException();
     }
 }

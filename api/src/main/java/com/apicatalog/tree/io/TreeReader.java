@@ -11,8 +11,9 @@ import java.io.Reader;
  * structures.
  * </p>
  */
+@FunctionalInterface
 public interface TreeReader {
 
-    Object readNode(Reader reader) throws TreeIOException;
+    Object read(Reader reader) throws TreeIOException;
 
 }

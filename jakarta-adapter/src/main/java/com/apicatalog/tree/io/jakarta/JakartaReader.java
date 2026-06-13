@@ -31,7 +31,7 @@ public final class JakartaReader implements TreeReader {
     }
 
     @Override
-    public Object readNode(Reader reader) {
+    public Object read(Reader reader) {
         return readNode(factory.createParser(reader));
     }
 

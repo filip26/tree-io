@@ -20,7 +20,6 @@ import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeIOException;
 
-@Deprecated
 public final class JavaAdapter implements TreeAdapter {
 
     static final Features FEATURES = new Features(

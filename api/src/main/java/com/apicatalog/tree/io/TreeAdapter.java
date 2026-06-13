@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.java.NativeTreeTraversal;
 
 /**
  * Provides a uniform, read-only abstraction for navigating tree-like data
@@ -29,7 +30,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * using a consistent API. This keeps application logic independent of the
  * underlying data-binding library.</li>
  * <li><b>Data Transformation:</b> Serve as the input for a
- * {@link TreeTraversal}, which walks the tree exposed by this adapter and
+ * {@link NativeTreeTraversal}, which walks the tree exposed by this adapter and
  * drives a {@link TreeGenerator}. This powerful pattern is the foundation for
  * converting between different data formats (e.g., from a YAML document to a
  * binary CBOR representation).</li>

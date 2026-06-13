@@ -131,7 +131,10 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws TreeIOException {
+    public void nullValue(Context context) throws TreeIOException {
+        if (context == Context.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeNull();
         } catch (IOException e) {

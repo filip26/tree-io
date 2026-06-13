@@ -1,17 +1,13 @@
 package com.apicatalog.tree.io.cbor;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
+import com.apicatalog.tree.io.TreeProcessor;
 
 import co.nstant.in.cbor.CborDecoder;
-import co.nstant.in.cbor.CborException;
 
-public class CborParser implements TreeParser {
+public class CborParser implements TreeParser, TreeProcessor {
 
     CborDecoder decoder;
     
@@ -41,9 +37,22 @@ public class CborParser implements TreeParser {
     }
 
     @Override
-    public Object getScalar() throws TreeIOException {
+    public Number getNumber() throws TreeIOException {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public String getString() throws TreeIOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public byte[] getBinary() throws TreeIOException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
 }

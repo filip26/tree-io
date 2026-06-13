@@ -3,15 +3,14 @@ package com.apicatalog.tree.io.jakarta;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
+import com.apicatalog.tree.io.TreeProcessor;
 
 import jakarta.json.JsonException;
 import jakarta.json.stream.JsonParser;
-import jakarta.json.stream.JsonParser.Event;
 
-public final class JakartaParser implements TreeParser {
+public final class JakartaParser implements TreeParser, TreeProcessor {
 
     private final JsonParser parser;
-    private Event lastEvent;
 
     public JakartaParser(JsonParser parser) {
         this.parser = parser;
@@ -36,7 +35,7 @@ public final class JakartaParser implements TreeParser {
     public Token nextToken() throws TreeIOException {
 
         try {
-            this.lastEvent = parser.next();
+            var lastEvent = parser.next();
 
             return switch (lastEvent) {
             case START_OBJECT -> Token.BEGIN_MAP;
@@ -57,21 +56,20 @@ public final class JakartaParser implements TreeParser {
     }
 
     @Override
-    public Object getScalar() {
-        return switch (lastEvent) {
-        case VALUE_STRING -> parser.getString();
-        case VALUE_NUMBER -> parser.isIntegralNumber()
+    public Number getNumber() throws TreeIOException {
+        return parser.isIntegralNumber()
                 ? parser.getLong()
                 : parser.getBigDecimal();
-        case VALUE_TRUE -> Boolean.TRUE;
-        case VALUE_FALSE -> Boolean.FALSE;
-        case VALUE_NULL -> null;
+    }
 
-        default -> throw new IllegalStateException(
-                """
-                Expected scalar, but have=%s
-                """.formatted(lastEvent));
-        };
+    @Override
+    public String getString() throws TreeIOException {
+        return parser.getString();
+    }
+
+    @Override
+    public byte[] getBinary() throws TreeIOException {
+        throw new UnsupportedOperationException();
     }
 
 }

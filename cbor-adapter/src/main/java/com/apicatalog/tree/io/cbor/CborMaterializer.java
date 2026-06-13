@@ -7,10 +7,10 @@ import java.util.Deque;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.java.NativeTreeTraversal;
 import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeTraversal;
 
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -26,7 +26,7 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
+ * This class implements both {@link NativeTreeTraversal} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to

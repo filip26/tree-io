@@ -5,10 +5,9 @@ import java.math.BigInteger;
 import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.TreeGenerator.Context;
+import com.apicatalog.tree.io.java.NativeTreeTraversal;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeTraversal;
 
 import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
@@ -17,11 +16,12 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
- * enabling it to function as a self-contained serialization engine. It
- * traverses a source structure (via its {@code NodeVisitor} parent) and
- * consumes its own traversal events (via its {@code NodeGenerator}
- * implementation) to write directly to the provided {@code JsonGenerator}.
+ * This class implements both {@link NativeTreeTraversal} and
+ * {@link TreeGenerator}, enabling it to function as a self-contained
+ * serialization engine. It traverses a source structure (via its
+ * {@code NodeVisitor} parent) and consumes its own traversal events (via its
+ * {@code NodeGenerator} implementation) to write directly to the provided
+ * {@code JsonGenerator}.
  * </p>
  * <p>
  * This class is stateful and intended for a single serialization task, as it
@@ -90,7 +90,10 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws TreeIOException {
+    public void nullValue(Context context) throws TreeIOException {
+        if (context == Context.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeNull();
         } catch (JsonException e) {
@@ -109,7 +112,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void booleanValue(Context context, boolean node) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -167,7 +170,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void numericValue(Context context, BigInteger node) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -186,7 +189,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void numericValue(Context context, double node) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -205,7 +208,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void numericValue(Context context, BigDecimal node) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -268,7 +271,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void beginSequence(Context context) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.writeStartArray();
         } catch (JsonException e) {
@@ -289,7 +292,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void endMap(Context context) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.writeEnd();
         } catch (JsonException e) {
@@ -301,7 +304,7 @@ public class JakartaGenerator implements TreeGenerator {
     public void endSequence(Context context) throws TreeIOException {
         if (context == Context.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
+        }
         try {
             writer.writeEnd();
         } catch (JsonException e) {

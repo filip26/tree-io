@@ -33,7 +33,7 @@ public interface TreeGenerator extends TreeProcessor {
      * originates from the structural state of the source tree during traversal,
      * allowing a stack-free generator to map the incoming node accurately.
      */
-    enum Context {
+    public enum Context {
         /**
          * Indicates the node is the top-level root of the tree structure.
          */
@@ -61,11 +61,13 @@ public interface TreeGenerator extends TreeProcessor {
     /**
      * Adds a null value to the current context.
      *
+     * @param context the structural context originating from the source tree
+     *                traversal.
      * @throws TreeIOException       if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
-    void nullValue() throws TreeIOException;
+    void nullValue(Context context) throws TreeIOException;
 
     /**
      * Adds a boolean value to the tree.
