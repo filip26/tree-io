@@ -2,12 +2,12 @@
 
 **Uniform API to read/write heterogeneous tree data models - cross-format, cross-library.**
 
-**tree-io** (pronounced **“tri-yo”**)  provides a consistent and lightweight abstraction for working with heterogeneous hierarchical data structures.  It is format-agnostic (JSON, YAML, CBOR, …) and library-agnostic,  allowing you to read, manipulate, and write trees uniformly without depending on a specific parser or generator.
+**tree-io** [tri-yo]  provides a consistent and lightweight abstraction for working with heterogeneous hierarchical data structures.  It is format-agnostic (JSON, YAML, CBOR, …) and library-agnostic,  allowing you to read, manipulate, and write trees uniformly without depending on a specific parser or generator.
 
 ## ✨ Features
 
 - 🌳 Uniform Tree Processing - handle any hierarchical and heterogeneous data structure consistently across formats and libraries  
-- 🌐 Library-agnostic API for tree data processing
+- 🌐 Library-agnostic API for tree data processing - Parser, Traversal, Generator
 - 🗂️ Multi-format support
 - 🛠️ Extensible model for adding new formats and libraries
 
