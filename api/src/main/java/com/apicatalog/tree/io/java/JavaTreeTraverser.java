@@ -23,7 +23,7 @@ import com.apicatalog.tree.io.TreeProcessor;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcessor {
+public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -48,15 +48,15 @@ public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcess
     protected NodeType currentNodeType;
     protected NodeContext currentNodeContext;
 
-    public JavaTreeTraversal() {
+    public JavaTreeTraverser() {
         this(new ArrayDeque<>(), null);
     }
 
-    public JavaTreeTraversal(Comparator<Entry<?, ?>> entryComparator) {
+    public JavaTreeTraverser(Comparator<Entry<?, ?>> entryComparator) {
         this(new ArrayDeque<>(), entryComparator);
     }
 
-    protected JavaTreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    protected JavaTreeTraverser(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
@@ -194,7 +194,7 @@ public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcess
         }
     }
 
-    public JavaTreeTraversal node(Object node) {
+    public JavaTreeTraverser node(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
@@ -216,7 +216,7 @@ public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcess
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      * @return
      */
-    public JavaTreeTraversal maxDepth(int maxDepth) {
+    public JavaTreeTraverser maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
@@ -238,7 +238,7 @@ public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcess
      *                        {@link #UNLIMITED_NODES} for no limit.
      * @return
      */
-    public JavaTreeTraversal maxVisited(int maxVisitedNodes) {
+    public JavaTreeTraverser maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
         return this;
     }

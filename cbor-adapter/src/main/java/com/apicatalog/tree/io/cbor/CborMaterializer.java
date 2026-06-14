@@ -1,7 +1,7 @@
 package com.apicatalog.tree.io.cbor;
 
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.java.JavaTreeTraversal;
+import com.apicatalog.tree.io.java.JavaTreeTraverser;
 
 import co.nstant.in.cbor.model.DataItem;
 
@@ -9,7 +9,7 @@ import co.nstant.in.cbor.model.DataItem;
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link JavaTreeTraversal} and {@link TreeGenerator},
+ * This class implements both {@link JavaTreeTraverser} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to

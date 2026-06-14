@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.java.JavaTreeGenerator;
-import com.apicatalog.tree.io.java.JavaTreeTraversal;
+import com.apicatalog.tree.io.java.JavaTreeTraverser;
 
 public final class Tree {
 
@@ -22,7 +22,7 @@ public final class Tree {
     }
 
     public static void write(Object node, TreeGenerator generator) throws TreeIOException {
-        var traversal = new JavaTreeTraversal();
+        var traversal = new JavaTreeTraverser();
         traversal.node(node);
         translate(traversal, generator);
     }
