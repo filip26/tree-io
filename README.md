@@ -7,7 +7,7 @@
 ## ✨ Features
 
 - 🌳 Uniform Tree Processing - handle any hierarchical and heterogeneous data structure consistently across formats and libraries  
-- 🌐 Library-agnostic API for tree data processing - Parser, Traversal, Generator
+- 🌐 Library-agnostic API for tree data processing - Parser, Traverser, Generator
 - 🗂️ Multi-format support
 - 🛠️ Extensible model for adding new formats and libraries
 

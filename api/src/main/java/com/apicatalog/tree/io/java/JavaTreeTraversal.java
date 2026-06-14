@@ -13,7 +13,7 @@ import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.fnc.TreeTraversal;
+import com.apicatalog.tree.io.fnc.TreeTraverser;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
@@ -23,7 +23,7 @@ import com.apicatalog.tree.io.TreeProcessor;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraversal implements TreeTraversal, TreeParser, TreeProcessor {
+public class JavaTreeTraversal implements TreeTraverser, TreeParser, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -73,7 +73,7 @@ public class JavaTreeTraversal implements TreeTraversal, TreeParser, TreeProcess
     }
 
     @Override
-    public void traverse(Object node, final Consumer<TreeTraversal> consumer) {
+    public void traverse(Object node, final Consumer<TreeTraverser> consumer) {
 
         node(node);
 
