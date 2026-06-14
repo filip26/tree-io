@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-import java.io.Writer;
+import java.io.OutputStream;
 
 /**
  * Provides a uniform abstraction for serializing tree-like data structures.
@@ -14,6 +14,6 @@ import java.io.Writer;
 @FunctionalInterface
 public interface TreeWriter {
 
-    void write(Object node, Writer writer) throws TreeIOException;
+    void write(Object node, OutputStream os) throws TreeIOException;
 
 }

@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 
 import jakarta.json.Json;
@@ -34,19 +34,19 @@ class JakartaTest {
     final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(
             Map.of(JsonGenerator.PRETTY_PRINTING, true));
 
+    final static JakartaReader READER = new JakartaReader(Json.createParserFactory(Map.of()));
+    final static JakartaWriter WRITER = new JakartaWriter(FACTORY);
+
     @ParameterizedTest
     @MethodSource({ "resources" })
     void testReadWrite(String name) throws TreeIOException, IOException {
-        var parser = new JakartaParser(Json.createParser(new StringReader(getResource(name))));
-        var result = Tree.read(parser);
+        var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
 
-        var writer = new StringWriter();
+        var bos = new ByteArrayOutputStream();
 
-        try (JsonGenerator generator = FACTORY.createGenerator(writer)) {
-            Tree.write(result, new JakartaGenerator(generator));
-        }
+        WRITER.write(tree, bos);
 
-        assertEquals(getResource(name), writer.toString());
+        assertEquals(getResource(name), bos.toString());
     }
 
     static final Stream<String> resources() throws TreeIOException {

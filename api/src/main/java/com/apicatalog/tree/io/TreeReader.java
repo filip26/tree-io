@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-import java.io.Reader;
+import java.io.InputStream;
 
 /**
  * Provides a uniform abstraction for de-serializing tree-like data structures.
@@ -14,6 +14,6 @@ import java.io.Reader;
 @FunctionalInterface
 public interface TreeReader {
 
-    Object read(Reader reader) throws TreeIOException;
+    Object read(InputStream is) throws TreeIOException;
 
 }

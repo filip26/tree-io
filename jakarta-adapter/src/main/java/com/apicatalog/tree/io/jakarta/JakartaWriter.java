@@ -6,11 +6,14 @@ import java.util.Collections;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.TreeWriter;
+import com.apicatalog.tree.io.Tree.Features;
 
 import jakarta.json.Json;
 import jakarta.json.stream.JsonGeneratorFactory;
 
-public class JakartaWriter {
+public class JakartaWriter implements TreeWriter, TreeProcessor {
 
     private final JsonGeneratorFactory factory;
 
@@ -21,7 +24,13 @@ public class JakartaWriter {
     public JakartaWriter(JsonGeneratorFactory factory) {
         this.factory = factory;
     }
+    
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
+    }
 
+    @Override
     public void write(Object node, OutputStream os) throws TreeIOException {
         try (final var generator = factory.createGenerator(os)) {
             var jsonGenerator = new JakartaGenerator(generator);

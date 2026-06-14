@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-public interface TreeComparison {
+interface TreeComparison {
 
     boolean isomorphic();
 
