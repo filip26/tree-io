@@ -2,14 +2,14 @@ package com.apicatalog.tree.io.jakarta;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayDeque;
 import java.util.function.Function;
 
-import com.apicatalog.tree.io.TreeAdapter;
-import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeContext;
+import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeTraversal;
+import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
 import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
@@ -18,11 +18,12 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
- * enabling it to function as a self-contained serialization engine. It
- * traverses a source structure (via its {@code NodeVisitor} parent) and
- * consumes its own traversal events (via its {@code NodeGenerator}
- * implementation) to write directly to the provided {@code JsonGenerator}.
+ * This class implements both {@link JavaTreeTraversal} and
+ * {@link TreeGenerator}, enabling it to function as a self-contained
+ * serialization engine. It traverses a source structure (via its
+ * {@code NodeVisitor} parent) and consumes its own traversal events (via its
+ * {@code NodeGenerator} implementation) to write directly to the provided
+ * {@code JsonGenerator}.
  * </p>
  * <p>
  * This class is stateful and intended for a single serialization task, as it
@@ -31,7 +32,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
+public class JakartaGenerator implements TreeGenerator, TreeProcessor {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -47,11 +48,6 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
         this(writer, null);
     }
 
-    @Override
-    public Features features() {
-        return JakartaAdapter.FEATURES;
-    }
-
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}
      * with custom handling for binary data.
@@ -63,24 +59,13 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      *                not supported
      */
     public JakartaGenerator(JsonGenerator writer, Function<byte[], String> encoder) {
-        super(new ArrayDeque<>(), null);
         this.writer = writer;
         this.encoder = encoder;
     }
-
-    /**
-     * The primary entry point for serialization. Traverses the given source node
-     * and writes the corresponding JSON structure to the underlying
-     * {@link JsonGenerator}.
-     *
-     * @param node    the source root node to traverse
-     * @param adapter the adapter for interpreting the source node's structure
-     * @return the underlying {@link JsonGenerator} for further use if needed
-     * @throws TreeIOException if an error occurs during writing
-     */
-    public JsonGenerator node(Object node, TreeAdapter adapter) throws TreeIOException {
-        root(node, adapter).generate(this);
-        return writer;
+    
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
     }
 
     /**
@@ -90,7 +75,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue() throws TreeIOException {
+    public void nullValue(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeNull();
         } catch (JsonException e) {
@@ -106,7 +94,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(boolean node) throws TreeIOException {
+    public void booleanValue(NodeContext context, boolean node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -123,9 +114,9 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(String node) throws TreeIOException {
+    public void stringValue(NodeContext context, String node) throws TreeIOException {
         try {
-            if (currentNodeContext == Context.PROPERTY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeKey(node);
                 return;
             }
@@ -143,7 +134,28 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(long node) throws TreeIOException {
+    public void numericValue(NodeContext context, long node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Writes a JSON number.
+     * </p>
+     */
+    @Override
+    public void numericValue(NodeContext context, BigInteger node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -159,7 +171,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(BigInteger node) throws TreeIOException {
+    public void numericValue(NodeContext context, double node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -175,23 +190,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(double node) throws TreeIOException {
-        try {
-            writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
+    public void numericValue(NodeContext context, BigDecimal node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
         }
-
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Writes a JSON number.
-     * </p>
-     */
-    @Override
-    public void numericValue(BigDecimal node) throws TreeIOException {
         try {
             writer.write(node);
         } catch (JsonException e) {
@@ -210,7 +212,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      *                                       construction
      */
     @Override
-    public void binaryValue(byte[] node) throws TreeIOException {
+    public void binaryValue(NodeContext context, byte[] node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         if (encoder == null) {
             throw new UnsupportedOperationException("Binary values are not supported without a configured encoder.");
         }
@@ -228,7 +233,10 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginMap() throws TreeIOException {
+    public void beginMap(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeStartObject();
         } catch (JsonException e) {
@@ -241,10 +249,14 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * <p>
      * Writes a JSON start-array token ({@code '['}).
      * </p>
-     * @throws TreeIOException 
+     * 
+     * @throws TreeIOException
      */
     @Override
-    public void beginSequence() throws TreeIOException {
+    public void beginSequence(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeStartArray();
         } catch (JsonException e) {
@@ -262,7 +274,22 @@ public class JakartaGenerator extends TreeTraversal implements TreeGenerator {
      * @throws TreeIOException
      */
     @Override
-    public void end() throws TreeIOException {
+    public void endMap(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
+        try {
+            writer.writeEnd();
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+    }
+
+    @Override
+    public void endSequence(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
         try {
             writer.writeEnd();
         } catch (JsonException e) {

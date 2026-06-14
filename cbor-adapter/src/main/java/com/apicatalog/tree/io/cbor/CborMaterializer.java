@@ -1,32 +1,15 @@
 package com.apicatalog.tree.io.cbor;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import com.apicatalog.tree.io.Tree;
-import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.TreeAdapter;
 import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeTraversal;
+import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
-import co.nstant.in.cbor.model.Array;
-import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
-import co.nstant.in.cbor.model.DoublePrecisionFloat;
-import co.nstant.in.cbor.model.Map;
-import co.nstant.in.cbor.model.NegativeInteger;
-import co.nstant.in.cbor.model.SimpleValue;
-import co.nstant.in.cbor.model.UnicodeString;
-import co.nstant.in.cbor.model.UnsignedInteger;
 
 /**
  * A specialized class that builds a {@code co.nstant.in.cbor.model.DataItem}
  * object model from any tree-like source.
  * <p>
- * This class implements both {@link TreeTraversal} and {@link TreeGenerator},
+ * This class implements both {@link JavaTreeTraversal} and {@link TreeGenerator},
  * allowing it to act as a self-contained transformation engine. It traverses a
  * source structure using its {@code NodeVisitor} capabilities and consumes its
  * own traversal events via its {@code NodeGenerator} implementation to
@@ -37,264 +20,264 @@ import co.nstant.in.cbor.model.UnsignedInteger;
  * reused by calling the {@link #reset()} method.
  * </p>
  */
-public class CborMaterializer extends TreeTraversal implements TreeGenerator {
+public class CborMaterializer /*extends TreeTraversal implements TreeGenerator*/ {
 
-    protected DataItem cbor;
-    protected final Deque<Object> builders;
-
-    /**
-     * Constructs a new, empty {@code CborMaterializer}.
-     */
-    public CborMaterializer() {
-        super(new ArrayDeque<>(), null);
-        this.builders = new ArrayDeque<>();
-        this.cbor = null;
-    }
-
-    @Override
-    public Features features() {
-        return CborAdapter.FEATURES;
-    }
-
-    public static DataItem node(Tree tree) throws TreeIOException {
-        return node(tree.node(), tree.adapter());
-    }
-    
-    public static DataItem node(Object node, TreeAdapter adapter) throws TreeIOException {
-
-        if (CborAdapter.instance().isEqualTo(adapter)
-                && node instanceof DataItem item) {
-            return item;
-        }
-
-        if (adapter.type(node).isScalar()) {
-            return scalar(node, adapter);
-        }
-
-        return new CborMaterializer().structure(node, adapter);
-    }
-
-    public static DataItem scalar(Object node, TreeAdapter adapter) throws TreeIOException {
-        return switch (adapter.type(node)) {
-        case NULL -> SimpleValue.NULL;
-        case TRUE -> SimpleValue.TRUE;
-        case FALSE -> SimpleValue.FALSE;
-        case STRING -> new UnicodeString(adapter.stringValue(node));
-        case BINARY -> new ByteString(adapter.binaryValue(node));
-        case NUMBER -> number(node, adapter);
-        default -> throw new TreeIOException("Node is not scalar, node=" + node);
-        };
-    }
-
-    private static DataItem number(Object node, TreeAdapter adapter) throws TreeIOException {
-        if (adapter.isIntegral(node)) {
-            var integer = adapter.integerValue(node);
-            if (integer.signum() < 0) {
-                return new NegativeInteger(integer);
-            }
-            return new UnsignedInteger(integer);
-        }
-        var decimal = adapter.doubleValue(node);
-        return new DoublePrecisionFloat(decimal);
-    }
-
-    /**
-     * The primary entry point for materialization. Traverses the given source node
-     * and returns the resulting CBOR {@link DataItem}.
-     *
-     * @param node    the source root node to traverse
-     * @param adapter the adapter for interpreting the source node's structure
-     * @return the fully materialized {@link DataItem}
-     * @throws TreeIOException if an error occurs during generation
-     */
-    public DataItem structure(Object node, TreeAdapter adapter) throws TreeIOException {
-        root(node, adapter).generate(this);
-        return cbor;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Clears the partially built CBOR structure and the internal builder stack,
-     * allowing the instance to be reused for a new materialization.
-     * </p>
-     */
-    @Override
-    public TreeTraversal reset() {
-        this.cbor = null;
-        this.builders.clear();
-        return super.reset();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Starts a new CBOR {@link Map} and places it on the internal builder stack.
-     * </p>
-     */
-    @Override
-    public void beginMap() {
-        builders.push(new Map());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Starts a new CBOR {@link Array} and places it on the internal builder stack.
-     * </p>
-     */
-    @Override
-    public void beginSequence() {
-        builders.push(new Array());
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Finalizes the current CBOR {@link Map} or {@link Array}, pops it from the
-     * builder stack, and attaches it to its parent structure.
-     * </p>
-     */
-    @Override
-    public void end() {
-        Object builder = builders.pop();
-
-        if (builder instanceof Map) {
-            cbor = (Map) builder;
-
-        } else if (builder instanceof Array) {
-            cbor = (Array) builder;
-
-        } else {
-            throw new IllegalStateException("Internal builder stack is in an inconsistent state.");
-        }
-
-        if (!builders.isEmpty()) {
-            Object parent = builders.peek();
-            if (parent instanceof Array) {
-                ((Array) parent).add(cbor);
-            } else if (parent instanceof Map) {
-                builders.push(cbor); // Pushes value to be paired with a key later
-            } else if (parent instanceof DataItem) {
-                DataItem key = (DataItem) builders.pop();
-                ((Map) builders.peek()).put(key, cbor);
-            } else {
-                throw new IllegalStateException("Internal builder stack contains an unexpected type.");
-            }
-        }
-    }
-
-    /**
-     * Returns the fully materialized CBOR {@link DataItem} after a successful
-     * traversal.
-     *
-     * @return the resulting {@link DataItem}, or {@code null} if traversal has not
-     *         completed
-     */
-    public DataItem cbor() {
-        return cbor;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void nullValue() throws TreeIOException {
-        cbor(SimpleValue.NULL);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void booleanValue(boolean node) throws TreeIOException {
-        cbor(node ? SimpleValue.TRUE : SimpleValue.FALSE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void stringValue(String node) throws TreeIOException {
-        cbor(new UnicodeString(node));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void numericValue(long node) throws TreeIOException {
-        if (node < 0) {
-            cbor(new NegativeInteger(node));
-        } else {
-            cbor(new UnsignedInteger(node));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void numericValue(BigInteger node) throws TreeIOException {
-        if (node.signum() < 0) {
-            cbor(new NegativeInteger(node));
-        } else {
-            cbor(new UnsignedInteger(node));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void numericValue(double node) throws TreeIOException {
-        cbor(new DoublePrecisionFloat(node));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void numericValue(BigDecimal node) throws TreeIOException {
-        cbor(new DoublePrecisionFloat(node.doubleValue()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void binaryValue(byte[] node) throws TreeIOException {
-        cbor(new ByteString(node));
-    }
-
-    /**
-     * Internal dispatcher that places a newly created {@link DataItem} into the
-     * correct position within the CBOR structure being built.
-     *
-     * @param node the {@link DataItem} to place
-     */
-    protected void cbor(DataItem node) {
-        switch (currentNodeContext) {
-        case PROPERTY_KEY:
-            builders.push(node);
-            break;
-
-        case PROPERTY_VALUE:
-            DataItem key = (DataItem) builders.pop();
-            ((Map) builders.peek()).put(key, node);
-            break;
-
-        case ELEMENT:
-            ((Array) builders.peek()).add(node);
-            break;
-
-        case ROOT:
-            cbor = node;
-            break;
-
-        default:
-            throw new IllegalStateException("Cannot add a CBOR DataItem in the current context: " + currentNodeContext);
-        }
-    }
+//    protected DataItem cbor;
+//    protected final Deque<Object> builders;
+//
+//    /**
+//     * Constructs a new, empty {@code CborMaterializer}.
+//     */
+//    public CborMaterializer() {
+//        super(new ArrayDeque<>(), null);
+//        this.builders = new ArrayDeque<>();
+//        this.cbor = null;
+//    }
+//
+//    @Override
+//    public Features features() {
+//        return CborAdapter.FEATURES;
+//    }
+//
+//    public static DataItem node(Tree tree) throws TreeIOException {
+//        return node(tree.node(), tree.adapter());
+//    }
+//    
+//    public static DataItem node(Object node, TreeAdapter adapter) throws TreeIOException {
+//
+//        if (CborAdapter.instance().isEqualTo(adapter)
+//                && node instanceof DataItem item) {
+//            return item;
+//        }
+//
+//        if (adapter.type(node).isScalar()) {
+//            return scalar(node, adapter);
+//        }
+//
+//        return new CborMaterializer().structure(node, adapter);
+//    }
+//
+//    public static DataItem scalar(Object node, TreeAdapter adapter) throws TreeIOException {
+//        return switch (adapter.type(node)) {
+//        case NULL -> SimpleValue.NULL;
+//        case TRUE -> SimpleValue.TRUE;
+//        case FALSE -> SimpleValue.FALSE;
+//        case STRING -> new UnicodeString(adapter.stringValue(node));
+//        case BINARY -> new ByteString(adapter.binaryValue(node));
+//        case NUMBER -> number(node, adapter);
+//        default -> throw new TreeIOException("Node is not scalar, node=" + node);
+//        };
+//    }
+//
+//    private static DataItem number(Object node, TreeAdapter adapter) throws TreeIOException {
+//        if (adapter.isIntegral(node)) {
+//            var integer = adapter.integerValue(node);
+//            if (integer.signum() < 0) {
+//                return new NegativeInteger(integer);
+//            }
+//            return new UnsignedInteger(integer);
+//        }
+//        var decimal = adapter.doubleValue(node);
+//        return new DoublePrecisionFloat(decimal);
+//    }
+//
+//    /**
+//     * The primary entry point for materialization. Traverses the given source node
+//     * and returns the resulting CBOR {@link DataItem}.
+//     *
+//     * @param node    the source root node to traverse
+//     * @param adapter the adapter for interpreting the source node's structure
+//     * @return the fully materialized {@link DataItem}
+//     * @throws TreeIOException if an error occurs during generation
+//     */
+//    public DataItem structure(Object node, TreeAdapter adapter) throws TreeIOException {
+//        root(node, adapter).generate(this);
+//        return cbor;
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     * <p>
+//     * Clears the partially built CBOR structure and the internal builder stack,
+//     * allowing the instance to be reused for a new materialization.
+//     * </p>
+//     */
+//    @Override
+//    public TreeTraversal reset() {
+//        this.cbor = null;
+//        this.builders.clear();
+//        return super.reset();
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     * <p>
+//     * Starts a new CBOR {@link Map} and places it on the internal builder stack.
+//     * </p>
+//     */
+//    @Override
+//    public void beginMap() {
+//        builders.push(new Map());
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     * <p>
+//     * Starts a new CBOR {@link Array} and places it on the internal builder stack.
+//     * </p>
+//     */
+//    @Override
+//    public void beginSequence() {
+//        builders.push(new Array());
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     * <p>
+//     * Finalizes the current CBOR {@link Map} or {@link Array}, pops it from the
+//     * builder stack, and attaches it to its parent structure.
+//     * </p>
+//     */
+//    @Override
+//    public void endMap() {
+//        Object builder = builders.pop();
+//
+//        if (builder instanceof Map) {
+//            cbor = (Map) builder;
+//
+//        } else if (builder instanceof Array) {
+//            cbor = (Array) builder;
+//
+//        } else {
+//            throw new IllegalStateException("Internal builder stack is in an inconsistent state.");
+//        }
+//
+//        if (!builders.isEmpty()) {
+//            Object parent = builders.peek();
+//            if (parent instanceof Array) {
+//                ((Array) parent).add(cbor);
+//            } else if (parent instanceof Map) {
+//                builders.push(cbor); // Pushes value to be paired with a key later
+//            } else if (parent instanceof DataItem) {
+//                DataItem key = (DataItem) builders.pop();
+//                ((Map) builders.peek()).put(key, cbor);
+//            } else {
+//                throw new IllegalStateException("Internal builder stack contains an unexpected type.");
+//            }
+//        }
+//    }
+//
+//    /**
+//     * Returns the fully materialized CBOR {@link DataItem} after a successful
+//     * traversal.
+//     *
+//     * @return the resulting {@link DataItem}, or {@code null} if traversal has not
+//     *         completed
+//     */
+//    public DataItem cbor() {
+//        return cbor;
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void nullValue() throws TreeIOException {
+//        cbor(SimpleValue.NULL);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void booleanValue(boolean node) throws TreeIOException {
+//        cbor(node ? SimpleValue.TRUE : SimpleValue.FALSE);
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void stringValue(String node) throws TreeIOException {
+//        cbor(new UnicodeString(node));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void numericValue(long node) throws TreeIOException {
+//        if (node < 0) {
+//            cbor(new NegativeInteger(node));
+//        } else {
+//            cbor(new UnsignedInteger(node));
+//        }
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void numericValue(BigInteger node) throws TreeIOException {
+//        if (node.signum() < 0) {
+//            cbor(new NegativeInteger(node));
+//        } else {
+//            cbor(new UnsignedInteger(node));
+//        }
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void numericValue(double node) throws TreeIOException {
+//        cbor(new DoublePrecisionFloat(node));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void numericValue(BigDecimal node) throws TreeIOException {
+//        cbor(new DoublePrecisionFloat(node.doubleValue()));
+//    }
+//
+//    /**
+//     * {@inheritDoc}
+//     */
+//    @Override
+//    public void binaryValue(byte[] node) throws TreeIOException {
+//        cbor(new ByteString(node));
+//    }
+//
+//    /**
+//     * Internal dispatcher that places a newly created {@link DataItem} into the
+//     * correct position within the CBOR structure being built.
+//     *
+//     * @param node the {@link DataItem} to place
+//     */
+//    protected void cbor(DataItem node) {
+//        switch (currentNodeContext) {
+//        case PROPERTY_KEY:
+//            builders.push(node);
+//            break;
+//
+//        case PROPERTY_VALUE:
+//            DataItem key = (DataItem) builders.pop();
+//            ((Map) builders.peek()).put(key, node);
+//            break;
+//
+//        case ELEMENT:
+//            ((Array) builders.peek()).add(node);
+//            break;
+//
+//        case ROOT:
+//            cbor = node;
+//            break;
+//
+//        default:
+//            throw new IllegalStateException("Cannot add a CBOR DataItem in the current context: " + currentNodeContext);
+//        }
+//    }
 
 }

@@ -1,230 +1,93 @@
 package com.apicatalog.tree.io;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.java.JavaTree;
+import com.apicatalog.tree.io.java.JavaTreeGenerator;
+import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
-/**
- * Immutable representation of a tree node where the node and its descendants
- * are accessed through a {@link TreeAdapter}.
- * <p>
- * A {@link Tree} instance binds a node with its adapter, providing a uniform
- * way to traverse or compare trees of arbitrary underlying object models.
- * </p>
- * <p>
- * Pass a {@link Tree} from JSON, YAML, or CBOR into the tree to create
- * polyformic tree composed of various different serializations, libraries, in
- * order to uniformly prosses such a tree.
- * </p>
- *
- */
-public record Tree(
-        Object node,
-        TreeAdapter adapter) {
+public final class Tree {
+
+    public static Object read(TreeParser parser) throws TreeIOException {
+        var generator = new JavaTreeGenerator();
+        translate(parser, generator);
+        return generator.get();
+    }
+
+    public static void write(Object node, TreeGenerator generator) throws TreeIOException {
+        var traversal = new JavaTreeTraversal();
+        traversal.node(node);
+        translate(traversal, generator);
+    }
 
     /**
-     * Creates a new immutable tree with the given root node and adapter.
+     * A high-level utility method that fully traverses the tree and drives the
+     * provided {@link TreeGenerator}. This is the primary method for tree
+     * transformation, serialization, or deep cloning. It iterates through every
+     * node using {@link TreeParser#next()} and emits a corresponding event to the generator.
      *
-     * @param node    the root node of the tree, must not be {@code null}
-     * @param adapter the adapter providing access to node types and values, must
-     *                not be {@code null}
-     * @throws NullPointerException if {@code root} or {@code adapter} is
-     *                              {@code null}
+     * @param parser
+     * @param generator the generator that will receive construction events.
+     * @throws TreeIOException       if the generator encounters an I/O error.
+     * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
+     *                               structures).
      */
-    public Tree {
-        node = Objects.requireNonNull(node);
-        adapter = Objects.requireNonNull(adapter);
+    public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
+        while (true) {
+            switch (parser.next()) {
+            case BEGIN_MAP:
+                generator.beginMap(parser.context());
+                continue;
+
+            case END_MAP:
+                generator.endMap(parser.context());
+                continue;
+
+            case BEGIN_SEQUENCE:
+                generator.beginSequence(parser.context());
+                continue;
+
+            case END_SEQUENCE:
+                generator.endSequence(parser.context());
+                continue;
+
+            case SCALAR:
+                switch (parser.nodeType()) {
+                case NULL -> generator.nullValue(parser.context());
+                case TRUE -> generator.booleanValue(parser.context(), true);
+                case FALSE -> generator.booleanValue(parser.context(), false);
+                case STRING -> generator.stringValue(parser.context(), parser.stringValue());
+                case NUMBER -> generator.numberValue(parser.context(), parser.numberValue());
+                case BINARY -> generator.binaryValue(parser.context(), parser.binaryValue());
+
+                default -> throw new IllegalArgumentException(
+                        """
+                        Unexpected node type=%s"
+                        """.formatted(parser.nodeType()));
+                }
+                continue;
+
+            case null:
+//                if (traversal.dept depth > 0) {
+//                    throw new IllegalStateException("The traversed tree is malformed. A map or a collection was not properly closed.");
+//                }
+                return;
+            }
+        }
+
+//        if (stack.peek() != NodeContext.ROOT) {
+//            throw new IllegalStateException();
+//        }
     }
 
-    public static Tree of(Map<?, ?> map) {
-        return JavaTree.of(map);
-    }
-
-    public static Tree of(Collection<?> collection) {
-        return JavaTree.of(collection);
-    }
-    
-    public Features features() {
-        return adapter.features();
-    }
-
-    public TreeAdapter adapter() {
-        return adapter;
-    }
-
-    /**
-     * Root node, a structure like Map or Collection.
-     * 
-     * @return
-     */
-    public Object node() {
-        return node;
-    }
-
-    public void traverse(Consumer<TreeTraversal> visitor) {
-        (new TreeTraversal()).root(node, adapter).traverse(visitor);
-    }
-
-    public void generate(TreeGenerator generator) throws TreeIOException {
-        (new TreeTraversal()).root(node, adapter).generate(generator);
-    }
-
-    // exact structural/value match
-    public boolean isIsomorphicTo(Tree other) {
-        return isIsomorphicTo(other.node, other.adapter);
-    }
-
-    public boolean isIsomorphicTo(Tree other, int maxDepth) {
-        return isIsomorphicTo(other.node, other.adapter, maxDepth);
-    }
-
-    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter) {
-        return TreeComparison.deepEquals(node, adapter, other, otherAdapter);
-    }
-
-    public boolean isIsomorphicTo(Object other, TreeAdapter otherAdapter, int maxDepth) {
-        return TreeComparison.deepEquals(node, adapter, other, otherAdapter, maxDepth);
-    }
-
-    public boolean isEmptyOrNull() {
-        return node == null
-                || adapter.isNull(node)
-                || adapter.isEmpty(node);
-    }
-
-    /**
-     * Determines the {@link NodeType} of the given native node.
-     *
-     * @return the {@link NodeType} corresponding to the node.
-     */
-    public NodeType type() {
-        return adapter.type(node);
-    }
-
-    /**
-     * Checks if a map or collection node is empty.
-     *
-     * @return {@code true} if the node contains no entries or elements,
-     *         {@code false} otherwise.
-     * @throws UnsupportedOperationException if the node is not a map or collection.
-     */
-    public boolean isEmpty() {
-        return node != null && adapter.isEmpty(node);
-    }
-
-    // --- Map Operations ---
-
-    /**
-     * Checks if the adapted node represents a map (an object with key-value pairs).
-     *
-     * @return {@code true} if the node represents a map, {@code false} otherwise.
-     */
-    public boolean isMap() {
-        return node != null && adapter.isMap(node);
-    }
-
-    /**
-     * Returns a collection of the native key objects from a map node. The types of
-     * the keys depend on the underlying format (e.g., Strings for JSON, various
-     * scalars for CBOR).
-     *
-     * @return a collection containing the map's native key objects.
-     */
-    public Collection<?> keys() {
-        return adapter.keys(node);
-    }
-
-    /**
-     * Retrieves the value associated with a given native key object from a map
-     * node.
-     *
-     * @param key the native key object used for the lookup.
-     * @return the native value node, or {@code null} if the key is not found.
-     */
-    public Object property(Object key) {
-        return adapter.property(key, node);
-    }
-
-    public Object property(Object key, TreeAdapter keyAdapter) {
-        return adapter.property(key, keyAdapter, node);
-    }
-
-    /**
-     * Returns all key-value pairs of a map node as an {@link Iterable}. The entries
-     * contain the native key and value objects.
-     *
-     * @return an {@link Iterable} of its entries.
-     * @throws UnsupportedOperationException if the node is not a map.
-     */
-    public Iterable<Entry<?, ?>> entries() {
-        return adapter.entries(node);
-    }
-
-    /**
-     * Returns all key-value pairs of a map node as a {@link Stream}. This is a
-     * convenience method for processing map entries using the Stream API.
-     *
-     * @return a {@link Stream} of its entries.
-     */
-    public Stream<Entry<?, ?>> entryStream() {
-        return adapter.entryStream(node);
-    }
-
-    public boolean isSingleEntry() {
-        return adapter.isSingleEntry(node);
-    }
-
-    public Entry<?, ?> singleEntry() {
-        return adapter.singleEntry(node);
-    }
-
-    public Stream<?> keyStream() {
-        return adapter.keyStream(node);
-    }
-
-    // --- Collection Operations ---
-
-    /**
-     * Checks if the adapted node represents a sequence of elements
-     *
-     * @return {@code true} if the node represents a sequence, {@code false}
-     *         otherwise.
-     */
-    public boolean isSequence() {
-        return node != null && adapter.isSequence(node);
-    }
-
-    /**
-     * Returns the elements of a collection node as an {@link Iterable}.
-     *
-     * @return an {@link Iterable} of its native element objects.
-     */
-    public Iterable<?> elements() {
-        return adapter.elements(node);
-    }
-
-    /**
-     * Returns the elements of a collection node as a {@link Stream}.
-     *
-     * @return a {@link Stream} of its native element objects.
-     */
-    public Stream<?> elementStream() {
-        return adapter.elementStream(node);
-    }
-
-    public boolean isSingleElement() {
-        return adapter.isSingleElement(node);
-    }
-
-    public Object singleElement() {
-        return adapter.singleElement(node);
-    }
+    // --- Convenience & Type Coercion Methods ---
 
     /**
      * Returns the node's contents as a universal {@link Iterable}. This is a
@@ -236,56 +99,181 @@ public record Tree(
      * <li>If the node is {@code null}, returns an empty iterable.</li>
      * </ul>
      *
+     * @param node the node to convert.
      * @return a non-null {@link Iterable} representing the node's contents.
      */
-    public Iterable<?> asIterable() {
-        return adapter.asIterable(node);
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static Iterable<? extends Object> asIterable(Object node) {
+        if (node == null) {
+            return List.of();
+        }
+        if (node instanceof Collection) {
+            return (Collection) node;
+        }
+        if (node instanceof Stream) {
+            return ((Stream<Object>) node).collect(Collectors.toList());
+        }
+        return List.of(node);
     }
 
     /**
      * Returns the node's contents as a universal {@link Stream}.
      *
+     * @param node the node to convert.
      * @return a non-null {@link Stream} representing the node's contents.
      */
-    public Stream<?> asStream() {
-        return adapter.asStream(node);
-    }
-
-    public boolean isEmptyMap() {
-        return node != null && adapter.isEmptyMap(node);
-    }
-
-    public boolean isEmptySequence() {
-        return node != null && adapter.isEmptySequence(node);
+    public static Stream<? extends Object> asStream(Object node) {
+        if (node == null) {
+            return Stream.empty();
+        }
+        if (node instanceof Stream<?> stream) {
+            return stream;
+        }
+        if (node instanceof Collection<?> collection) {
+            return collection.stream();
+        }
+        return Stream.of(node);
     }
 
     /**
-     * Enumeration of supported node types within a {@code PolyMorph} tree
-     * structure.
-     * <p>
-     * A {@code NodeType} describes the semantic kind of a node, distinguishing
-     * between scalar values (e.g. string, number, boolean) and structural
-     * containers (e.g. map, collection, or polymorphic wrapper).
-     * </p>
-     * <p>
-     * {@link #TREE} represents an ad-hoc, heterogeneous wrapper node that can
-     * encapsulate another node originating from a different data model or library.
-     * This enables uniform traversal and comparison of mixed-format trees.
-     * </p>
+     * Returns a string representation of the node, coercing non-string scalar types
+     * where applicable.
      *
-     * @see TreeAdapter
-     * @see com.apicatalog.tree.io.Tree
+     * @param node the node to convert.
+     * @return a string representation of the node's value.
      */
-    public enum NodeType {
+    public static String asString(Object node) {
+        if (node instanceof String stringValue) {
+            return stringValue;
+        }
+        return Objects.toString(node);
+    }
+
+    /**
+     * Converts a given node to a {@link BigDecimal}, if possible. This method can
+     * be used to treat both numeric and string nodes as decimal values.
+     *
+     * @param node the node to convert.
+     * @return the {@link BigDecimal} representation.
+     * @throws NumberFormatException if a string node cannot be parsed into a
+     *                               BigDecimal.
+     * @throws ClassCastException    if the node is neither a number nor a string.
+     */
+    public static BigDecimal asDecimal(Object node) {
+        if (node instanceof BigDecimal number) {
+            return number;
+        }
+        if (node instanceof Double number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Float number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Integer number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof Long number) {
+            return BigDecimal.valueOf(number);
+        }
+        if (node instanceof BigInteger number) {
+            return BigDecimal.valueOf(number.longValueExact());
+        }
+        throw new IllegalArgumentException();
+    }
+
+    public static Collection<?> asCollection(Object node) {
+        return node instanceof Collection col
+                ? col
+                : node != null
+                        ? List.of(node)
+                        : List.of();
+    }
+
+    public static boolean isIntegral(Object node) {
+        return node != null
+                && (node instanceof Integer
+                        || node instanceof Long
+                        || node instanceof BigInteger);
+    }
+
+    public static boolean isNode(Object node) {
+        return node == null
+                || node instanceof String
+                || node instanceof Boolean
+                || node instanceof Integer
+                || node instanceof Long
+                || node instanceof BigInteger
+                || node instanceof Double
+                || node instanceof BigDecimal
+                || node instanceof Float
+                || node instanceof Map
+                || node instanceof Collection
+                || node instanceof byte[];
+    }
+
+    public static NodeType type(Object node) {
+        if (node == null) {
+            return NodeType.NULL;
+        }
+        if (node instanceof String) {
+            return NodeType.STRING;
+        }
+        if (node instanceof Boolean) {
+            return ((boolean) node) ? NodeType.TRUE : NodeType.FALSE;
+        }
+        if (node instanceof Number) {
+            return NodeType.NUMBER;
+        }
+        if (node instanceof Map) {
+            return NodeType.MAP;
+        }
+        if (node instanceof Collection) {
+            return NodeType.SEQUENCE;
+        }
+        if (node instanceof byte[]) {
+            return NodeType.BINARY;
+        }
+
+        throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
+    }
+
+    public enum Event {
+        BEGIN_MAP,
+        END_MAP,
+        BEGIN_SEQUENCE,
+        END_SEQUENCE,
+        SCALAR;
+    }
+
+    /**
+     * Defines the structural role of the token or value being emitted. Ordinarily
+     * originates from the structural state of the source tree during traversal,
+     * allowing a stack-free generator to map the incoming node accurately.
+     */
+    public enum NodeContext {
+        /**
+         * Indicates the node is the top-level root of the tree structure.
+         */
+        ROOT,
 
         /**
-         * Polymorphic wrapper node enabling heterogeneous access across formats.
-         * <p>
-         * An adapted node acts as an adapter-level bridge between different underlying
-         * object models, allowing a mixed tree to be processed uniformly.
-         * </p>
+         * Indicates the node is an element within an ordered sequence or array.
          */
-        TREE(false),
+        ELEMENT,
+
+        /**
+         * Indicates the node functions as a key within a map or object structure.
+         */
+        ENTRY_KEY,
+
+        /**
+         * Indicates the node functions as a value associated with a key within a map or
+         * object structure.
+         */
+        ENTRY_VALUE
+    }
+
+    public enum NodeType {
 
         /**
          * Mapping structure of key-value pairs, such as a JSON object or
@@ -351,24 +339,17 @@ public record Tree(
          * @return {@code true} if the node is structural (non-scalar)
          */
         public boolean isStructure() {
-            return !scalar && this != TREE;
+            return !scalar;
         }
-    }
-
-    public enum Capability {
-        DEEP_OBJECT_EQUALS,
-        SCALAR_OBJECT_EQUALS,
     }
 
     public static final record Features(
             Set<NodeType> keys,
-            Set<NodeType> nodes,
-            Set<Capability> capabilities) {
+            Set<NodeType> nodes) {
 
         public Features {
             keys = keys == null ? Set.of() : Set.copyOf(keys);
             nodes = nodes == null ? Set.of() : Set.copyOf(nodes);
-            capabilities = capabilities == null ? Set.of() : Set.copyOf(capabilities);
         }
 
         /**
@@ -378,6 +359,7 @@ public record Tree(
          *
          * @return an immutable set of supported key {@link NodeType}s.
          */
+        @Override
         public Set<NodeType> keys() {
             return keys;
         }
@@ -388,6 +370,7 @@ public record Tree(
          *
          * @return an immutable set of supported {@link NodeType}s.
          */
+        @Override
         public Set<NodeType> nodes() {
             return nodes;
         }

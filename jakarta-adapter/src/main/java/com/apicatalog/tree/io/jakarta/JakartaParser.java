@@ -1,35 +1,149 @@
 package com.apicatalog.tree.io.jakarta;
 
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.Map;
+import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeContext;
+import com.apicatalog.tree.io.Tree.NodeType;
 
-import com.apicatalog.tree.io.Tree;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
+import com.apicatalog.tree.io.TreeProcessor;
 
-import jakarta.json.Json;
 import jakarta.json.JsonException;
-import jakarta.json.JsonReaderFactory;
+import jakarta.json.stream.JsonParser;
 
-public final class JakartaParser implements TreeParser {
+public final class JakartaParser implements TreeParser, TreeProcessor {
 
-    private final JsonReaderFactory factory;
+    private final JsonParser parser;
+    private final Deque<NodeContext> contexts;
 
-    public JakartaParser() {
-        this(Json.createReaderFactory(Map.of()));
-    }
-    
-    public JakartaParser(JsonReaderFactory factory) {
-        this.factory = factory;
+    private NodeType nodeType;
+    private NodeContext context;
+
+    public JakartaParser(JsonParser parser) {
+        this.parser = parser;
+        this.contexts = new ArrayDeque<NodeContext>();
+        this.nodeType = null;
+        contexts.push(NodeContext.ROOT);
     }
 
     @Override
-    public Tree parse(InputStream is) throws TreeIOException {
-        try (final var reader = factory.createReader(is, Charset.defaultCharset())) {
-            return new Tree(reader.readValue(), JakartaAdapter.instance());
-        } catch (JsonException | IllegalStateException e) {
+    public Features features() {
+        return JakartaAdapter.FEATURES;
+    }
+
+    @Override
+    public Event next() throws TreeIOException {
+
+        if (!parser.hasNext()) {
+            nodeType = null;
+            context = contexts.peek();
+            return null;
+        }
+
+        this.context = contexts.peek();
+
+        try {
+            var lastEvent = parser.next();
+            return switch (lastEvent) {
+            case START_OBJECT -> {
+                contexts.push(NodeContext.ENTRY_KEY);
+                nodeType = NodeType.MAP;
+                yield Event.BEGIN_MAP;
+            }
+            case END_OBJECT -> {
+                contexts.pop();
+                this.context = contexts.peek();
+                switchMapContext();
+                nodeType = NodeType.MAP;
+                yield Event.END_MAP;
+            }
+            case START_ARRAY -> {
+                contexts.push(NodeContext.ELEMENT);
+                nodeType = NodeType.SEQUENCE;
+                yield Event.BEGIN_SEQUENCE;
+            }
+            case END_ARRAY -> {
+                contexts.pop();
+                this.context = contexts.peek();
+                switchMapContext();
+                nodeType = NodeType.SEQUENCE;
+                yield Event.END_SEQUENCE;
+            }
+            case VALUE_NULL -> {
+                switchMapContext();
+                nodeType = NodeType.NULL;
+                yield Event.SCALAR;
+            }
+            case VALUE_TRUE -> {
+                switchMapContext();
+                nodeType = NodeType.TRUE;
+                yield Event.SCALAR;
+            }
+            case VALUE_FALSE -> {
+                switchMapContext();
+                nodeType = NodeType.FALSE;
+                yield Event.SCALAR;
+            }
+            case VALUE_NUMBER -> {
+                switchMapContext();
+                nodeType = NodeType.NUMBER;
+                yield Event.SCALAR;
+            }
+            case KEY_NAME, VALUE_STRING -> {
+                switchMapContext();
+                nodeType = NodeType.STRING;
+                yield Event.SCALAR;
+            }
+            };
+
+        } catch (JsonException e) {
             throw new TreeIOException(e);
         }
+    }
+
+    @Override
+    public Number numberValue() throws TreeIOException {
+        return parser.isIntegralNumber()
+                ? parser.getLong()
+                : parser.getBigDecimal();
+    }
+
+    @Override
+    public String stringValue() throws TreeIOException {
+        return parser.getString();
+    }
+
+    @Override
+    public byte[] binaryValue() throws TreeIOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public NodeType nodeType() {
+        return nodeType;
+    }
+
+    @Override
+    public NodeContext context() {
+        return context;
+    }
+
+    private void switchMapContext() {
+        if (contexts.peek() == NodeContext.ENTRY_KEY) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_VALUE);
+        } else if (contexts.peek() == NodeContext.ENTRY_VALUE) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_KEY);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return JakartaParser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";
     }
 }
