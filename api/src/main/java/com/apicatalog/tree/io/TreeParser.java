@@ -1,5 +1,8 @@
 package com.apicatalog.tree.io;
 
+import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.NodeType;
+
 /**
  * Provides a uniform, performant, pull-based streaming abstraction for parsing
  * tree-like data structures. This interface decouples the process of reading a
@@ -17,69 +20,13 @@ package com.apicatalog.tree.io;
 public interface TreeParser {
 
     /**
-     * Represents the structural and scalar components encountered during the
-     * parsing of a tree structure.
-     */
-    public enum Token {
-        /**
-         * Indicates the start of a map structure.
-         */
-        BEGIN_MAP,
-
-        /**
-         * Indicates the end of a map structure.
-         */
-        END_MAP,
-
-        /**
-         * Indicates the start of an ordered sequence structure.
-         */
-        BEGIN_SEQUENCE,
-
-        /**
-         * Indicates the end of an ordered sequence structure.
-         */
-        END_SEQUENCE,
-
-        /**
-         * Indicates a literal null value.
-         */
-        NULL,
-
-        /**
-         * Indicates a boolean true literal.
-         */
-        TRUE,
-
-        /**
-         * Indicates a boolean false literal.
-         */
-        FALSE,
-
-        /**
-         * Indicates a numeric value.
-         */
-        NUMBER,
-
-        /**
-         * Indicates a text string.
-         */
-        STRING,
-
-        /**
-         * Indicates a binary data payload.
-         */
-        BINARY
-    }
-
-    /**
      * Advances the parser to the next token in the stream and returns its type.
      *
-     * @return the next structural or scalar {@link Token} in the sequence, or null
+     * @return the next structural or scalar {@link Event} in the sequence, or null
      *         if the end of the input (EOF) has been reached.
      * @throws TreeIOException
      */
-    Token nextToken() throws TreeIOException;
+    Event next() throws TreeIOException;
 
     /**
      * Returns the numeric value associated with the current token position.
@@ -116,5 +63,8 @@ public interface TreeParser {
      * @throws TreeIOException if an I/O error occurs while retrieving the value.
      */
     byte[] getBinary() throws TreeIOException;
+
+    /** Gets the node type of the current node. */
+    NodeType nodeType();
 
 }

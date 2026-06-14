@@ -3,6 +3,8 @@ package com.apicatalog.tree.io;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.apicatalog.tree.io.Tree.NodeContext;
+
 /**
  * Provides a uniform, performant, event-based abstraction for generating
  * tree-like data structures. This interface decouples the process of describing
@@ -12,7 +14,7 @@ import java.math.BigInteger;
  * This interface is explicitly designed to enable completely stateless,
  * stack-free generator implementations. To eliminate internal state tracking or
  * stacks within the generator, the responsibility of tracking the structural
- * hierarchy is shifted entirely to the caller. The {@link Context} passed into
+ * hierarchy is shifted entirely to the caller. The {@link NodeContext} passed into
  * each method originates from the processing or traversal of a source tree
  * structure (e.g., a tree reader, walker, or visitor). This allows the
  * structural state to be piped directly from the source tracking mechanism into
@@ -28,34 +30,6 @@ import java.math.BigInteger;
  */
 public interface TreeGenerator extends TreeProcessor {
 
-    /**
-     * Defines the structural role of the token or value being emitted. Ordinarily
-     * originates from the structural state of the source tree during traversal,
-     * allowing a stack-free generator to map the incoming node accurately.
-     */
-    public enum Context {
-        /**
-         * Indicates the node is the top-level root of the tree structure.
-         */
-        ROOT,
-
-        /**
-         * Indicates the node is an element within an ordered sequence or array.
-         */
-        ELEMENT,
-
-        /**
-         * Indicates the node functions as a key within a map or object structure.
-         */
-        ENTRY_KEY,
-
-        /**
-         * Indicates the node functions as a value associated with a key within a map or
-         * object structure.
-         */
-        ENTRY_VALUE
-    }
-
     // --- scalars ---
 
     /**
@@ -67,7 +41,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void nullValue(Context context) throws TreeIOException;
+    void nullValue(NodeContext context) throws TreeIOException;
 
     /**
      * Adds a boolean value to the tree.
@@ -79,7 +53,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void booleanValue(Context context, boolean value) throws TreeIOException;
+    void booleanValue(NodeContext context, boolean value) throws TreeIOException;
 
     /**
      * Adds a string value to the tree.
@@ -91,7 +65,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void stringValue(Context context, String value) throws TreeIOException;
+    void stringValue(NodeContext context, String value) throws TreeIOException;
 
     /**
      * Adds a generic numeric value by routing it to the appropriate typed method.
@@ -105,7 +79,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                                  supported.
      * @throws IllegalStateException
      */
-    default void numericValue(Context context, Number value) throws TreeIOException {
+    default void numberValue(NodeContext context, Number value) throws TreeIOException {
         switch (value) {
         case Short s -> numericValue(context, (long) s);
         case Integer i -> numericValue(context, (long) i);
@@ -133,7 +107,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void numericValue(Context context, BigInteger value) throws TreeIOException;
+    void numericValue(NodeContext context, BigInteger value) throws TreeIOException;
 
     /**
      * Adds a long integer value.
@@ -145,7 +119,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    default void numericValue(Context context, long value) throws TreeIOException {
+    default void numericValue(NodeContext context, long value) throws TreeIOException {
         numericValue(context, BigInteger.valueOf(value));
     }
 
@@ -159,7 +133,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    default void numericValue(Context context, double value) throws TreeIOException {
+    default void numericValue(NodeContext context, double value) throws TreeIOException {
         numericValue(context, BigDecimal.valueOf(value));
     }
 
@@ -173,7 +147,7 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void numericValue(Context context, BigDecimal value) throws TreeIOException;
+    void numericValue(NodeContext context, BigDecimal value) throws TreeIOException;
 
     /**
      * Adds a binary data value to the specified context.
@@ -185,14 +159,14 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void binaryValue(Context context, byte[] value) throws TreeIOException;
+    void binaryValue(NodeContext context, byte[] value) throws TreeIOException;
 
     // --- structures --
 
     /**
      * Begins a new map (or object) structure within the given context. Every call
      * to this method must be matched by a corresponding call to
-     * {@link #endMap(Context)}.
+     * {@link #endMap(NodeContext)}.
      *
      * @param context the structural context originating from the source tree
      *                traversal.
@@ -200,11 +174,11 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void beginMap(Context context) throws TreeIOException;
+    void beginMap(NodeContext context) throws TreeIOException;
 
     /**
      * Ends the current map structure. This call must close the scope opened by the
-     * corresponding {@link #beginMap(Context)} call.
+     * corresponding {@link #beginMap(NodeContext)} call.
      *
      * @param context the structural context originating from the source tree
      *                traversal.
@@ -212,12 +186,12 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void endMap(Context context) throws TreeIOException;
+    void endMap(NodeContext context) throws TreeIOException;
 
     /**
      * Begins a new list, array, or sequence structure within the given context.
      * Every call to this method must be matched by a corresponding call to
-     * {@link #endSequence(Context)}.
+     * {@link #endSequence(NodeContext)}.
      *
      * @param context the structural context originating from the source tree
      *                traversal.
@@ -225,11 +199,11 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void beginSequence(Context context) throws TreeIOException;
+    void beginSequence(NodeContext context) throws TreeIOException;
 
     /**
      * Ends the current sequence structure. This call must close the scope opened by
-     * the corresponding {@link #beginSequence(Context)} call.
+     * the corresponding {@link #beginSequence(NodeContext)} call.
      *
      * @param context the structural context originating from the source tree
      *                traversal.
@@ -237,5 +211,5 @@ public interface TreeGenerator extends TreeProcessor {
      *                               materialization.
      * @throws IllegalStateException
      */
-    void endSequence(Context context) throws TreeIOException;
+    void endSequence(NodeContext context) throws TreeIOException;
 }

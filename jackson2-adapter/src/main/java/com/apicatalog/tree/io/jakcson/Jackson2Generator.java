@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -69,8 +70,8 @@ public class Jackson2Generator implements TreeGenerator {
      * @throws TreeIOException
      */
     @Override
-    public void beginMap(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void beginMap(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -88,8 +89,8 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginSequence(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void beginSequence(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }        
         try {
@@ -107,7 +108,7 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void endMap(Context context) throws TreeIOException {
+    public void endMap(NodeContext context) throws TreeIOException {
         try {
             writer.writeEndObject();
         } catch (IOException e) {
@@ -116,7 +117,7 @@ public class Jackson2Generator implements TreeGenerator {
     }
     
     @Override
-    public void endSequence(Context context) throws TreeIOException {
+    public void endSequence(NodeContext context) throws TreeIOException {
         try {
             writer.writeEndArray();
         } catch (IOException e) {
@@ -131,8 +132,8 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void nullValue(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -150,8 +151,8 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(Context context, boolean value) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void booleanValue(NodeContext context, boolean value) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -169,9 +170,9 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(Context context, String value) throws TreeIOException {
+    public void stringValue(NodeContext context, String value) throws TreeIOException {
         try {
-            if (context == Context.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeFieldName(value);
                 return;
             }
@@ -188,9 +189,9 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, long value) throws TreeIOException {
+    public void numericValue(NodeContext context, long value) throws TreeIOException {
         try {
-            if (context == Context.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeFieldId(value);
                 return;
             }
@@ -207,9 +208,9 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, BigInteger value) throws TreeIOException {
+    public void numericValue(NodeContext context, BigInteger value) throws TreeIOException {
         try {
-            if (context == Context.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeFieldId(value.longValueExact());
                 return;
             }
@@ -226,8 +227,8 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, double value) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void numericValue(NodeContext context, double value) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -244,9 +245,9 @@ public class Jackson2Generator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, BigDecimal value) throws TreeIOException {
+    public void numericValue(NodeContext context, BigDecimal value) throws TreeIOException {
         try {
-            if (context == Context.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeFieldId(value.longValueExact());
                 return;
             }
@@ -267,7 +268,7 @@ public class Jackson2Generator implements TreeGenerator {
      * @throws UnsupportedOperationException always
      */
     @Override
-    public void binaryValue(Context context, byte[] value) throws TreeIOException {
+    public void binaryValue(NodeContext context, byte[] value) throws TreeIOException {
         throw new UnsupportedOperationException("JSON does not support a native binary type.");
     }
 }

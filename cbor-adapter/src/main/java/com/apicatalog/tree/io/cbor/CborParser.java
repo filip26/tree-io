@@ -1,6 +1,8 @@
 package com.apicatalog.tree.io.cbor;
 
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
@@ -29,7 +31,7 @@ public class CborParser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Token nextToken() throws TreeIOException {
+    public Event next() throws TreeIOException {
         
         
         // TODO Auto-generated method stub
@@ -54,5 +56,9 @@ public class CborParser implements TreeParser, TreeProcessor {
         return null;
     }
 
-
+    @Override
+    public NodeType nodeType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

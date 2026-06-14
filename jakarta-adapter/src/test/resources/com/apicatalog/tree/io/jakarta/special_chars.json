@@ -1,6 +1,6 @@
 {
-  "quotes": "\"double\" and 'single'",
-  "slashes": "backslash \\\\ forwardslash /",
-  "controls": "line1\nline2\ttabbed",
-  "unicode": "Café ☕ 世界 🌍"
+    "quotes": "\"double\" and 'single'",
+    "slashes": "backslash \\\\ forwardslash /",
+    "controls": "line1\nline2\ttabbed",
+    "unicode": "Café ☕ 世界 🌍"
 }

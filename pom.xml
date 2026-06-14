@@ -24,7 +24,7 @@
         <module>api</module>
         <module>jakarta-adapter</module>
         <module>jackson2-adapter</module>
-        <module>cbor-adapter</module>
+  <!--      <module>cbor-adapter</module>-->
     </modules>
     
     <build>

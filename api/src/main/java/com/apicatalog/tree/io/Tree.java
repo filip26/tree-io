@@ -11,21 +11,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.TreeGenerator.Context;
-import com.apicatalog.tree.io.java.NativeTreeGenerator;
-import com.apicatalog.tree.io.java.NativeTreeTraversal;
+import com.apicatalog.tree.io.java.JavaTreeGenerator;
+import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
 public final class Tree {
 
     public static Object read(TreeParser parser) throws TreeIOException {
-        var generator = new NativeTreeGenerator();
+        var generator = new JavaTreeGenerator();
         translate(parser, generator);
         return generator.get();
     }
 
     public static void write(Object node, TreeGenerator generator) throws TreeIOException {
-        var traversal = new NativeTreeTraversal();
+        var traversal = new JavaTreeTraversal();
         traversal.node(node);
         translate(traversal, generator);
     }
@@ -63,118 +61,155 @@ public final class Tree {
                 continue;
 
             case SCALAR:
-                break;
+                switch (traversal.node()) {
+                case null -> generator.nullValue(traversal.context());
+                case Boolean bool -> generator.booleanValue(traversal.context(), bool);
+                case String string -> generator.stringValue(traversal.context(), string);
+                case Number number -> generator.numberValue(traversal.context(), number);
+                case byte[] bytes -> generator.binaryValue(traversal.context(), bytes);
 
-            case END:
+                default -> throw new IllegalArgumentException(
+                        """
+                        Unexpected node type=%s, value=%s"
+                        """.formatted(traversal.node().getClass(), traversal.node()));
+                }
+                continue;
+
+            case null:
 //                if (traversal.dept depth > 0) {
 //                    throw new IllegalStateException("The traversed tree is malformed. A map or a collection was not properly closed.");
 //                }
                 return;
-            }
-
-            switch (traversal.node()) {
-            case null -> generator.nullValue(traversal.context());
-            case Boolean bool -> generator.booleanValue(traversal.context(), bool);
-            case String string -> generator.stringValue(traversal.context(), string);
-            case Number number -> generator.numericValue(traversal.context(), number);
-            case byte[] bytes -> generator.binaryValue(traversal.context(), bytes);
-
-            default -> throw new IllegalArgumentException(
-                    """
-                    Unexpected node type=%s, value=%s"
-                    """.formatted(traversal.node().getClass(), traversal.node()));
             }
         }
     }
 
     public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
 
-        var stack = new ArrayDeque<Context>();
-        stack.push(Context.ROOT);
+        var stack = new ArrayDeque<NodeContext>();
+        stack.push(NodeContext.ROOT);
 
-        var token = parser.nextToken();
+        var event = parser.next();
 
-        while (token != null) {
+        while (event != null) {
+            System.out.println("1: " + event + ", context=" + stack);
 
-            switch (token) {
+            switch (event) {
             case BEGIN_MAP:
                 generator.beginMap(stack.peek());
-                stack.push(Context.ENTRY_KEY);
+                stack.push(NodeContext.ENTRY_KEY);
                 break;
 
             case END_MAP:
-                if (stack.pop() != Context.ENTRY_VALUE) {
+                System.out.println("END_MAP: " + stack);
+                if (stack.pop() != NodeContext.ENTRY_KEY) {
                     throw new IllegalStateException();
                 }
                 generator.endMap(stack.peek());
-                if (stack.peek() == Context.ENTRY_KEY) {
+                if (stack.peek() == NodeContext.ENTRY_KEY) {
                     stack.pop();
-                    stack.push(Context.ENTRY_VALUE);
+                    stack.push(NodeContext.ENTRY_VALUE);
+                } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                    stack.pop();
+                    stack.push(NodeContext.ENTRY_KEY);
                 }
                 break;
 
             case BEGIN_SEQUENCE:
                 generator.beginSequence(stack.peek());
-                stack.push(Context.ELEMENT);
+                stack.push(NodeContext.ELEMENT);
                 break;
 
             case END_SEQUENCE:
-                if (stack.pop() != Context.ELEMENT) {
+                if (stack.pop() != NodeContext.ELEMENT) {
                     throw new IllegalStateException();
                 }
                 generator.endSequence(stack.peek());
-                if (stack.peek() == Context.ENTRY_KEY) {
+                if (stack.peek() == NodeContext.ENTRY_KEY) {
                     stack.pop();
-                    stack.push(Context.ENTRY_VALUE);
+                    stack.push(NodeContext.ENTRY_VALUE);
+                } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                    stack.pop();
+                    stack.push(NodeContext.ENTRY_KEY);
                 }
                 break;
 
-            case NULL:
-                generator.nullValue(stack.peek());
-                break;
+            case SCALAR:
+                switch (parser.nodeType()) {
+                case NULL:
+                    generator.nullValue(stack.peek());
+                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
 
-            case TRUE:
-                generator.booleanValue(stack.peek(), true);
-                break;
+                case TRUE:
+                    generator.booleanValue(stack.peek(), true);
+                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
 
-            case FALSE:
-                generator.booleanValue(stack.peek(), false);
-                break;
+                case FALSE:
+                    generator.booleanValue(stack.peek(), false);
+                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
 
-            case NUMBER:
-                generator.numericValue(stack.peek(), parser.getNumber());
-                if (stack.peek() == Context.ENTRY_KEY) {
-                    stack.pop();
-                    stack.push(Context.ENTRY_VALUE);
-                }
-                break;
+                case NUMBER:
+                    System.out.println("N " + parser.getNumber());
+                    generator.numberValue(stack.peek(), parser.getNumber());
+                    if (stack.peek() == NodeContext.ENTRY_KEY) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_VALUE);
+                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
 
-            case STRING:
-                generator.stringValue(stack.peek(), parser.getString());
-                if (stack.peek() == Context.ENTRY_KEY) {
-                    stack.pop();
-                    stack.push(Context.ENTRY_VALUE);
-                }
-                break;
+                case STRING:
+                    System.out.println("S " + parser.getString());
+                    generator.stringValue(stack.peek(), parser.getString());
+                    if (stack.peek() == NodeContext.ENTRY_KEY) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_VALUE);
+                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
 
-            case BINARY:
-                generator.binaryValue(stack.peek(), parser.getBinary());
-                if (stack.peek() == Context.ENTRY_KEY) {
-                    stack.pop();
-                    stack.push(Context.ENTRY_VALUE);
+                case BINARY:
+                    generator.binaryValue(stack.peek(), parser.getBinary());
+                    if (stack.peek() == NodeContext.ENTRY_KEY) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_VALUE);
+                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
+                        stack.pop();
+                        stack.push(NodeContext.ENTRY_KEY);
+                    }
+                    break;
+
+                default:
+                    throw new IllegalStateException();
                 }
                 break;
             }
             ;
 
-            token = parser.nextToken();
+            event = parser.next();
         }
 
-        if (stack.peek() != Context.ROOT) {
+        if (stack.peek() != NodeContext.ROOT) {
             throw new IllegalStateException();
         }
     }
-    
+
     // --- Convenience & Type Coercion Methods ---
 
     /**
@@ -222,7 +257,7 @@ public final class Tree {
         }
         return Stream.of(node);
     }
-    
+
     /**
      * Returns a string representation of the node, coercing non-string scalar types
      * where applicable.
@@ -269,7 +304,6 @@ public final class Tree {
         throw new IllegalArgumentException();
     }
 
-
     public static Collection<?> asCollection(Object node) {
         return node instanceof Collection col
                 ? col
@@ -277,14 +311,14 @@ public final class Tree {
                         ? List.of(node)
                         : List.of();
     }
-    
+
     public static boolean isIntegral(Object node) {
         return node != null
                 && (node instanceof Integer
                         || node instanceof Long
                         || node instanceof BigInteger);
     }
-    
+
     public static boolean isNode(Object node) {
         return node == null
                 || node instanceof String
@@ -327,41 +361,47 @@ public final class Tree {
         if (node instanceof byte[]) {
             return NodeType.BINARY;
         }
-        if (node instanceof Tree) {
-            return NodeType.TREE;
-        }
 
         throw new IllegalArgumentException("Unrecognized node type='" + node.getClass() + ", value=" + node + "'.");
     }
 
+    public enum Event {
+        BEGIN_MAP,
+        END_MAP,
+        BEGIN_SEQUENCE,
+        END_SEQUENCE,
+        SCALAR;
+    }
+
     /**
-     * Enumeration of supported node types within a {@code PolyMorph} tree
-     * structure.
-     * <p>
-     * A {@code NodeType} describes the semantic kind of a node, distinguishing
-     * between scalar values (e.g. string, number, boolean) and structural
-     * containers (e.g. map, collection, or polymorphic wrapper).
-     * </p>
-     * <p>
-     * {@link #TREE} represents an ad-hoc, heterogeneous wrapper node that can
-     * encapsulate another node originating from a different data model or library.
-     * This enables uniform traversal and comparison of mixed-format trees.
-     * </p>
-     *
-     * @see TreeAdapter
-     * @see com.apicatalog.tree.io.Tree
+     * Defines the structural role of the token or value being emitted. Ordinarily
+     * originates from the structural state of the source tree during traversal,
+     * allowing a stack-free generator to map the incoming node accurately.
      */
-    @Deprecated
-    public enum NodeType {
+    public enum NodeContext {
+        /**
+         * Indicates the node is the top-level root of the tree structure.
+         */
+        ROOT,
 
         /**
-         * Polymorphic wrapper node enabling heterogeneous access across formats.
-         * <p>
-         * An adapted node acts as an adapter-level bridge between different underlying
-         * object models, allowing a mixed tree to be processed uniformly.
-         * </p>
+         * Indicates the node is an element within an ordered sequence or array.
          */
-        TREE(false),
+        ELEMENT,
+
+        /**
+         * Indicates the node functions as a key within a map or object structure.
+         */
+        ENTRY_KEY,
+
+        /**
+         * Indicates the node functions as a value associated with a key within a map or
+         * object structure.
+         */
+        ENTRY_VALUE
+    }
+
+    public enum NodeType {
 
         /**
          * Mapping structure of key-value pairs, such as a JSON object or
@@ -427,7 +467,7 @@ public final class Tree {
          * @return {@code true} if the node is structural (non-scalar)
          */
         public boolean isStructure() {
-            return !scalar && this != TREE;
+            return !scalar;
         }
     }
 

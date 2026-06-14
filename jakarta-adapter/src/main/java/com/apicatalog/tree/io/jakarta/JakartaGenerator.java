@@ -5,9 +5,10 @@ import java.math.BigInteger;
 import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.java.NativeTreeTraversal;
+import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
 import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
@@ -16,7 +17,7 @@ import jakarta.json.stream.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link NativeTreeTraversal} and
+ * This class implements both {@link JavaTreeTraversal} and
  * {@link TreeGenerator}, enabling it to function as a self-contained
  * serialization engine. It traverses a source structure (via its
  * {@code NodeVisitor} parent) and consumes its own traversal events (via its
@@ -66,23 +67,6 @@ public class JakartaGenerator implements TreeGenerator {
         this.encoder = encoder;
     }
 
-//    /**
-//     * DETACH FROM TreeTraversal
-//     * 
-//     * The primary entry point for serialization. Traverses the given source node
-//     * and writes the corresponding JSON structure to the underlying
-//     * {@link JsonGenerator}.
-//     *
-//     * @param node    the source root node to traverse
-//     * @return the underlying {@link JsonGenerator} for further use if needed
-//     * @throws TreeIOException if an error occurs during writing
-//     */
-//    @Deprecated
-//    public JsonGenerator node(Object node) throws TreeIOException {
-//        root(node).generate(this);
-//        return writer;
-//    }
-
     /**
      * {@inheritDoc}
      * <p>
@@ -90,8 +74,8 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void nullValue(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void nullValue(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -109,8 +93,8 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void booleanValue(Context context, boolean node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void booleanValue(NodeContext context, boolean node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -129,9 +113,10 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void stringValue(Context context, String node) throws TreeIOException {
+    public void stringValue(NodeContext context, String node) throws TreeIOException {
+        System.out.println("writeString " + node + ", " + context);
         try {
-            if (context == Context.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY) {
                 writer.writeKey(node);
                 return;
             }
@@ -149,8 +134,8 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, long node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void numericValue(NodeContext context, long node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -167,27 +152,8 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, BigInteger node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
-            throw new IllegalStateException();
-        }
-        try {
-            writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * Writes a JSON number.
-     * </p>
-     */
-    @Override
-    public void numericValue(Context context, double node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void numericValue(NodeContext context, BigInteger node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -205,8 +171,27 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void numericValue(Context context, BigDecimal node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void numericValue(NodeContext context, double node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
+            throw new IllegalStateException();
+        }
+        try {
+            writer.write(node);
+        } catch (JsonException e) {
+            throw new TreeIOException(e);
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Writes a JSON number.
+     * </p>
+     */
+    @Override
+    public void numericValue(NodeContext context, BigDecimal node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -227,8 +212,8 @@ public class JakartaGenerator implements TreeGenerator {
      *                                       construction
      */
     @Override
-    public void binaryValue(Context context, byte[] node) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void binaryValue(NodeContext context, byte[] node) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         if (encoder == null) {
@@ -248,8 +233,8 @@ public class JakartaGenerator implements TreeGenerator {
      * </p>
      */
     @Override
-    public void beginMap(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void beginMap(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -268,8 +253,8 @@ public class JakartaGenerator implements TreeGenerator {
      * @throws TreeIOException
      */
     @Override
-    public void beginSequence(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void beginSequence(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -289,8 +274,8 @@ public class JakartaGenerator implements TreeGenerator {
      * @throws TreeIOException
      */
     @Override
-    public void endMap(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void endMap(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -301,8 +286,8 @@ public class JakartaGenerator implements TreeGenerator {
     }
 
     @Override
-    public void endSequence(Context context) throws TreeIOException {
-        if (context == Context.ENTRY_KEY) {
+    public void endSequence(NodeContext context) throws TreeIOException {
+        if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {

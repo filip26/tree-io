@@ -2,21 +2,12 @@ package com.apicatalog.tree.io;
 
 import java.util.function.Consumer;
 
-import com.apicatalog.tree.io.TreeGenerator.Context;
-import com.apicatalog.tree.io.java.NativeTreeTraversal;
+import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.NodeContext;
 
 public interface TreeTraversal {
 
-    public enum Event {
-        BEGIN_MAP,
-        END_MAP,
-        BEGIN_SEQUENCE,
-        END_SEQUENCE,
-        SCALAR,
-        END;
-    }
-
-    void traverse(Object node, final Consumer<NativeTreeTraversal> consumer);
+    void traverse(Object node, final Consumer<TreeTraversal> consumer);
     
     /**
      * Advances the traversal to the next node in the depth-first sequence.
@@ -46,5 +37,5 @@ public interface TreeTraversal {
     Object node();
 
     /** Gets the context of the current node. */
-    public Context context();
+    public NodeContext context();
 }

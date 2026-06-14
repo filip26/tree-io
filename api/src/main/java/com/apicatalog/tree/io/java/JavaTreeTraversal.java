@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-import com.apicatalog.tree.io.TreeGenerator.Context;
-import com.apicatalog.tree.io.TreeParser.Token;
+import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeTraversal;
 
 /**
@@ -18,7 +18,7 @@ import com.apicatalog.tree.io.TreeTraversal;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class NativeTreeTraversal implements TreeTraversal {
+public class JavaTreeTraversal implements TreeTraversal {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -40,18 +40,17 @@ public class NativeTreeTraversal implements TreeTraversal {
 
     protected Object currentNode;
 
-    protected Token currentToken;
-    protected Context currentNodeContext;
+    protected NodeContext currentNodeContext;
 
-    public NativeTreeTraversal() {
+    public JavaTreeTraversal() {
         this(new ArrayDeque<>(), null);
     }
 
-    public NativeTreeTraversal(Comparator<Entry<?, ?>> entryComparator) {
+    public JavaTreeTraversal(Comparator<Entry<?, ?>> entryComparator) {
         this(new ArrayDeque<>(), entryComparator);
     }
 
-    protected NativeTreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    protected JavaTreeTraversal(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
@@ -63,13 +62,13 @@ public class NativeTreeTraversal implements TreeTraversal {
     }
 
     @Override
-    public void traverse(Object node, final Consumer<NativeTreeTraversal> consumer) {
+    public void traverse(Object node, final Consumer<TreeTraversal> consumer) {
 
         node(node);
 
         var event = next();
 
-        while (event != Event.END) {
+        while (event != null) {
             consumer.accept(this);
             event = next();
         }
@@ -79,7 +78,7 @@ public class NativeTreeTraversal implements TreeTraversal {
     public Event next() {
 
         if (stack.isEmpty()) {
-            return Event.END;
+            return null;
         }
 
         if (maxVisited > 0 && maxVisited < visited) {
@@ -103,7 +102,7 @@ public class NativeTreeTraversal implements TreeTraversal {
             if (!it.hasNext()) {
                 stack.pop(); // remove iterator
                 currentNode = stack.pop();
-                currentNodeContext = (Context) stack.pop();
+                currentNodeContext = (NodeContext) stack.pop();
                 depth -= 1;
                 return (Event) stack.pop();
             }
@@ -112,7 +111,7 @@ public class NativeTreeTraversal implements TreeTraversal {
 
             if (item instanceof Map.Entry<?, ?> entry) {
                 // process map entry
-                currentNodeContext = Context.ENTRY_KEY;
+                currentNodeContext = NodeContext.ENTRY_KEY;
 
                 stack.push(entry);
 
@@ -121,13 +120,13 @@ public class NativeTreeTraversal implements TreeTraversal {
 
             } else {
                 // process collection element
-                currentNodeContext = Context.ELEMENT;
+                currentNodeContext = NodeContext.ELEMENT;
                 currentNode = item;
             }
 
         } else if (item instanceof Map.Entry<?, ?> entry) {
             // process property value
-            currentNodeContext = Context.ENTRY_VALUE;
+            currentNodeContext = NodeContext.ENTRY_VALUE;
             currentNode = entry.getValue();
             stack.pop();
 
@@ -162,19 +161,20 @@ public class NativeTreeTraversal implements TreeTraversal {
             depth += 1;
             return Event.BEGIN_MAP;
 
+        case null:
         default:
             return Event.SCALAR;
         }
     }
 
     @Override
-    public NativeTreeTraversal node(Object node) {
+    public JavaTreeTraversal node(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
         this.currentNode = node;
-        this.currentNodeContext = Context.ROOT;
+        this.currentNodeContext = NodeContext.ROOT;
         return this;
     }
 
@@ -190,7 +190,7 @@ public class NativeTreeTraversal implements TreeTraversal {
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      * @return
      */
-    public NativeTreeTraversal maxDepth(int maxDepth) {
+    public JavaTreeTraversal maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
@@ -212,7 +212,7 @@ public class NativeTreeTraversal implements TreeTraversal {
      *                        {@link #UNLIMITED_NODES} for no limit.
      * @return
      */
-    public NativeTreeTraversal maxVisited(int maxVisitedNodes) {
+    public JavaTreeTraversal maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
         return this;
     }
@@ -233,7 +233,7 @@ public class NativeTreeTraversal implements TreeTraversal {
     }
 
     @Override
-    public Context context() {
+    public NodeContext context() {
         return currentNodeContext;
     }
 }

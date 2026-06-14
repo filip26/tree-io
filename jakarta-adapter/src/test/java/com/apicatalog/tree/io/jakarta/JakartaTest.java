@@ -4,20 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URL;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -34,44 +31,26 @@ import jakarta.json.stream.JsonGeneratorFactory;
 @TestMethodOrder(OrderAnnotation.class)
 class JakartaTest {
 
-    // Enable pretty printing
-    final static Map<String, Object> CONFIG = new HashMap<>();
-
-    static {
-        CONFIG.put(JsonGenerator.PRETTY_PRINTING, true);
-    }
-
-    final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(CONFIG);
+    final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(
+            Map.of(JsonGenerator.PRETTY_PRINTING, true));
 
     @ParameterizedTest
     @MethodSource({ "resources" })
-    @Order(0)
-    void testWrite(String name) throws TreeIOException {
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-
-        try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
-            JakartaGenerator writer = new JakartaGenerator(generator);
-            Tree.write(getJsonResource(name), writer);
-        }
-        assertEquals(getJsonResource(name), getJson(bos.toString()));
-    }
-
-    @ParameterizedTest
-    @MethodSource({ "resources" })
-    @Order(1)
-    void testRead(String name) throws TreeIOException, IOException {
+    void testReadWrite(String name) throws TreeIOException, IOException {
         var parser = new JakartaParser(Json.createParser(new StringReader(getResource(name))));
         var result = Tree.read(parser);
 
-//        var result = Tree.read(null)  JakartaMaterializer.node(getJsonResource(name), JakartaAdapter.instance());
-        assertEquals(getJsonResource(name), result);
+        var writer = new StringWriter();
+
+        try (JsonGenerator generator = FACTORY.createGenerator(writer)) {
+            Tree.write(result, new JakartaGenerator(generator));
+        }
+
+        assertEquals(getResource(name), writer.toString());
     }
 
     static final Stream<String> resources() throws TreeIOException {
-        URL url = JakartaTest.class.getResource("");
-
-        return Stream.of(new File(url.getPath()).listFiles())
+        return Stream.of(new File(JakartaTest.class.getResource("").getPath()).listFiles())
                 .filter(File::isFile)
                 .map(File::getName)
                 .filter(name -> name.endsWith(".json"));
@@ -98,5 +77,4 @@ class JakartaTest {
             return reader.read();
         }
     }
-
 }
