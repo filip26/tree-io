@@ -31,7 +31,7 @@ public final class Tree {
      * A high-level utility method that fully traverses the tree and drives the
      * provided {@link TreeGenerator}. This is the primary method for tree
      * transformation, serialization, or deep cloning. It iterates through every
-     * node using {@link #next()} and emits a corresponding event to the generator.
+     * node using {@link TreeParser#next()} and emits a corresponding event to the generator.
      *
      * @param parser
      * @param generator the generator that will receive construction events.
