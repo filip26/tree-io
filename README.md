@@ -11,8 +11,7 @@
 - 🗂️ Multi-format support
 - 🔌 Works with Jackson, Gson, Jakarta, and other libraries
 - 🛠️ Extensible model for adding new formats and libraries
-- ⚙️ Unified traversal 
-- Composable data transformations over an immutable source
+
 
 ## 🏗️ Use Cases
 
