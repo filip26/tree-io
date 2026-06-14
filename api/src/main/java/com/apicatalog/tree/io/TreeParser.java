@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io;
 
 import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 
 /**
@@ -66,5 +67,8 @@ public interface TreeParser {
 
     /** Gets the node type of the current node. */
     NodeType nodeType();
+    
+    /** Gets the context of the current node. */
+    public NodeContext context();
 
 }

@@ -2,7 +2,6 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,44 +33,44 @@ public final class Tree {
      * transformation, serialization, or deep cloning. It iterates through every
      * node using {@link #next()} and emits a corresponding event to the generator.
      *
-     * @param node
+     * @param parser
      * @param generator the generator that will receive construction events.
      * @throws TreeIOException       if the generator encounters an I/O error.
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public static void translate(TreeTraversal traversal, TreeGenerator generator) throws TreeIOException {
-
+    public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
         while (true) {
-            switch (traversal.next()) {
+            switch (parser.next()) {
             case BEGIN_MAP:
-                generator.beginMap(traversal.context());
+                generator.beginMap(parser.context());
                 continue;
 
             case END_MAP:
-                generator.endMap(traversal.context());
+                generator.endMap(parser.context());
                 continue;
 
             case BEGIN_SEQUENCE:
-                generator.beginSequence(traversal.context());
+                generator.beginSequence(parser.context());
                 continue;
 
             case END_SEQUENCE:
-                generator.endSequence(traversal.context());
+                generator.endSequence(parser.context());
                 continue;
 
             case SCALAR:
-                switch (traversal.node()) {
-                case null -> generator.nullValue(traversal.context());
-                case Boolean bool -> generator.booleanValue(traversal.context(), bool);
-                case String string -> generator.stringValue(traversal.context(), string);
-                case Number number -> generator.numberValue(traversal.context(), number);
-                case byte[] bytes -> generator.binaryValue(traversal.context(), bytes);
+                switch (parser.nodeType()) {
+                case NULL -> generator.nullValue(parser.context());
+                case TRUE -> generator.booleanValue(parser.context(), true);
+                case FALSE -> generator.booleanValue(parser.context(), false);
+                case STRING -> generator.stringValue(parser.context(), parser.stringValue());
+                case NUMBER -> generator.numberValue(parser.context(), parser.numberValue());
+                case BINARY -> generator.binaryValue(parser.context(), parser.binaryValue());
 
                 default -> throw new IllegalArgumentException(
                         """
-                        Unexpected node type=%s, value=%s"
-                        """.formatted(traversal.node().getClass(), traversal.node()));
+                        Unexpected node type=%s"
+                        """.formatted(parser.nodeType()));
                 }
                 continue;
 
@@ -82,132 +81,10 @@ public final class Tree {
                 return;
             }
         }
-    }
 
-    public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
-
-        var stack = new ArrayDeque<NodeContext>();
-        stack.push(NodeContext.ROOT);
-
-        var event = parser.next();
-
-        while (event != null) {
-            System.out.println("1: " + event + ", context=" + stack);
-
-            switch (event) {
-            case BEGIN_MAP:
-                generator.beginMap(stack.peek());
-                stack.push(NodeContext.ENTRY_KEY);
-                break;
-
-            case END_MAP:
-                System.out.println("END_MAP: " + stack);
-                if (stack.pop() != NodeContext.ENTRY_KEY) {
-                    throw new IllegalStateException();
-                }
-                generator.endMap(stack.peek());
-                if (stack.peek() == NodeContext.ENTRY_KEY) {
-                    stack.pop();
-                    stack.push(NodeContext.ENTRY_VALUE);
-                } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                    stack.pop();
-                    stack.push(NodeContext.ENTRY_KEY);
-                }
-                break;
-
-            case BEGIN_SEQUENCE:
-                generator.beginSequence(stack.peek());
-                stack.push(NodeContext.ELEMENT);
-                break;
-
-            case END_SEQUENCE:
-                if (stack.pop() != NodeContext.ELEMENT) {
-                    throw new IllegalStateException();
-                }
-                generator.endSequence(stack.peek());
-                if (stack.peek() == NodeContext.ENTRY_KEY) {
-                    stack.pop();
-                    stack.push(NodeContext.ENTRY_VALUE);
-                } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                    stack.pop();
-                    stack.push(NodeContext.ENTRY_KEY);
-                }
-                break;
-
-            case SCALAR:
-                switch (parser.nodeType()) {
-                case NULL:
-                    generator.nullValue(stack.peek());
-                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                case TRUE:
-                    generator.booleanValue(stack.peek(), true);
-                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                case FALSE:
-                    generator.booleanValue(stack.peek(), false);
-                    if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                case NUMBER:
-                    System.out.println("N " + parser.numberValue());
-                    generator.numberValue(stack.peek(), parser.numberValue());
-                    if (stack.peek() == NodeContext.ENTRY_KEY) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_VALUE);
-                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                case STRING:
-                    System.out.println("S " + parser.stringValue());
-                    generator.stringValue(stack.peek(), parser.stringValue());
-                    if (stack.peek() == NodeContext.ENTRY_KEY) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_VALUE);
-                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                case BINARY:
-                    generator.binaryValue(stack.peek(), parser.binaryValue());
-                    if (stack.peek() == NodeContext.ENTRY_KEY) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_VALUE);
-                    } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-                        stack.pop();
-                        stack.push(NodeContext.ENTRY_KEY);
-                    }
-                    break;
-
-                default:
-                    throw new IllegalStateException();
-                }
-                break;
-            }
-            ;
-
-            event = parser.next();
-        }
-
-        if (stack.peek() != NodeContext.ROOT) {
-            throw new IllegalStateException();
-        }
+//        if (stack.peek() != NodeContext.ROOT) {
+//            throw new IllegalStateException();
+//        }
     }
 
     // --- Convenience & Type Coercion Methods ---

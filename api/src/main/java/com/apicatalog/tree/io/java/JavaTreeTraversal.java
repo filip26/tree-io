@@ -11,6 +11,9 @@ import java.util.function.Consumer;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.NodeContext;
+import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeTraversal;
 
 /**
@@ -18,7 +21,7 @@ import com.apicatalog.tree.io.TreeTraversal;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraversal implements TreeTraversal {
+public class JavaTreeTraversal implements TreeTraversal, TreeParser {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -40,6 +43,7 @@ public class JavaTreeTraversal implements TreeTraversal {
 
     protected Object currentNode;
 
+    protected NodeType currentNodeType;
     protected NodeContext currentNodeContext;
 
     public JavaTreeTraversal() {
@@ -144,6 +148,7 @@ public class JavaTreeTraversal implements TreeTraversal {
             stack.push(col);
             stack.push(col.iterator());
             depth += 1;
+            currentNodeType = NodeType.SEQUENCE;
             return Event.BEGIN_SEQUENCE;
 
         case Map<?, ?> map:
@@ -159,15 +164,29 @@ public class JavaTreeTraversal implements TreeTraversal {
             }
 
             depth += 1;
+            currentNodeType = NodeType.MAP;
             return Event.BEGIN_MAP;
 
         case null:
+            currentNodeType = NodeType.NULL;
+            return Event.SCALAR;
+            
         default:
+            currentNodeType = switch (currentNode) {
+            case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
+            case String string -> NodeType.STRING;
+            case Number number -> NodeType.NUMBER;
+            case byte[] bytes -> NodeType.BINARY;
+
+            default -> throw new IllegalStateException(
+                    """
+                    Unexpected scalar node value=%s"
+                    """.formatted(currentNode));
+            };
             return Event.SCALAR;
         }
     }
 
-    @Override
     public JavaTreeTraversal node(Object node) {
         this.stack.clear();
         this.stack.push(node);
@@ -227,7 +246,6 @@ public class JavaTreeTraversal implements TreeTraversal {
         return maxVisited;
     }
 
-    @Override
     public Object node() {
         return currentNode;
     }
@@ -235,5 +253,25 @@ public class JavaTreeTraversal implements TreeTraversal {
     @Override
     public NodeContext context() {
         return currentNodeContext;
+    }
+
+    @Override
+    public Number numberValue() throws TreeIOException {
+        return (Number)currentNode;
+    }
+
+    @Override
+    public String stringValue() throws TreeIOException {
+        return (String)currentNode;
+    }
+
+    @Override
+    public byte[] binaryValue() throws TreeIOException {
+        return (byte[])currentNode;
+    }
+
+    @Override
+    public NodeType nodeType() {
+        return currentNodeType;
     }
 }

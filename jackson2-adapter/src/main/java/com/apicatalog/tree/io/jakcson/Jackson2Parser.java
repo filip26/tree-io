@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
+import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
@@ -114,5 +115,11 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     @Override
     public NodeType nodeType() {
         return nodeType;
+    }
+    
+    @Override
+    public NodeContext context() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
