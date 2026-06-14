@@ -10,18 +10,20 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
+import com.apicatalog.tree.io.fnc.TreeTraversal;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
-import com.apicatalog.tree.io.TreeTraversal;
+import com.apicatalog.tree.io.TreeProcessor;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraversal implements TreeTraversal, TreeParser {
+public class JavaTreeTraversal implements TreeTraversal, TreeParser, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -63,6 +65,11 @@ public class JavaTreeTraversal implements TreeTraversal, TreeParser {
         this.depth = 0;
         this.currentNode = null;
         this.currentNodeContext = null;
+    }
+    
+    @Override
+    public Features features() {
+        return JavaTreeGenerator.FEATURES;
     }
 
     @Override

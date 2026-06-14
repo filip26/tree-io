@@ -1,6 +1,8 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.fnc;
 
 import java.io.InputStream;
+
+import com.apicatalog.tree.io.TreeIOException;
 
 /**
  * Provides a uniform abstraction for de-serializing tree-like data structures.
