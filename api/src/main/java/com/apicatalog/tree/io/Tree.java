@@ -221,12 +221,7 @@ public final class Tree {
         if (node instanceof Boolean) {
             return ((boolean) node) ? NodeType.TRUE : NodeType.FALSE;
         }
-        if (node instanceof Integer
-                || node instanceof Long
-                || node instanceof BigInteger
-                || node instanceof Double
-                || node instanceof BigDecimal
-                || node instanceof Float) {
+        if (node instanceof Number) {
             return NodeType.NUMBER;
         }
         if (node instanceof Map) {
