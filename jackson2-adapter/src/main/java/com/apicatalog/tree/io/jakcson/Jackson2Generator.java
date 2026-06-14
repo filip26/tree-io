@@ -3,8 +3,6 @@ package com.apicatalog.tree.io.jakcson;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
@@ -26,10 +24,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Generator implements TreeGenerator, TreeProcessor {
+public final class Jackson2Generator implements TreeGenerator, TreeProcessor {
 
-    protected final Deque<Boolean> stack;
-    protected final JsonGenerator writer;
+    private final JsonGenerator writer;
 
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}.
@@ -38,7 +35,6 @@ public class Jackson2Generator implements TreeGenerator, TreeProcessor {
      *               {@code null}
      */
     public Jackson2Generator(JsonGenerator writer) {
-        this.stack = new ArrayDeque<>();
         this.writer = writer;
     }
 
@@ -62,7 +58,6 @@ public class Jackson2Generator implements TreeGenerator, TreeProcessor {
         }
         try {
             writer.writeStartObject();
-            stack.push(true);
         } catch (IOException e) {
             throw new TreeIOException(e);
         }

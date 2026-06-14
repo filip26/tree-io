@@ -18,16 +18,16 @@ import jakarta.json.stream.JsonParser;
 public final class JakartaParser implements TreeParser, TreeProcessor {
 
     private final JsonParser parser;
-    private final Deque<NodeContext> stack;
+    private final Deque<NodeContext> contexts;
 
     private NodeType nodeType;
     private NodeContext context;
 
     public JakartaParser(JsonParser parser) {
         this.parser = parser;
-        this.stack = new ArrayDeque<NodeContext>();
+        this.contexts = new ArrayDeque<NodeContext>();
         this.nodeType = null;
-        stack.push(NodeContext.ROOT);
+        contexts.push(NodeContext.ROOT);
     }
 
     @Override
@@ -40,35 +40,35 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
 
         if (!parser.hasNext()) {
             nodeType = null;
-            context = stack.peek();
+            context = contexts.peek();
             return null;
         }
 
-        this.context = stack.peek();
+        this.context = contexts.peek();
 
         try {
             var lastEvent = parser.next();
             return switch (lastEvent) {
             case START_OBJECT -> {
-                stack.push(NodeContext.ENTRY_KEY);
+                contexts.push(NodeContext.ENTRY_KEY);
                 nodeType = NodeType.MAP;
                 yield Event.BEGIN_MAP;
             }
             case END_OBJECT -> {
-                stack.pop();
-                this.context = stack.peek();
+                contexts.pop();
+                this.context = contexts.peek();
                 switchMapContext();
                 nodeType = NodeType.MAP;
                 yield Event.END_MAP;
             }
             case START_ARRAY -> {
-                stack.push(NodeContext.ELEMENT);
+                contexts.push(NodeContext.ELEMENT);
                 nodeType = NodeType.SEQUENCE;
                 yield Event.BEGIN_SEQUENCE;
             }
             case END_ARRAY -> {
-                stack.pop();
-                this.context = stack.peek();
+                contexts.pop();
+                this.context = contexts.peek();
                 switchMapContext();
                 nodeType = NodeType.SEQUENCE;
                 yield Event.END_SEQUENCE;
@@ -133,12 +133,12 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
     }
 
     private void switchMapContext() {
-        if (stack.peek() == NodeContext.ENTRY_KEY) {
-            stack.pop();
-            stack.push(NodeContext.ENTRY_VALUE);
-        } else if (stack.peek() == NodeContext.ENTRY_VALUE) {
-            stack.pop();
-            stack.push(NodeContext.ENTRY_KEY);
+        if (contexts.peek() == NodeContext.ENTRY_KEY) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_VALUE);
+        } else if (contexts.peek() == NodeContext.ENTRY_VALUE) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_KEY);
         }
     }
     

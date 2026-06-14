@@ -1,6 +1,8 @@
 package com.apicatalog.tree.io.jakcson;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
@@ -14,11 +16,16 @@ import com.fasterxml.jackson.core.JsonParser;
 public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     private final JsonParser parser;
+    private final Deque<NodeContext> contexts;
+    
     private NodeType nodeType;
+    private NodeContext context;
 
     public Jackson2Parser(final JsonParser parser) {
         this.parser = parser;
+        this.contexts = new ArrayDeque<NodeContext>();
         this.nodeType = null;
+        contexts.push(NodeContext.ROOT);
     }
 
     @Override
@@ -28,47 +35,69 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     @Override
     public Event next() throws TreeIOException {
+        
+        this.context = contexts.peek();
+        
         try {
             return switch (parser.nextToken()) {
             case START_OBJECT -> {
+                contexts.push(NodeContext.ENTRY_KEY);
                 nodeType = NodeType.MAP;
                 yield Event.BEGIN_MAP;
             }
             case END_OBJECT -> {
+                contexts.pop();
+                this.context = contexts.peek();
+                switchMapContext();                
                 nodeType = NodeType.MAP;
                 yield Event.END_MAP;
             }
             case START_ARRAY -> {
+                contexts.push(NodeContext.ELEMENT);
                 nodeType = NodeType.SEQUENCE;
                 yield Event.BEGIN_SEQUENCE;
             }
             case END_ARRAY -> {
+                contexts.pop();
+                this.context = contexts.peek();
+                switchMapContext();
                 nodeType = NodeType.SEQUENCE;
                 yield Event.END_SEQUENCE;
             }
             case VALUE_NULL -> {
+                switchMapContext();
                 nodeType = NodeType.NULL;
                 yield Event.SCALAR;
             }
             case FIELD_NAME -> {
+                switchMapContext();
                 nodeType = NodeType.STRING;
                 yield Event.SCALAR;
             }
             case VALUE_TRUE -> {
+                switchMapContext();
                 nodeType = NodeType.TRUE;
                 yield Event.SCALAR;
             }
             case VALUE_FALSE -> {
+                switchMapContext();
                 nodeType = NodeType.FALSE;
                 yield Event.SCALAR;
             }
             case VALUE_NUMBER_FLOAT, VALUE_NUMBER_INT -> {
+                switchMapContext();
                 nodeType = NodeType.NUMBER;
                 yield Event.SCALAR;
             }
             case VALUE_STRING -> {
+                switchMapContext();
                 nodeType = NodeType.STRING;
                 yield Event.SCALAR;
+            }
+            case null -> {
+                nodeType = null;
+                context = contexts.peek();
+                yield null;
             }
             default -> throw new IllegalStateException(
                     """
@@ -119,7 +148,21 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     
     @Override
     public NodeContext context() {
-        // TODO Auto-generated method stub
-        return null;
+        return context;
+    }
+    
+    private void switchMapContext() {
+        if (contexts.peek() == NodeContext.ENTRY_KEY) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_VALUE);
+        } else if (contexts.peek() == NodeContext.ENTRY_VALUE) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_KEY);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return Jackson2Parser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";
     }
 }

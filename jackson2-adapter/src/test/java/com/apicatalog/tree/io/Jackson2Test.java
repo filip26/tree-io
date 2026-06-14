@@ -4,46 +4,43 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.apicatalog.tree.io.jakcson.Jackson2Generator;
+import com.apicatalog.tree.io.jakcson.Jackson2Reader;
+import com.apicatalog.tree.io.jakcson.Jackson2Writer;
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @TestMethodOrder(OrderAnnotation.class)
 class Jackson2Test {
 
-    final static ObjectMapper MAPPER = new ObjectMapper();
     final static JsonFactory FACTORY = JsonFactory.builder().build();
 
+    final static Jackson2Reader READER = new Jackson2Reader(FACTORY);
+    final static Jackson2Writer WRITER = new Jackson2Writer(FACTORY);
+    
     @ParameterizedTest
     @MethodSource({ "resources" })
-    @Order(0)
-    void testWrite(String name) throws IOException, TreeIOException {
+    void testReadWrite(String name) throws IOException, TreeIOException {
 
+        var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
+        
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        WRITER.write(tree, bos);
 
-        try (JsonGenerator generator = FACTORY.createGenerator(bos)) {
-            Jackson2Generator writer = new Jackson2Generator(generator);
-//            writer.node(getJsonResource(name), Jackson2Adapter.instance());
-        }
-        assertEquals(getJsonResource(name), getJson(bos.toString()));
+        assertEquals(getResource(name), bos.toString());
     }
 
     static final Stream<String> resources() throws IOException {
@@ -62,13 +59,5 @@ class Jackson2Test {
                     .lines()
                     .collect(Collectors.joining("\n"));
         }
-    }
-
-    static JsonNode getJsonResource(String name) throws IOException {
-        return MAPPER.readTree(Jackson2Test.class.getResourceAsStream(name));
-    }
-
-    static JsonNode getJson(String json) throws IOException {
-        return MAPPER.readTree(new StringReader(json));
     }
 }

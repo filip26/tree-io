@@ -1,14 +1,1 @@
-{
-  "user": {
-    "id": "U1",
-    "info": {
-      "firstName": "Dana",
-      "lastName": "Miller",
-      "address": {
-        "street": "123 Main St",
-        "city": "Metropolis",
-        "zip": "12345"
-      }
-    }
-  }
-}
+{"user":{"id":"U1","info":{"firstName":"Dana","lastName":"Miller","address":{"street":"123 Main St","city":"Metropolis","zip":"12345"}}}}

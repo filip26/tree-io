@@ -48,6 +48,7 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         return FEATURES;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void nullValue(NodeContext context) {
         // root
@@ -56,12 +57,12 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         }
         switch (context) {
         case ELEMENT:
-            ((Collection) stack.peek()).add(null);
+            ((Collection<?>) stack.peek()).add(null);
             return;
 
         case ENTRY_VALUE:
             var key = stack.pop();
-            ((Map) stack.peek()).put(key, null);
+            ((Map<Object, ?>) stack.peek()).put(key, null);
             return;
 
         case ROOT:
@@ -140,17 +141,18 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         return stack.peek();
     }
 
+    @SuppressWarnings("unchecked")
     private final void next(NodeContext context) {
         switch (context) {
         case ELEMENT:
             var element = stack.pop();
-            ((Collection) stack.peek()).add(element);
+            ((Collection<Object>) stack.peek()).add(element);
             return;
 
         case ENTRY_VALUE:
             var value = stack.pop();
             var key = stack.pop();
-            ((Map) stack.peek()).put(key, value);
+            ((Map<Object, Object>) stack.peek()).put(key, value);
             return;
 
         case ENTRY_KEY:
