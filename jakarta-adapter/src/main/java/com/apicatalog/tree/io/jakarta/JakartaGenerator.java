@@ -8,6 +8,7 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.java.JavaTreeTraversal;
 
 import jakarta.json.JsonException;
@@ -31,7 +32,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator implements TreeGenerator {
+public class JakartaGenerator implements TreeGenerator, TreeProcessor {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -47,11 +48,6 @@ public class JakartaGenerator implements TreeGenerator {
         this(writer, null);
     }
 
-    @Override
-    public Features features() {
-        return JakartaAdapter.FEATURES;
-    }
-
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}
      * with custom handling for binary data.
@@ -65,6 +61,11 @@ public class JakartaGenerator implements TreeGenerator {
     public JakartaGenerator(JsonGenerator writer, Function<byte[], String> encoder) {
         this.writer = writer;
         this.encoder = encoder;
+    }
+    
+    @Override
+    public Features features() {
+        return JakartaAdapter.FEATURES;
     }
 
     /**
@@ -114,7 +115,6 @@ public class JakartaGenerator implements TreeGenerator {
      */
     @Override
     public void stringValue(NodeContext context, String node) throws TreeIOException {
-        System.out.println("writeString " + node + ", " + context);
         try {
             if (context == NodeContext.ENTRY_KEY) {
                 writer.writeKey(node);

@@ -4,17 +4,17 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.TreeReader;
 
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParserFactory;
 
-public final class JakartaReader implements TreeReader {
+public final class JakartaReader implements TreeReader, TreeProcessor {
 
     private final JsonParserFactory factory;
 
@@ -33,15 +33,6 @@ public final class JakartaReader implements TreeReader {
     @Override
     public Object read(Reader reader) {
         return readNode(factory.createParser(reader));
-    }
-
-    protected static Object readNode(JsonParser parser) {
-        if (parser.hasNext()) {
-            var structures = new ArrayDeque<Object>();
-
-            return processEvent(parser, parser.next());
-        }
-        return null;
     }
 
     protected static Object processEvent(JsonParser parser, JsonParser.Event event) {

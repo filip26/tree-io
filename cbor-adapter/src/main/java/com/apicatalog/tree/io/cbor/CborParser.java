@@ -39,19 +39,19 @@ public class CborParser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Number getNumber() throws TreeIOException {
+    public Number numberValue() throws TreeIOException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public String getString() throws TreeIOException {
+    public String stringValue() throws TreeIOException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public byte[] getBinary() throws TreeIOException {
+    public byte[] binaryValue() throws TreeIOException {
         // TODO Auto-generated method stub
         return null;
     }

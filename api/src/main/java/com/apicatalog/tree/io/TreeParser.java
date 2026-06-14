@@ -38,7 +38,7 @@ public interface TreeParser {
      * @return the Number mapping to the current numeric token
      * @throws TreeIOException if an I/O error occurs while retrieving the value.
      */
-    Number getNumber() throws TreeIOException;
+    Number numberValue() throws TreeIOException;
 
     /**
      * Returns the string value associated with the current token position.
@@ -50,7 +50,7 @@ public interface TreeParser {
      * @return the String mapping to the current text token
      * @throws TreeIOException if an I/O error occurs while retrieving the value.
      */
-    String getString() throws TreeIOException;
+    String stringValue() throws TreeIOException;
 
     /**
      * Returns the binary data associated with the current token position.
@@ -62,7 +62,7 @@ public interface TreeParser {
      * @return a byte array containing the binary payload
      * @throws TreeIOException if an I/O error occurs while retrieving the value.
      */
-    byte[] getBinary() throws TreeIOException;
+    byte[] binaryValue() throws TreeIOException;
 
     /** Gets the node type of the current node. */
     NodeType nodeType();

@@ -6,9 +6,8 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeType;
 
 /**
- * An  implementation for the
- * {@code co.nstant.in.cbor.model.DataItem} object model, which represents CBOR
- * (Concise Binary Object Representation) data.
+ * An implementation for the {@code co.nstant.in.cbor.model.DataItem} object
+ * model, which represents CBOR (Concise Binary Object Representation) data.
  * <p>
  * This adapter allows the generic tree processing framework to read and
  * interpret CBOR structures. It is implemented as a singleton and can be
@@ -20,7 +19,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * </p>
  */
 @Deprecated
-public class CborAdapter  {
+public class CborAdapter {
 
     static final Features FEATURES = new Features(
             // keys
@@ -39,9 +38,7 @@ public class CborAdapter  {
                     NodeType.BINARY,
                     NodeType.FALSE,
                     NodeType.TRUE,
-                    NodeType.NULL),
-            // capabilities
-            null);
+                    NodeType.NULL));
 //
 //    static final CborAdapter INSTANCE = new CborAdapter();
 //

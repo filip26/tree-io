@@ -10,6 +10,7 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeProcessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
@@ -25,7 +26,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public class Jackson2Generator implements TreeGenerator {
+public class Jackson2Generator implements TreeGenerator, TreeProcessor {
 
     protected final Deque<Boolean> stack;
     protected final JsonGenerator writer;
@@ -45,21 +46,6 @@ public class Jackson2Generator implements TreeGenerator {
     public Features features() {
         return Jackson2Adapter.FEATURES;
     }
-//
-//    /**
-//     * The primary entry point for serialization. Traverses the given source node
-//     * and writes the corresponding JSON structure to the underlying
-//     * {@link JsonGenerator}.
-//     *
-//     * @param node    the source root node to traverse
-//     * @param adapter the adapter for interpreting the source node's structure
-//     * @return the underlying {@link JsonGenerator} for further use if needed
-//     * @throws TreeIOException if an error occurs during writing
-//     */
-//    public JsonGenerator node(Object node, TreeAdapter adapter) throws TreeIOException {
-//        root(node, adapter).generate(this);
-//        return writer;
-//    }
 
     /**
      * {@inheritDoc}

@@ -20,19 +20,9 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
         this.nodeType = null;
     }
 
-//    @Override
-//    public Tree parse(InputStream is) throws TreeIOException {
-//        try (final var reader = factory.createReader(is, Charset.defaultCharset())) {
-//            return new Tree(reader.readValue(), JakartaAdapter.instance());
-//        } catch (JsonException | IllegalStateException e) {
-//            throw new TreeIOException(e);
-//        }
-//    }
-
     @Override
     public Features features() {
-        // TODO Auto-generated method stub
-        return null;
+        return JakartaAdapter.FEATURES;
     }
 
     @Override
@@ -94,19 +84,19 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Number getNumber() throws TreeIOException {
+    public Number numberValue() throws TreeIOException {
         return parser.isIntegralNumber()
                 ? parser.getLong()
                 : parser.getBigDecimal();
     }
 
     @Override
-    public String getString() throws TreeIOException {
+    public String stringValue() throws TreeIOException {
         return parser.getString();
     }
 
     @Override
-    public byte[] getBinary() throws TreeIOException {
+    public byte[] binaryValue() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
 

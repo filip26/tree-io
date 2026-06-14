@@ -22,8 +22,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     @Override
     public Features features() {
-        // TODO Auto-generated method stub
-        return null;
+        return Jackson2Adapter.FEATURES;
     }
 
     @Override
@@ -82,7 +81,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Number getNumber() throws TreeIOException {
+    public Number numberValue() throws TreeIOException {
         try {
             return switch (parser.currentToken()) {
             case VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
@@ -99,7 +98,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public String getString() throws TreeIOException {
+    public String stringValue() throws TreeIOException {
         try {
             return parser.getText();
         } catch (IOException e) {
@@ -108,7 +107,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public byte[] getBinary() throws TreeIOException {
+    public byte[] binaryValue() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
     

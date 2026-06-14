@@ -1,18 +1,5 @@
 package com.apicatalog.tree.io;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.function.Function;
-
-import com.apicatalog.tree.io.Tree.Capability;
-import com.apicatalog.tree.io.Tree.NodeType;
-
 public interface TreeComparison {
 
     boolean isomorphic();

@@ -10,14 +10,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.apicatalog.tree.io.Tree.Capability;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeProcessor;
 
-public class JavaTreeGenerator implements TreeGenerator {
+public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
 
     Deque<Object> stack;
 
@@ -37,10 +37,7 @@ public class JavaTreeGenerator implements TreeGenerator {
                     NodeType.BINARY,
                     NodeType.FALSE,
                     NodeType.TRUE,
-                    NodeType.NULL),
-
-            // capabilities
-            Set.of(Capability.SCALAR_OBJECT_EQUALS));
+                    NodeType.NULL));
 
     public JavaTreeGenerator() {
         this.stack = new ArrayDeque<>();
@@ -48,8 +45,7 @@ public class JavaTreeGenerator implements TreeGenerator {
 
     @Override
     public Features features() {
-        // TODO Auto-generated method stub
-        return null;
+        return FEATURES;
     }
 
     @Override

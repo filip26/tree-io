@@ -28,7 +28,7 @@ import com.apicatalog.tree.io.Tree.NodeContext;
  * an internal nesting stack.
  * </p>
  */
-public interface TreeGenerator extends TreeProcessor {
+public interface TreeGenerator {
 
     // --- scalars ---
 

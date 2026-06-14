@@ -161,8 +161,8 @@ public final class Tree {
                     break;
 
                 case NUMBER:
-                    System.out.println("N " + parser.getNumber());
-                    generator.numberValue(stack.peek(), parser.getNumber());
+                    System.out.println("N " + parser.numberValue());
+                    generator.numberValue(stack.peek(), parser.numberValue());
                     if (stack.peek() == NodeContext.ENTRY_KEY) {
                         stack.pop();
                         stack.push(NodeContext.ENTRY_VALUE);
@@ -173,8 +173,8 @@ public final class Tree {
                     break;
 
                 case STRING:
-                    System.out.println("S " + parser.getString());
-                    generator.stringValue(stack.peek(), parser.getString());
+                    System.out.println("S " + parser.stringValue());
+                    generator.stringValue(stack.peek(), parser.stringValue());
                     if (stack.peek() == NodeContext.ENTRY_KEY) {
                         stack.pop();
                         stack.push(NodeContext.ENTRY_VALUE);
@@ -185,7 +185,7 @@ public final class Tree {
                     break;
 
                 case BINARY:
-                    generator.binaryValue(stack.peek(), parser.getBinary());
+                    generator.binaryValue(stack.peek(), parser.binaryValue());
                     if (stack.peek() == NodeContext.ENTRY_KEY) {
                         stack.pop();
                         stack.push(NodeContext.ENTRY_VALUE);
@@ -471,20 +471,13 @@ public final class Tree {
         }
     }
 
-    public enum Capability {
-        DEEP_OBJECT_EQUALS,
-        SCALAR_OBJECT_EQUALS,
-    }
-
     public static final record Features(
             Set<NodeType> keys,
-            Set<NodeType> nodes,
-            Set<Capability> capabilities) {
+            Set<NodeType> nodes) {
 
         public Features {
             keys = keys == null ? Set.of() : Set.copyOf(keys);
             nodes = nodes == null ? Set.of() : Set.copyOf(nodes);
-            capabilities = capabilities == null ? Set.of() : Set.copyOf(capabilities);
         }
 
         /**
@@ -494,6 +487,7 @@ public final class Tree {
          *
          * @return an immutable set of supported key {@link NodeType}s.
          */
+        @Override
         public Set<NodeType> keys() {
             return keys;
         }
@@ -504,6 +498,7 @@ public final class Tree {
          *
          * @return an immutable set of supported {@link NodeType}s.
          */
+        @Override
         public Set<NodeType> nodes() {
             return nodes;
         }
