@@ -20,19 +20,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <argLine>-Dfile.encoding=UTF-8</argLine>
-        
+
         <jackson.version>2.22.0</jackson.version>
-    
+
         <!--  test resources -->
         <junit.version>6.0.1</junit.version>
     </properties>
 
-    <name>Tree I/O - Jackson 2 Tree Model Adapter</name>
+    <name>Tree I/O - Jackson 2</name>
 
     <description>
-    Adapter implementation for the Jackson 2 Tree Model, providing tree access via the Tree I/O API.
-    </description
-    >
+        Adapter implementation for the Jackson 2, providing tree access via the
+        Tree I/O API.
+    </description>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -65,7 +65,7 @@
             <version>1.0.0-M1</version>
         </dependency>
 
-     	<dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
@@ -166,26 +166,26 @@
                         <version>3.2.8</version>
                         <executions>
                             <execution>
-                              <id>sign-artifacts</id>
-                              <phase>verify</phase>
-                              <goals>
-                                  <goal>sign</goal>
-                              </goals>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
-               <plugin>
-                  <groupId>org.sonatype.central</groupId>
-                  <artifactId>central-publishing-maven-plugin</artifactId>
-                  <version>0.10.0</version>
-                <extensions>true</extensions>
-                  <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                  </configuration>
-                </plugin>                    
-            </plugins>
-            </build>            
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.10.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
-    </profiles>    
+    </profiles>
 </project>

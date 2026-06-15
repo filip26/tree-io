@@ -20,18 +20,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <argLine>-Dfile.encoding=UTF-8</argLine>
-        
+
         <jakarta.json.version>2.0.1</jakarta.json.version>
 
         <!--  test resources -->
         <junit.version>6.0.1</junit.version>
     </properties>
 
-    <name>Tree I/O - Jakarta JSON API Adapter</name>
+    <name>Tree I/O - Jakarta JSON</name>
     <description>
-        Adapter implementation for the Jakarta JSON API, providing tree access via Tree I/O API.
+        Adapter implementation for the Jakarta JSON, providing tree access via
+        Tree I/O API.
     </description>
-    
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -77,7 +78,7 @@
             <artifactId>jakarta.json</artifactId>
             <version>${jakarta.json.version}</version>
             <scope>test</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -150,17 +151,18 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.6</version>
-<!--                <configuration>
+                <!--                <configuration>
                     <useModulePath>false</useModulePath>   tests use classpath 
                 </configuration>                
--->            </plugin>
+-->
+            </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.5.6</version>
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <id>maven-central</id>
@@ -175,26 +177,26 @@
                         <version>3.2.8</version>
                         <executions>
                             <execution>
-                              <id>sign-artifacts</id>
-                              <phase>verify</phase>
-                              <goals>
-                                  <goal>sign</goal>
-                              </goals>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
-               <plugin>
-                  <groupId>org.sonatype.central</groupId>
-                  <artifactId>central-publishing-maven-plugin</artifactId>
-                  <version>0.10.0</version>
-                <extensions>true</extensions>
-                  <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <autoPublish>true</autoPublish>
-                  </configuration>
-                </plugin>                    
-            </plugins>
-            </build>            
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.10.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
-    </profiles>        
+    </profiles>
 </project>
