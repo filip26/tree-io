@@ -7,7 +7,7 @@
 ## ✨ Features
 
 - 🌳 Uniform Tree Processing - handle any hierarchical and heterogeneous data structure consistently across formats and libraries  
-- 🌐 Library-agnostic API for tree data processing - Parser, Traversal, Generator
+- 🌐 Library-agnostic API for tree data processing - Parser, Traverser, Generator
 - 🗂️ Multi-format support
 - 🛠️ Extensible model for adding new formats and libraries
 
@@ -38,14 +38,14 @@
 
 <!-- Available adapters: include the one(s) matching your use case -->
 
-<!-- Jakarta JSON API adapter -->
+<!-- Jakarta JSON adapter -->
 <dependency>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-jakarta</artifactId>
     <version>${tree-io.version}</version>
 </dependency>
 
-<!-- Jackson 2 Tree Model adapter -->
+<!-- Jackson 2 adapter -->
 <dependency>
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io-jackson2</artifactId>

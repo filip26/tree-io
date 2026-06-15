@@ -32,11 +32,14 @@ public final class JakartaReader implements TreeReader, TreeProcessor {
 
     @Override
     public Object read(InputStream is) throws TreeIOException {
-        return Tree.read(new JakartaParser(factory.createParser(is)));
-    }
-    
-    public Object read(Reader reader) throws TreeIOException {
-        return Tree.read(new JakartaParser(factory.createParser(reader)));
+        try (var parser = factory.createParser(is)) {
+            return Tree.read(new JakartaParser(parser));
+        }
     }
 
+    public Object read(Reader reader) throws TreeIOException {
+        try (var parser = factory.createParser(reader)) {
+            return Tree.read(new JakartaParser(parser));
+        }
+    }
 }
