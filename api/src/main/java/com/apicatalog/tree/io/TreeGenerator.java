@@ -2,6 +2,7 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.NodeContext;
 
@@ -14,8 +15,8 @@ import com.apicatalog.tree.io.Tree.NodeContext;
  * This interface is explicitly designed to enable completely stateless,
  * stack-free generator implementations. To eliminate internal state tracking or
  * stacks within the generator, the responsibility of tracking the structural
- * hierarchy is shifted entirely to the caller. The {@link NodeContext} passed into
- * each method originates from the processing or traversal of a source tree
+ * hierarchy is shifted entirely to the caller. The {@link NodeContext} passed
+ * into each method originates from the processing or traversal of a source tree
  * structure (e.g., a tree reader, walker, or visitor). This allows the
  * structural state to be piped directly from the source tracking mechanism into
  * the generator, enabling a zero-allocation, stateless data transformation or
@@ -212,4 +213,53 @@ public interface TreeGenerator {
      * @throws IllegalStateException
      */
     void endSequence(NodeContext context) throws TreeIOException;
+
+    default void nullEntry(String key) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        nullValue(NodeContext.ENTRY_VALUE);
+    }
+
+    default void entry(String key, boolean value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        booleanValue(NodeContext.ENTRY_VALUE, value);
+    }
+
+    default void entry(String key, long value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        numericValue(NodeContext.ENTRY_VALUE, value);
+    }
+
+    default void entry(String key, int value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        numericValue(NodeContext.ENTRY_VALUE, value);
+    }
+
+    default void entry(String key, double value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        numericValue(NodeContext.ENTRY_VALUE, value);
+    }
+    
+    default void entry(String key, BigDecimal value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        numericValue(NodeContext.ENTRY_VALUE, value);
+    }
+
+    default void entry(String key, BigInteger value) throws TreeIOException {
+        stringValue(NodeContext.ENTRY_KEY, key);
+        numericValue(NodeContext.ENTRY_VALUE, value);
+    }
+
+    default void entry(String key, String value) throws TreeIOException {
+        if (value != null) {
+            stringValue(NodeContext.ENTRY_KEY, key);
+            stringValue(NodeContext.ENTRY_VALUE, value);
+        }
+    }
+
+    default <T> void entry(String key, T object, Function<T, String> map) throws TreeIOException {
+        if (object != null) {
+            stringValue(NodeContext.ENTRY_KEY, key);
+            stringValue(NodeContext.ENTRY_VALUE, map.apply(object));
+        }
+    }
 }
