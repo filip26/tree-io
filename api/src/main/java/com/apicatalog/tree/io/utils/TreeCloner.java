@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io.utils;
 
-import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeEmitter;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 
@@ -10,7 +10,7 @@ class TreeCloner {
     
     /**
      * A high-level utility method that fully traverses the tree and drives the
-     * provided {@link TreeGenerator}. This is the primary method for tree
+     * provided {@link TreeEmitter}. This is the primary method for tree
      * transformation, serialization, or deep cloning. It iterates through every
      * node using {@link TreeParser#next()} and emits a corresponding event to the generator.
      *
@@ -20,7 +20,7 @@ class TreeCloner {
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public static void copy(TreeParser parser, TreeGenerator generator) throws TreeIOException {
+    public static void copy(TreeParser parser, TreeEmitter generator) throws TreeIOException {
         while (true) {
             switch (parser.next()) {
             case BEGIN_MAP:

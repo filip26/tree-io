@@ -1,7 +1,5 @@
 package com.apicatalog.tree.io.java;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,14 +8,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeComposer;
+import com.apicatalog.tree.io.TreeCursor;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public class NativeGenerator implements TreeGenerator, TreeProcessor {
+public class NativeComposer implements TreeComposer<Object>, TreeProcessor {
 
     Deque<Object> stack;
 
@@ -39,7 +39,7 @@ public class NativeGenerator implements TreeGenerator, TreeProcessor {
                     NodeType.TRUE,
                     NodeType.NULL));
 
-    public NativeGenerator() {
+    public NativeComposer() {
         this.stack = new ArrayDeque<>();
     }
 
@@ -49,18 +49,17 @@ public class NativeGenerator implements TreeGenerator, TreeProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public void nullValue(NodeContext context) {
         // root
         if (stack.isEmpty()) {
             return;
         }
         switch (context) {
-        case ELEMENT:
+        case ELEMENT, LAST_ELEMENT:
             ((Collection<?>) stack.peek()).add(null);
             return;
 
-        case ENTRY_VALUE:
+        case ENTRY_VALUE, LAST_ENTRY_VALUE:
             var key = stack.pop();
             ((Map<Object, ?>) stack.peek()).put(key, null);
             return;
@@ -74,83 +73,90 @@ public class NativeGenerator implements TreeGenerator, TreeProcessor {
     }
 
     @Override
-    public void booleanValue(NodeContext context, boolean value) throws TreeIOException {
-        stack.push(value);
-        next(context);
-    }
+    public boolean accept(Event event, TreeCursor cursor) throws TreeIOException {
+        switch (event) {
+        case BEGIN_MAP:
+            stack.push(new LinkedHashMap<>());
+            return true;
 
-    @Override
-    public void stringValue(NodeContext context, String value) throws TreeIOException {
-        stack.push(value);
-        next(context);
-    }
+        case END_MAP:
+            if (stack.peek() instanceof Map) {
+                next(cursor.context());
+                return true;
+            }
+            throw new IllegalStateException();
 
-    @Override
-    public void numericValue(NodeContext context, BigInteger value) throws TreeIOException {
-        stack.push(value);
-        next(context);
-    }
+        case BEGIN_SEQUENCE:
+            stack.push(new ArrayList<>());
+            return true;
 
-    @Override
-    public void numericValue(NodeContext context, BigDecimal value) throws TreeIOException {
-        stack.push(value);
-        next(context);
-    }
+        case END_SEQUENCE:
+            if (stack.peek() instanceof Collection) {
+                next(cursor.context());
+                return true;
+            }
+            throw new IllegalStateException();
 
-    @Override
-    public void binaryValue(NodeContext context, byte[] value) throws TreeIOException {
-        stack.push(value);
-        next(context);
-    }
+        case SCALAR:
+            switch (cursor.nodeType()) {
+            case NULL:
+                nullValue(cursor.context());
+                return true;
 
-    @Override
-    public void beginMap(NodeContext context) {
-        stack.push(new LinkedHashMap<>());
-    }
+            case TRUE:
+                stack.push(true);
+                next(cursor.context());
+                return true;
 
-    @Override
-    public void endMap(NodeContext context) {
-        if (stack.peek() instanceof Map) {
-            next(context);
-            return;
+            case FALSE:
+                stack.push(false);
+                next(cursor.context());
+                return true;
+
+            case BINARY:
+                stack.push(cursor.binaryValue());
+                next(cursor.context());
+                return true;
+
+            case NUMBER:
+                stack.push(cursor.numberValue());
+                next(cursor.context());
+                return true;
+
+            case STRING:
+                stack.push(cursor.stringValue());
+                next(cursor.context());
+                return true;
+
+            default:
+                throw new IllegalStateException();
+            }
+
+        case null:
+            throw new IllegalArgumentException();
         }
-        throw new IllegalStateException();
     }
 
     @Override
-    public void beginSequence(NodeContext context) throws TreeIOException {
-        stack.push(new ArrayList<>());
-    }
-
-    @Override
-    public void endSequence(NodeContext context) throws TreeIOException {
-        if (stack.peek() instanceof Collection) {
-            next(context);
-            return;
-        }
-        throw new IllegalStateException();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T get() {
+    public Object compose() throws TreeIOException {
         if (stack.size() > 1) {
             throw new IllegalStateException();
         }
         if (stack.isEmpty()) {
             return null;
         }
-        return (T)stack.peek();
+        return stack.peek();
     }
 
     @SuppressWarnings("unchecked")
     private final void next(NodeContext context) {
         switch (context) {
-        case ELEMENT:
+        case ELEMENT, LAST_ELEMENT:
             var element = stack.pop();
             ((Collection<Object>) stack.peek()).add(element);
             return;
 
-        case ENTRY_VALUE:
+        case ENTRY_VALUE, LAST_ENTRY_VALUE:
             var value = stack.pop();
             var key = stack.pop();
             ((Map<Object, Object>) stack.peek()).put(key, value);
@@ -163,5 +169,4 @@ public class NativeGenerator implements TreeGenerator, TreeProcessor {
             return;
         }
     }
-
 }

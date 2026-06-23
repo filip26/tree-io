@@ -1,8 +1,6 @@
 package com.apicatalog.tree.io;
 
 import com.apicatalog.tree.io.Tree.Event;
-import com.apicatalog.tree.io.Tree.NodeContext;
-import com.apicatalog.tree.io.Tree.NodeType;
 
 /**
  * Provides a uniform, performant, pull-based streaming abstraction for parsing
@@ -12,63 +10,34 @@ import com.apicatalog.tree.io.Tree.NodeType;
  * <p>
  * The parser is forward-only and token-driven, maintaining the internal state
  * of the current position in the input stream. It emits fine-grained structural
- * and scalar tokens. The parser does not track structural roles; the caller is
- * entirely responsible for keeping track of the structural context (such as
- * tracking whether a token represents a map key, a map value, or a sequence
- * element) during traversal.
+ * and scalar tokens. The parser keeps track structural roles.
  * </p>
  */
-public interface TreeParser {
+public interface TreeParser extends TreeCursor {
 
-    /**
-     * Advances the parser to the next token in the stream and returns its type.
-     *
-     * @return the next structural or scalar {@link Event} in the sequence, or null
-     *         if the end of the input (EOF) has been reached.
-     * @throws TreeIOException
-     */
-    Event next() throws TreeIOException;
-
-    /**
-     * Returns the numeric value associated with the current token position.
-     * <p>
-     * This method is intended to be called when the parser is positioned on a
-     * NUMBER token.
-     * </p>
-     *
-     * @return the Number mapping to the current numeric token
-     * @throws TreeIOException if an I/O error occurs while retrieving the value.
-     */
-    Number numberValue() throws TreeIOException;
-
-    /**
-     * Returns the string value associated with the current token position.
-     * <p>
-     * This method is intended to be called when the parser is positioned on a
-     * STRING token.
-     * </p>
-     *
-     * @return the String mapping to the current text token
-     * @throws TreeIOException if an I/O error occurs while retrieving the value.
-     */
-    String stringValue() throws TreeIOException;
-
-    /**
-     * Returns the binary data associated with the current token position.
-     * <p>
-     * This method is intended to be called when the parser is positioned on a
-     * BINARY token.
-     * </p>
-     *
-     * @return a byte array containing the binary payload
-     * @throws TreeIOException if an I/O error occurs while retrieving the value.
-     */
-    byte[] binaryValue() throws TreeIOException;
-
-    /** Gets the node type of the current node. */
-    NodeType nodeType();
+    @FunctionalInterface
+    interface StateConsumer {
+        boolean accept(Event event, TreeParser cursor) throws TreeIOException;
+    }
     
-    /** Gets the context of the current node. */
-    public NodeContext context();
-
+//    
+//    /**
+//     * Advances the parser to the next token in the stream and returns its type.
+//     *
+//     * @return the next structural or scalar {@link Event} in the sequence, or null
+//     *         if the end of the input (EOF) has been reached.
+//     * @throws TreeIOException
+//     */
+//    Event next() throws TreeIOException;
+//    
+    default boolean parse(StateConsumer consumer) throws TreeIOException {
+        var event = next();
+        while (event != null) {
+            if (!consumer.accept(event, this)) {
+                return false;
+            }
+            event = next();
+        }
+        return true;
+    }
 }

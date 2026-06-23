@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
-import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeEmitter;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.java.NativeTraverser;
@@ -19,7 +19,7 @@ import jakarta.json.stream.JsonGenerator;
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
  * This class implements both {@link NativeTraverser} and
- * {@link TreeGenerator}, enabling it to function as a self-contained
+ * {@link TreeEmitter}, enabling it to function as a self-contained
  * serialization engine. It traverses a source structure (via its
  * {@code NodeVisitor} parent) and consumes its own traversal events (via its
  * {@code NodeGenerator} implementation) to write directly to the provided
@@ -32,7 +32,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator implements TreeGenerator, TreeProcessor {
+public class JakartaGenerator implements TreeEmitter, TreeProcessor {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;

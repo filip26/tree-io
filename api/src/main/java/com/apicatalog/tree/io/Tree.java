@@ -2,102 +2,61 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.java.NativeGenerator;
-import com.apicatalog.tree.io.java.NativeParser;
+import com.apicatalog.tree.io.java.NativeComposer;
+import com.apicatalog.tree.io.java.NativeTraverser;
 
 public final class Tree {
 
-    public static  <T> T read(TreeParser parser) throws TreeIOException {
-        var generator = new NativeGenerator();
-        clone(parser, generator);
-        return generator.get();
+    public static <T> T read(TreeParser parser) throws TreeIOException {
+        return (T) read(parser, new NativeComposer());
     }
 
-    public static <T> void write(T node, TreeGenerator generator) throws TreeIOException {
-        var parser = new NativeParser();
-        parser.node(node);
-        clone(parser, generator);
+    public static <T> T read(TreeParser parser, TreeComposer<T> composer) throws TreeIOException {
+        parser.parse(composer::accept);
+        return composer.compose();
     }
 
-    /**
-     * A high-level utility method that fully traverses the tree and drives the
-     * provided {@link TreeGenerator}. This is the primary method for tree
-     * transformation, serialization, or deep cloning. It iterates through every
-     * node using {@link TreeParser#next()} and emits a corresponding event to the generator.
-     *
-     * @param parser
-     * @param generator the generator that will receive construction events.
-     * @throws TreeIOException       if the generator encounters an I/O error.
-     * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
-     *                               structures).
-     */
-    public static void clone(TreeParser parser, TreeGenerator generator) throws TreeIOException {
-        while (true) {
-            switch (parser.next()) {
-            case BEGIN_MAP:
-                generator.beginMap(parser.context());
-                continue;
-
-            case END_MAP:
-                generator.endMap(parser.context());
-                continue;
-
-            case BEGIN_SEQUENCE:
-                generator.beginSequence(parser.context());
-                continue;
-
-            case END_SEQUENCE:
-                generator.endSequence(parser.context());
-                continue;
-
-            case SCALAR:
-                switch (parser.nodeType()) {
-                case NULL -> generator.nullValue(parser.context());
-                case TRUE -> generator.booleanValue(parser.context(), true);
-                case FALSE -> generator.booleanValue(parser.context(), false);
-                case STRING -> generator.stringValue(parser.context(), parser.stringValue());
-                case NUMBER -> generator.numberValue(parser.context(), parser.numberValue());
-                case BINARY -> generator.binaryValue(parser.context(), parser.binaryValue());
-
-                default -> throw new IllegalArgumentException(
-                        """
-                        Unexpected node type=%s"
-                        """.formatted(parser.nodeType()));
-                }
-                continue;
-
-            case null:
-//                if (traversal.dept depth > 0) {
-//                    throw new IllegalStateException("The traversed tree is malformed. A map or a collection was not properly closed.");
-//                }
-                return;
-            }
-        }
-
-//        if (stack.peek() != NodeContext.ROOT) {
-//            throw new IllegalStateException();
-//        }
+    public static <T> void write(T node, TreeEmitter emitter) throws TreeIOException {
+        write(new NativeTraverser(node), emitter);
     }
 
-    public static void traverse(TreeParser parser, final Consumer<TreeParser> consumer) throws TreeIOException {
-
-        var event = parser.next();
-
-        while (event != null) {
-            consumer.accept(parser);
-            event = parser.next();
-        }
+    public static void write(TreeTraverser traverser, TreeEmitter emitter) throws TreeIOException {
+        traverser.traverse(emitter::accept);
     }
-    
+
+    public static void clone(TreeParser parser, TreeEmitter emitter) throws TreeIOException {
+        parser.parse(emitter::accept);
+    }
+
+    public static <T> T clone(TreeTraverser traverser, TreeComposer<T> composer) throws TreeIOException {
+        traverser.traverse(composer::accept);
+        return composer.compose();
+    }
+
+    public static boolean equals(TreeTraverser tree1, TreeTraverser tree2) throws TreeIOException {
+        return tree1.traverse((event1, cursor1) -> {
+            return Objects.equals(event1, tree2.next())
+                    // cursor
+                    && Objects.equals(cursor1.nodeType(), tree2.nodeType())
+                    && switch (cursor1.nodeType()) {
+                    case BINARY -> Arrays.equals(cursor1.binaryValue(), tree2.binaryValue());
+                    
+                    case NULL, TRUE, FALSE -> true;
+                    case null -> throw new IllegalStateException();
+                    default -> false;
+                    };
+        });
+    }
+
     // --- Convenience & Type Coercion Methods ---
 
     /**
@@ -272,6 +231,8 @@ public final class Tree {
          */
         ELEMENT,
 
+        LAST_ELEMENT,
+
         /**
          * Indicates the node functions as a key within a map or object structure.
          */
@@ -281,7 +242,9 @@ public final class Tree {
          * Indicates the node functions as a value associated with a key within a map or
          * object structure.
          */
-        ENTRY_VALUE
+        ENTRY_VALUE,
+
+        LAST_ENTRY_VALUE
     }
 
     public enum NodeType {

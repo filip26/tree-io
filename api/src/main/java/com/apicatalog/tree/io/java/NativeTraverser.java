@@ -13,15 +13,15 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.TreeTraverser;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class NativeParser implements TreeParser, TreeProcessor {
+public class NativeTraverser implements TreeTraverser, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -46,31 +46,44 @@ public class NativeParser implements TreeParser, TreeProcessor {
     protected NodeType currentNodeType;
     protected NodeContext currentNodeContext;
 
-    public NativeParser() {
-        this(new ArrayDeque<>(), null);
+    public NativeTraverser(Object node) {
+        this(node, new ArrayDeque<>(), null);
     }
 
-    public NativeParser(Comparator<Entry<?, ?>> entryComparator) {
-        this(new ArrayDeque<>(), entryComparator);
+    public NativeTraverser(Object node, Comparator<Entry<?, ?>> entryComparator) {
+        this(node, new ArrayDeque<>(), entryComparator);
     }
 
-    protected NativeParser(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    protected NativeTraverser(Object node, Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
         this.maxDepth = UNLIMITED_DEPTH;
         this.visited = 0;
         this.depth = 0;
-        this.currentNode = null;
-        this.currentNodeContext = null;
-    }
-    
-    @Override
-    public Features features() {
-        return NativeGenerator.FEATURES;
+        this.stack.push(node);
+        this.currentNode = node;
+        this.currentNodeContext = NodeContext.ROOT;
     }
 
     @Override
+    public Features features() {
+        return NativeComposer.FEATURES;
+    }
+    
+    @Override
+    public boolean traverse(StateConsumer consumer) throws TreeIOException {
+        var event = next();
+        while (event != null) {
+            if (!consumer.accept(event, this)) {
+                return false;
+            }
+            event = next();
+        }
+        return true;
+    }
+
+//    @Override
     public Event next() {
 
         if (stack.isEmpty()) {
@@ -116,15 +129,16 @@ public class NativeParser implements TreeParser, TreeProcessor {
 
             } else {
                 // process collection element
-                currentNodeContext = NodeContext.ELEMENT;
+                currentNodeContext = it.hasNext() ? NodeContext.ELEMENT : NodeContext.LAST_ELEMENT;
                 currentNode = item;
             }
 
         } else if (item instanceof Map.Entry<?, ?> entry) {
             // process property value
-            currentNodeContext = NodeContext.ENTRY_VALUE;
             currentNode = entry.getValue();
-            stack.pop();
+            // restore map iterator over entries
+            var it = (Iterator<?>) stack.pop();
+            currentNodeContext = it.hasNext() ? NodeContext.ENTRY_VALUE : NodeContext.LAST_ENTRY_VALUE;
 
         } else {
             currentNode = item;
@@ -162,7 +176,7 @@ public class NativeParser implements TreeParser, TreeProcessor {
         case null:
             currentNodeType = NodeType.NULL;
             return Event.SCALAR;
-            
+
         default:
             currentNodeType = switch (currentNode) {
             case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
@@ -179,7 +193,7 @@ public class NativeParser implements TreeParser, TreeProcessor {
         }
     }
 
-    public NativeParser node(Object node) {
+    public NativeTraverser reset(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
@@ -201,7 +215,7 @@ public class NativeParser implements TreeParser, TreeProcessor {
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      * @return
      */
-    public NativeParser maxDepth(int maxDepth) {
+    public NativeTraverser maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
@@ -223,7 +237,7 @@ public class NativeParser implements TreeParser, TreeProcessor {
      *                        {@link #UNLIMITED_NODES} for no limit.
      * @return
      */
-    public NativeParser maxVisited(int maxVisitedNodes) {
+    public NativeTraverser maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
         return this;
     }
@@ -249,17 +263,17 @@ public class NativeParser implements TreeParser, TreeProcessor {
 
     @Override
     public Number numberValue() throws TreeIOException {
-        return (Number)currentNode;
+        return (Number) currentNode;
     }
 
     @Override
     public String stringValue() throws TreeIOException {
-        return (String)currentNode;
+        return (String) currentNode;
     }
 
     @Override
     public byte[] binaryValue() throws TreeIOException {
-        return (byte[])currentNode;
+        return (byte[]) currentNode;
     }
 
     @Override
@@ -267,4 +281,14 @@ public class NativeParser implements TreeParser, TreeProcessor {
         return currentNodeType;
     }
 
+    @Override
+    public int structureSize() throws TreeIOException {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void comparator(Comparator<Entry<?, ?>> entryComparator) {
+        this.entryComparator = entryComparator;
+    }
 }

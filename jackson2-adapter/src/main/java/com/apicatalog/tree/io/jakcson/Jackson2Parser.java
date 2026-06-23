@@ -17,13 +17,17 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     private final JsonParser parser;
     private final Deque<NodeContext> contexts;
-    
+
     private NodeType nodeType;
     private NodeContext context;
 
     public Jackson2Parser(final JsonParser parser) {
+        this(parser, new ArrayDeque<NodeContext>());
+    }
+
+    public Jackson2Parser(final JsonParser parser, final Deque<NodeContext> contexts) {
         this.parser = parser;
-        this.contexts = new ArrayDeque<NodeContext>();
+        this.contexts = contexts;
         this.nodeType = null;
         contexts.push(NodeContext.ROOT);
     }
@@ -35,9 +39,9 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
 
     @Override
     public Event next() throws TreeIOException {
-        
+
         this.context = contexts.peek();
-        
+
         try {
             return switch (parser.nextToken()) {
             case START_OBJECT -> {
@@ -48,7 +52,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
             case END_OBJECT -> {
                 contexts.pop();
                 this.context = contexts.peek();
-                switchMapContext();                
+                switchMapContext();
                 nodeType = NodeType.MAP;
                 yield Event.END_MAP;
             }
@@ -140,17 +144,17 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     public byte[] binaryValue() throws TreeIOException {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public NodeType nodeType() {
         return nodeType;
     }
-    
+
     @Override
     public NodeContext context() {
         return context;
     }
-    
+
     private void switchMapContext() {
         if (contexts.peek() == NodeContext.ENTRY_KEY) {
             contexts.pop();
@@ -160,7 +164,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
             contexts.push(NodeContext.ENTRY_KEY);
         }
     }
-    
+
     @Override
     public String toString() {
         return Jackson2Parser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
 
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.NodeContext;
 
 /**
@@ -29,8 +30,48 @@ import com.apicatalog.tree.io.Tree.NodeContext;
  * an internal nesting stack.
  * </p>
  */
-public interface TreeGenerator {
+public interface TreeEmitter {
 
+    default boolean accept(Event event, TreeCursor cursor) throws TreeIOException {
+        switch (event) {
+        case BEGIN_MAP:
+            beginMap(cursor.context());
+            return true;
+
+        case END_MAP:
+            endMap(cursor.context());
+            return true;
+
+        case BEGIN_SEQUENCE:
+            beginSequence(cursor.context());
+            return true;
+
+        case END_SEQUENCE:
+            endSequence(cursor.context());
+            return true;
+
+        case SCALAR:
+            switch (cursor.nodeType()) {
+            case NULL -> nullValue(cursor.context());
+            case TRUE -> booleanValue(cursor.context(), true);
+            case FALSE -> booleanValue(cursor.context(), false);
+            case STRING -> stringValue(cursor.context(), cursor.stringValue());
+            case NUMBER -> numberValue(cursor.context(), cursor.numberValue());
+            case BINARY -> binaryValue(cursor.context(), cursor.binaryValue());
+
+            default -> throw new IllegalArgumentException(
+                    """
+                    Unexpected node type=%s"
+                    """.formatted(cursor.nodeType()));
+            }
+            return true;
+
+        case null:
+            throw new IllegalArgumentException();
+        }
+    }
+
+    
     // --- scalars ---
 
     /**

@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
-import com.apicatalog.tree.io.TreeGenerator;
+import com.apicatalog.tree.io.TreeEmitter;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jackson 2 streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements {@link TreeGenerator}, enabling it to function as a
+ * This class implements {@link TreeEmitter}, enabling it to function as a
  * self-contained serialization engine. to write directly to the provided
  * {@code JsonGenerator}.
  * </p>
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public final class Jackson2Generator implements TreeGenerator, TreeProcessor {
+public final class Jackson2Generator implements TreeEmitter, TreeProcessor {
 
     private final JsonGenerator writer;
 
