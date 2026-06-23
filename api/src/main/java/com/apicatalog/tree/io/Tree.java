@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -87,6 +88,16 @@ public final class Tree {
 //        }
     }
 
+    public static void traverse(TreeParser parser, final Consumer<TreeParser> consumer) throws TreeIOException {
+
+        var event = parser.next();
+
+        while (event != null) {
+            consumer.accept(parser);
+            event = parser.next();
+        }
+    }
+    
     // --- Convenience & Type Coercion Methods ---
 
     /**
