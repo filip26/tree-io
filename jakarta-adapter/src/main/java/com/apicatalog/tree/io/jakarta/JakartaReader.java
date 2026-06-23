@@ -6,14 +6,14 @@ import java.util.Map;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.fnc.TreeReader;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.TreeReader;
 
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParserFactory;
 
-public final class JakartaReader implements TreeReader, TreeProcessor {
+public final class JakartaReader implements TreeReader<Object>, TreeProcessor {
 
     private final JsonParserFactory factory;
 

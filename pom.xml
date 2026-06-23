@@ -7,7 +7,7 @@
 
     <groupId>com.apicatalog</groupId>
     <artifactId>tree-io</artifactId>
-    <version>1.0.0-M1</version>
+    <version>1.0.0-M2</version>
     <packaging>pom</packaging> 
 
     <name>Tree I/O</name>

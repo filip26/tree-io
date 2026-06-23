@@ -7,13 +7,11 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.fnc.TreeTraverser;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
@@ -23,7 +21,7 @@ import com.apicatalog.tree.io.TreeProcessor;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcessor {
+public class NativeParser implements TreeParser, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -48,15 +46,15 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
     protected NodeType currentNodeType;
     protected NodeContext currentNodeContext;
 
-    public JavaTreeTraverser() {
+    public NativeParser() {
         this(new ArrayDeque<>(), null);
     }
 
-    public JavaTreeTraverser(Comparator<Entry<?, ?>> entryComparator) {
+    public NativeParser(Comparator<Entry<?, ?>> entryComparator) {
         this(new ArrayDeque<>(), entryComparator);
     }
 
-    protected JavaTreeTraverser(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    protected NativeParser(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
@@ -69,20 +67,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
     
     @Override
     public Features features() {
-        return JavaTreeGenerator.FEATURES;
-    }
-
-    @Override
-    public void traverse(Object node, final Consumer<TreeTraverser> consumer) {
-
-        node(node);
-
-        var event = next();
-
-        while (event != null) {
-            consumer.accept(this);
-            event = next();
-        }
+        return NativeGenerator.FEATURES;
     }
 
     @Override
@@ -194,7 +179,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
         }
     }
 
-    public JavaTreeTraverser node(Object node) {
+    public NativeParser node(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
@@ -216,7 +201,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      * @return
      */
-    public JavaTreeTraverser maxDepth(int maxDepth) {
+    public NativeParser maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
@@ -238,7 +223,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
      *                        {@link #UNLIMITED_NODES} for no limit.
      * @return
      */
-    public JavaTreeTraverser maxVisited(int maxVisitedNodes) {
+    public NativeParser maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
         return this;
     }
@@ -281,4 +266,5 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
     public NodeType nodeType() {
         return currentNodeType;
     }
+
 }

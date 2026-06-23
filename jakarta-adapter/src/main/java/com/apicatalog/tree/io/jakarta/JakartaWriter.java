@@ -7,13 +7,13 @@ import java.util.Collections;
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.TreeWriter;
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.fnc.TreeWriter;
 
 import jakarta.json.Json;
 import jakarta.json.stream.JsonGeneratorFactory;
 
-public class JakartaWriter implements TreeWriter, TreeProcessor {
+public class JakartaWriter implements TreeWriter<Object>, TreeProcessor {
 
     private final JsonGeneratorFactory factory;
 

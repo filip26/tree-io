@@ -7,11 +7,11 @@ import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
-import com.apicatalog.tree.io.fnc.TreeWriter;
+import com.apicatalog.tree.io.TreeWriter;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
-public final class Jackson2Writer implements TreeWriter, TreeProcessor {
+public final class Jackson2Writer implements TreeWriter<Object>, TreeProcessor {
 
     private final JsonFactory factory;
     

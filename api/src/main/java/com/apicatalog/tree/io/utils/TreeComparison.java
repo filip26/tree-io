@@ -1,4 +1,4 @@
-package com.apicatalog.tree.io;
+package com.apicatalog.tree.io.utils;
 
 interface TreeComparison {
 

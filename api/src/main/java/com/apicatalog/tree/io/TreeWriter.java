@@ -1,8 +1,6 @@
-package com.apicatalog.tree.io.fnc;
+package com.apicatalog.tree.io;
 
 import java.io.OutputStream;
-
-import com.apicatalog.tree.io.TreeIOException;
 
 /**
  * Provides a uniform abstraction for serializing tree-like data structures.
@@ -14,8 +12,8 @@ import com.apicatalog.tree.io.TreeIOException;
  * </p>
  */
 @FunctionalInterface
-public interface TreeWriter {
+public interface TreeWriter<T> {
 
-    void write(Object node, OutputStream os) throws TreeIOException;
+    void write(T node, OutputStream os) throws TreeIOException;
 
 }

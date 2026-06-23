@@ -1,8 +1,6 @@
-package com.apicatalog.tree.io.fnc;
+package com.apicatalog.tree.io;
 
 import java.io.InputStream;
-
-import com.apicatalog.tree.io.TreeIOException;
 
 /**
  * Provides a uniform abstraction for de-serializing tree-like data structures.
@@ -14,8 +12,8 @@ import com.apicatalog.tree.io.TreeIOException;
  * </p>
  */
 @FunctionalInterface
-public interface TreeReader {
+public interface TreeReader<T> {
 
-    Object read(InputStream is) throws TreeIOException;
+    T read(InputStream is) throws TreeIOException;
 
 }

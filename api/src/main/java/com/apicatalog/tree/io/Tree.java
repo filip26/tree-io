@@ -10,21 +10,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.java.JavaTreeGenerator;
-import com.apicatalog.tree.io.java.JavaTreeTraverser;
+import com.apicatalog.tree.io.java.NativeGenerator;
+import com.apicatalog.tree.io.java.NativeParser;
 
 public final class Tree {
 
-    public static Object read(TreeParser parser) throws TreeIOException {
-        var generator = new JavaTreeGenerator();
-        translate(parser, generator);
+    public static  <T> T read(TreeParser parser) throws TreeIOException {
+        var generator = new NativeGenerator();
+        clone(parser, generator);
         return generator.get();
     }
 
-    public static void write(Object node, TreeGenerator generator) throws TreeIOException {
-        var traversal = new JavaTreeTraverser();
-        traversal.node(node);
-        translate(traversal, generator);
+    public static <T> void write(T node, TreeGenerator generator) throws TreeIOException {
+        var parser = new NativeParser();
+        parser.node(node);
+        clone(parser, generator);
     }
 
     /**
@@ -39,7 +39,7 @@ public final class Tree {
      * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
      *                               structures).
      */
-    public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
+    public static void clone(TreeParser parser, TreeGenerator generator) throws TreeIOException {
         while (true) {
             switch (parser.next()) {
             case BEGIN_MAP:

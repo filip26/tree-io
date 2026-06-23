@@ -7,10 +7,10 @@ import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
-import com.apicatalog.tree.io.fnc.TreeReader;
+import com.apicatalog.tree.io.TreeReader;
 import com.fasterxml.jackson.core.JsonFactory;
 
-public final class Jackson2Reader implements TreeReader, TreeProcessor {
+public final class Jackson2Reader implements TreeReader<Object>, TreeProcessor {
 
     private final JsonFactory factory;
 

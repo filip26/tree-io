@@ -17,7 +17,7 @@ import com.apicatalog.tree.io.TreeGenerator;
 import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
+public class NativeGenerator implements TreeGenerator, TreeProcessor {
 
     Deque<Object> stack;
 
@@ -39,7 +39,7 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
                     NodeType.TRUE,
                     NodeType.NULL));
 
-    public JavaTreeGenerator() {
+    public NativeGenerator() {
         this.stack = new ArrayDeque<>();
     }
 
@@ -131,14 +131,15 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         throw new IllegalStateException();
     }
 
-    public Object get() {
+    @SuppressWarnings("unchecked")
+    public <T> T get() {
         if (stack.size() > 1) {
             throw new IllegalStateException();
         }
         if (stack.isEmpty()) {
             return null;
         }
-        return stack.peek();
+        return (T)stack.peek();
     }
 
     @SuppressWarnings("unchecked")
