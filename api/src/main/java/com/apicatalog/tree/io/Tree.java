@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -16,6 +17,7 @@ import com.apicatalog.tree.io.java.NativeTraverser;
 
 public final class Tree {
 
+    @SuppressWarnings("unchecked")
     public static <T> T read(TreeParser parser) throws TreeIOException {
         return (T) read(parser, new NativeComposer());
     }
@@ -29,7 +31,7 @@ public final class Tree {
         write(new NativeTraverser(node), emitter);
     }
 
-    public static void write(TreeTraverser traverser, TreeEmitter emitter) throws TreeIOException {
+    public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws TreeIOException {
         traverser.traverse(emitter::accept);
     }
 
@@ -37,24 +39,28 @@ public final class Tree {
         parser.parse(emitter::accept);
     }
 
-    public static <T> T clone(TreeTraverser traverser, TreeComposer<T> composer) throws TreeIOException {
+    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) throws TreeIOException {
         traverser.traverse(composer::accept);
         return composer.compose();
     }
 
-    public static boolean equals(TreeTraverser tree1, TreeTraverser tree2) throws TreeIOException {
-        return tree1.traverse((event1, cursor1) -> {
-            return Objects.equals(event1, tree2.next())
-                    // cursor
-                    && Objects.equals(cursor1.nodeType(), tree2.nodeType())
-                    && switch (cursor1.nodeType()) {
-                    case BINARY -> Arrays.equals(cursor1.binaryValue(), tree2.binaryValue());
-                    
-                    case NULL, TRUE, FALSE -> true;
-                    case null -> throw new IllegalStateException();
-                    default -> false;
-                    };
-        });
+    public static boolean equivalent(TreeCursor cursor1, TreeCursor cursor2, BiPredicate<TreeCursor, TreeCursor> equivalentScalar) throws TreeIOException {
+
+        var event1 = cursor1.next();
+        var event2 = cursor2.next();
+
+        while (event1 != null
+                && Objects.equals(event1, event2)
+                // cursor
+                && Objects.equals(cursor1.nodeType(), cursor2.nodeType())
+                && equivalentScalar.test(cursor1, cursor2)) {
+
+            event1 = cursor1.next();
+            event2 = cursor2.next();
+        }
+
+        return event2 == null;
+
     }
 
     // --- Convenience & Type Coercion Methods ---

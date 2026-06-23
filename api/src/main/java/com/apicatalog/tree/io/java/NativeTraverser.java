@@ -21,7 +21,7 @@ import com.apicatalog.tree.io.TreeTraverser;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class NativeTraverser implements TreeTraverser, TreeProcessor {
+public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -70,9 +70,9 @@ public class NativeTraverser implements TreeTraverser, TreeProcessor {
     public Features features() {
         return NativeComposer.FEATURES;
     }
-    
+
     @Override
-    public boolean traverse(StateConsumer consumer) throws TreeIOException {
+    public boolean traverse(StateConsumer<Object> consumer) throws TreeIOException {
         var event = next();
         while (event != null) {
             if (!consumer.accept(event, this)) {
@@ -193,14 +193,13 @@ public class NativeTraverser implements TreeTraverser, TreeProcessor {
         }
     }
 
-    public NativeTraverser reset(Object node) {
+    public void reset(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
         this.currentNode = node;
         this.currentNodeContext = NodeContext.ROOT;
-        return this;
     }
 
     /** Gets the total number of nodes visited so far. */

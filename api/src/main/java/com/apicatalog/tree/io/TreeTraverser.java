@@ -17,11 +17,11 @@ import com.apicatalog.tree.io.Tree.NodeType;
  *
  * @param <T> the type of the tree structure being traversed
  */
-public interface TreeTraverser extends TreeCursor {
+public interface TreeTraverser<T> extends TreeCursor {
 
     @FunctionalInterface
-    interface StateConsumer {
-        boolean accept(Event event, TreeTraverser cursor) throws TreeIOException;
+    interface StateConsumer<T> {
+        boolean accept(Event event, TreeTraverser<T> cursor) throws TreeIOException;
     }
     
     /**
@@ -32,9 +32,9 @@ public interface TreeTraverser extends TreeCursor {
      * @throws TreeIOException      if an I/O error occurs during traversal
      * @throws NullPointerException if {@code tree} or {@code consumer} is null
      */
-    boolean traverse(StateConsumer consumer) throws TreeIOException;
+    boolean traverse(StateConsumer<T> consumer) throws TreeIOException;
 
-    
+    void reset(T tree);
     
     void comparator(Comparator<Entry<?, ?>> entryComparator);
     
@@ -51,6 +51,6 @@ public interface TreeTraverser extends TreeCursor {
      */
     int structureSize() throws TreeIOException;
     
+    //TODO skipMap, skipSequence, skipEntryValue
     
-
 }
