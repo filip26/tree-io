@@ -2,6 +2,7 @@ package com.apicatalog.tree.io;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.apicatalog.tree.io.Tree.Event;
@@ -19,7 +20,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
  *
  * @param <T> the type of the tree structure being traversed
  */
-public interface TreeTraverser<T> extends TreeCursor {
+public interface TreeTraverser<T> extends TreeCursor, Iterator<Event> {
 
     /**
      * Initiates a traversal of the specified tree structure.
@@ -36,7 +37,8 @@ public interface TreeTraverser<T> extends TreeCursor {
      * @return the next structural or scalar {@link Event} in the sequence, or null
      *         if the end of the input has been reached.
      */
-    Event next();
+    @Override
+    Event next(); 
 
     void reset(T tree);
 

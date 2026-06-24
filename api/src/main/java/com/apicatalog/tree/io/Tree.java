@@ -50,20 +50,21 @@ public final class Tree {
 
     public static boolean identical(TreeTraverser<?> tree1, TreeTraverser<?> tree2, ScalarEquality scalarEquals) {
 
-        var event1 = tree1.next();
-        var event2 = tree2.next();
+        while (tree1.hasNext() && tree2.hasNext()) {
 
-        while (event1 != null
-                && Objects.equals(event1, event2)
-                // cursor
-                && Objects.equals(tree1.nodeType(), tree2.nodeType())
-                && (tree1.nodeType().isStructure() || scalarEquals.test(tree1, tree2))) {
+            var event1 = tree1.next();
+            var event2 = tree2.next();
 
-            event1 = tree1.next();
-            event2 = tree2.next();
+            if (!Objects.equals(event1, event2)
+                    // cursor
+                    || !Objects.equals(tree1.nodeType(), tree2.nodeType())
+                    || (tree1.nodeType().isScalar() && !scalarEquals.test(tree1, tree2))) {
+
+                return false;
+            }
         }
 
-        return event1 == null && event2 == null;
+        return !tree1.hasNext() && !tree2.hasNext();
     }
 
     // --- Convenience & Type Coercion Methods ---

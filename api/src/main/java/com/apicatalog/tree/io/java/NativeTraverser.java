@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io.java;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
@@ -8,6 +9,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.EventConsumer;
@@ -22,7 +24,7 @@ import com.apicatalog.tree.io.TreeTraverser;
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
+public final class NativeTraverser implements TreeTraverser<Object>, TreeProcessor, Iterator<Event> {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -32,20 +34,20 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
      */
     public static final int UNLIMITED_NODES = -1;
 
-    protected final Deque<Object> stack;
+    private final Deque<Object> stack;
 
-    protected Comparator<Entry<?, ?>> entryComparator;
+    private Comparator<Entry<?, ?>> entryComparator;
 
-    protected int maxVisited;
-    protected int maxDepth;
+    private int maxVisited;
+    private int maxDepth;
 
-    protected int depth;
-    protected int visited;
+    private int depth;
+    private int visited;
 
-    protected Object currentNode;
+    private Object currentNode;
 
-    protected NodeType currentNodeType;
-    protected NodeContext currentNodeContext;
+    private NodeType currentNodeType;
+    private NodeContext currentNodeContext;
 
     public NativeTraverser(Object node) {
         this(node, new ArrayDeque<>(), null);
@@ -55,7 +57,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
         this(node, new ArrayDeque<>(), entryComparator);
     }
 
-    protected NativeTraverser(Object node, Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    private NativeTraverser(Object node, Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
@@ -74,19 +76,23 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
 
     @Override
     public boolean traverse(EventConsumer consumer) throws IOException {
-        var event = next();
-        while (event != null) {
-            if (!consumer.accept(event, this)) {
+        while (hasNext()) {
+            if (!consumer.accept(next(), this)) {
                 return false;
             }
-            event = next();
         }
         return true;
     }
 
+    @Override
+    public boolean hasNext() {
+        return !stack.isEmpty();
+    }
+
+    @Override
     public Event next() {
         if (stack.isEmpty()) {
-            return null;
+            throw new NoSuchElementException();
         }
 
         if (maxVisited > 0 && maxVisited < visited) {
@@ -210,13 +216,13 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             currentNodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
         }
-        
+
         case Enum<?> enumeration -> {
             currentNode = enumeration.name();
             currentNodeType = NodeType.STRING;
             yield Event.SCALAR;
         }
-        
+
         default -> {
             currentNodeType = switch (currentNode) {
             case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
@@ -332,9 +338,9 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     }
 
     private static Iterator<Object> primitiveArrayIterator(Object primitiveArray) {
-        return new java.util.Iterator<Object>() {
+        return new Iterator<Object>() {
             private int index = 0;
-            private final int length = java.lang.reflect.Array.getLength(primitiveArray);
+            private final int length = Array.getLength(primitiveArray);
 
             @Override
             public boolean hasNext() {
@@ -344,15 +350,15 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             @Override
             public Object next() {
                 if (!hasNext()) {
-                    throw new java.util.NoSuchElementException();
+                    throw new NoSuchElementException();
                 }
-                return java.lang.reflect.Array.get(primitiveArray, index++);
+                return Array.get(primitiveArray, index++);
             }
         };
     }
 
     private static Iterator<Object> arrayIterator(Object[] array) {
-        return new java.util.Iterator<Object>() {
+        return new Iterator<Object>() {
             private int index = 0;
 
             @Override
@@ -363,7 +369,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             @Override
             public Object next() {
                 if (!hasNext()) {
-                    throw new java.util.NoSuchElementException();
+                    throw new NoSuchElementException();
                 }
                 return array[index++];
             }
