@@ -3,7 +3,7 @@ package com.apicatalog.tree.io;
 import java.util.Comparator;
 import java.util.Map.Entry;
 
-import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.EventConsumer;
 import com.apicatalog.tree.io.Tree.NodeType;
 
 /**
@@ -19,11 +19,6 @@ import com.apicatalog.tree.io.Tree.NodeType;
  */
 public interface TreeTraverser<T> extends TreeCursor {
 
-    @FunctionalInterface
-    interface StateConsumer<T> {
-        boolean accept(Event event, TreeTraverser<T> cursor) throws TreeIOException;
-    }
-    
     /**
      * Initiates a traversal of the specified tree structure.
      *
@@ -32,7 +27,7 @@ public interface TreeTraverser<T> extends TreeCursor {
      * @throws TreeIOException      if an I/O error occurs during traversal
      * @throws NullPointerException if {@code tree} or {@code consumer} is null
      */
-    boolean traverse(StateConsumer<T> consumer) throws TreeIOException;
+    boolean traverse(EventConsumer consumer) throws TreeIOException;
 
     void reset(T tree);
     

@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.EventConsumer;
 
 /**
  * Provides a uniform, performant, pull-based streaming abstraction for parsing
@@ -15,11 +15,6 @@ import com.apicatalog.tree.io.Tree.Event;
  */
 public interface TreeParser extends TreeCursor {
 
-    @FunctionalInterface
-    interface StateConsumer {
-        boolean accept(Event event, TreeParser cursor) throws TreeIOException;
-    }
-    
 //    
 //    /**
 //     * Advances the parser to the next token in the stream and returns its type.
@@ -30,7 +25,7 @@ public interface TreeParser extends TreeCursor {
 //     */
 //    Event next() throws TreeIOException;
 //    
-    default boolean parse(StateConsumer consumer) throws TreeIOException {
+    default boolean parse(EventConsumer consumer) throws TreeIOException {
         var event = next();
         while (event != null) {
             if (!consumer.accept(event, this)) {

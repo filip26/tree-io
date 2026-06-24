@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.apicatalog.tree.io.Tree.Event;
+import com.apicatalog.tree.io.Tree.EventConsumer;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
@@ -72,7 +73,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     }
 
     @Override
-    public boolean traverse(StateConsumer<Object> consumer) throws TreeIOException {
+    public boolean traverse(EventConsumer consumer) throws TreeIOException {
         var event = next();
         while (event != null) {
             if (!consumer.accept(event, this)) {

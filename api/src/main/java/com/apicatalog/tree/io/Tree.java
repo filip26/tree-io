@@ -2,7 +2,6 @@ package com.apicatalog.tree.io;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,7 @@ import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.java.NativeComposer;
 import com.apicatalog.tree.io.java.NativeTraverser;
 
@@ -44,7 +44,7 @@ public final class Tree {
         return composer.compose();
     }
 
-    public static boolean equivalent(TreeCursor cursor1, TreeCursor cursor2, BiPredicate<TreeCursor, TreeCursor> equivalentScalar) throws TreeIOException {
+    public static boolean equivalent(TreeCursor cursor1, TreeCursor cursor2, BiPredicate<TreeCursor, TreeCursor> scalarEquals) throws TreeIOException {
 
         var event1 = cursor1.next();
         var event2 = cursor2.next();
@@ -53,7 +53,7 @@ public final class Tree {
                 && Objects.equals(event1, event2)
                 // cursor
                 && Objects.equals(cursor1.nodeType(), cursor2.nodeType())
-                && equivalentScalar.test(cursor1, cursor2)) {
+                && scalarEquals.test(cursor1, cursor2)) {
 
             event1 = cursor1.next();
             event2 = cursor2.next();
@@ -220,6 +220,13 @@ public final class Tree {
         END_SEQUENCE,
         SCALAR;
     }
+    
+
+    @FunctionalInterface
+    public interface EventConsumer {
+        <T extends TreeCursor> boolean accept(Event event, T cursor) throws TreeIOException;
+    }
+    
 
     /**
      * Defines the structural role of the token or value being emitted. Ordinarily
