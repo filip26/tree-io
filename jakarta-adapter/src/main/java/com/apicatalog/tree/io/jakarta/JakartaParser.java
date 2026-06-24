@@ -34,7 +34,7 @@ public final class JakartaParser implements TreeParser, TreeProcessor, Closeable
     public static JakartaParser createParser(InputStream is, JsonParserFactory factory) {
         return new JakartaParser(factory.createParser(is));
     }
-    
+
     @Override
     public Features features() {
         return JakartaAdapter.FEATURES;

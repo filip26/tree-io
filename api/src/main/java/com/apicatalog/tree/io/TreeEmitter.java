@@ -31,7 +31,7 @@ import com.apicatalog.tree.io.Tree.NodeContext;
  * an internal nesting stack.
  * </p>
  */
-public interface TreeEmitter /*extends Flushable, Closeable*/ {
+public interface TreeEmitter {
 
     default boolean accept(Event event, TreeCursor cursor) throws IOException {
         switch (event) {
@@ -72,7 +72,6 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
         }
     }
 
-    
     // --- scalars ---
 
     /**
@@ -80,7 +79,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -92,7 +91,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the boolean value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -104,7 +103,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null string value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -116,7 +115,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null numeric value to add.
-     * @throws IOException          if an I/O error occurs during serialization
+     * @throws IOException              if an I/O error occurs during serialization
      *                                  or materialization.
      * @throws IllegalArgumentException if the underlying numeric type is not
      *                                  supported.
@@ -146,7 +145,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null BigInteger value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -158,7 +157,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the long value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -172,7 +171,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the double value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -186,7 +185,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null BigDecimal value to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -198,7 +197,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null byte array to add.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -213,7 +212,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -225,7 +224,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -238,7 +237,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -250,7 +249,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException       if an I/O error occurs during serialization or
+     * @throws IOException           if an I/O error occurs during serialization or
      *                               materialization.
      * @throws IllegalStateException
      */
@@ -280,7 +279,7 @@ public interface TreeEmitter /*extends Flushable, Closeable*/ {
         stringValue(NodeContext.ENTRY_KEY, key);
         numericValue(NodeContext.ENTRY_VALUE, value);
     }
-    
+
     default void entry(String key, BigDecimal value) throws IOException {
         stringValue(NodeContext.ENTRY_KEY, key);
         numericValue(NodeContext.ENTRY_VALUE, value);

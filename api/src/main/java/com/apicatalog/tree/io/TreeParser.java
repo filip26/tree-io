@@ -18,12 +18,6 @@ import com.apicatalog.tree.io.Tree.EventConsumer;
  */
 public interface TreeParser extends TreeCursor {
 
-
-    @FunctionalInterface
-    public interface EventConsumer {
-        <T extends TreeCursor> boolean accept(Event event, T cursor) throws IOException;
-    }
-    
     default boolean parse(EventConsumer consumer) throws IOException {
         var event = next();
         while (event != null) {
@@ -34,7 +28,7 @@ public interface TreeParser extends TreeCursor {
         }
         return true;
     }
-    
+
     /**
      * Advances the cursor to the next token in the stream and returns its type.
      *

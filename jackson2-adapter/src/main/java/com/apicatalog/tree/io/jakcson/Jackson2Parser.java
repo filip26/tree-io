@@ -41,7 +41,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeabl
     public static Jackson2Parser createParser(InputStream is, JsonFactory factory) throws IOException {
         return new Jackson2Parser(factory.createParser(is));
     }
-    
+
     @Override
     public Features features() {
         return Jackson2Adapter.FEATURES;

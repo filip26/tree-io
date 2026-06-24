@@ -38,24 +38,29 @@ public final class Tree {
         parser.parse(emitter::accept);
     }
 
-    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) throws IOException {
-        traverser.traverse(composer::accept);
-        return composer.compose();
+    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) {
+        try {
+            traverser.traverse(composer::accept);
+            return composer.compose();
+        } catch (IOException e) {
+            // should not happen, in-memory operations
+            throw new IllegalStateException(e);
+        }
     }
 
-    public static boolean equals(TreeTraverser<?> cursor1, TreeTraverser<?> cursor2, ScalarEquality scalarEquals) {
+    public static boolean identical(TreeTraverser<?> tree1, TreeTraverser<?> tree2, ScalarEquality scalarEquals) {
 
-        var event1 = cursor1.next();
-        var event2 = cursor2.next();
+        var event1 = tree1.next();
+        var event2 = tree2.next();
 
         while (event1 != null
                 && Objects.equals(event1, event2)
                 // cursor
-                && Objects.equals(cursor1.nodeType(), cursor2.nodeType())
-                && (cursor1.nodeType().isStructure() || scalarEquals.test(cursor1, cursor2))) {
+                && Objects.equals(tree1.nodeType(), tree2.nodeType())
+                && (tree1.nodeType().isStructure() || scalarEquals.test(tree1, tree2))) {
 
-            event1 = cursor1.next();
-            event2 = cursor2.next();
+            event1 = tree1.next();
+            event2 = tree2.next();
         }
 
         return event1 == null && event2 == null;
