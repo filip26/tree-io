@@ -29,7 +29,14 @@ public interface TreeTraverser<T> extends TreeCursor, Iterator<Event> {
      *                 current event type and the traverser instance
      * @throws IOException
      */
-    boolean traverse(EventConsumer consumer) throws IOException;
+    default boolean traverse(EventConsumer consumer) throws IOException {
+        while (hasNext()) {
+            if (!consumer.accept(next(), this)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     /**
      * Advances the cursor to the next token in the stream and returns its type.
@@ -38,7 +45,7 @@ public interface TreeTraverser<T> extends TreeCursor, Iterator<Event> {
      *         if the end of the input has been reached.
      */
     @Override
-    Event next(); 
+    Event next();
 
     void reset(T tree);
 

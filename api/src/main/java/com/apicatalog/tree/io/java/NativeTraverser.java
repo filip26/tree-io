@@ -75,16 +75,6 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
     }
 
     @Override
-    public boolean traverse(EventConsumer consumer) throws IOException {
-        while (hasNext()) {
-            if (!consumer.accept(next(), this)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
     public boolean hasNext() {
         return !stack.isEmpty();
     }

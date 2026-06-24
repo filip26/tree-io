@@ -16,9 +16,9 @@ import com.apicatalog.tree.io.TreeComposer;
 import com.apicatalog.tree.io.TreeCursor;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public class NativeComposer implements TreeComposer<Object>, TreeProcessor {
+public final class NativeComposer implements TreeComposer<Object>, TreeProcessor {
 
-    Deque<Object> stack;
+    private final Deque<Object> stack;
 
     static final Features FEATURES = new Features(
             // keys
