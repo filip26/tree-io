@@ -1,5 +1,8 @@
 package com.apicatalog.tree.io.jakarta;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -11,8 +14,9 @@ import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
 
 import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParserFactory;
 
-public final class JakartaParser implements TreeParser, TreeProcessor {
+public final class JakartaParser implements TreeParser, TreeProcessor, Closeable {
 
     private final JsonParser parser;
     private final Deque<NodeContext> contexts;
@@ -27,6 +31,10 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
         contexts.push(NodeContext.ROOT);
     }
 
+    public static JakartaParser createParser(InputStream is, JsonParserFactory factory) {
+        return new JakartaParser(factory.createParser(is));
+    }
+    
     @Override
     public Features features() {
         return JakartaAdapter.FEATURES;
@@ -138,5 +146,10 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
     @Override
     public String toString() {
         return JakartaParser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";
+    }
+
+    @Override
+    public void close() throws IOException {
+        parser.close();
     }
 }

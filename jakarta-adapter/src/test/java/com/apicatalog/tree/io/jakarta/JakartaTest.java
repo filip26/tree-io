@@ -20,29 +20,38 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.apicatalog.tree.io.Tree;
+
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonGeneratorFactory;
+import jakarta.json.stream.JsonParserFactory;
 
 @TestMethodOrder(OrderAnnotation.class)
 class JakartaTest {
 
-    final static JsonGeneratorFactory FACTORY = Json.createGeneratorFactory(
+    final static JsonGeneratorFactory GENERATOR = Json.createGeneratorFactory(
             Map.of(JsonGenerator.PRETTY_PRINTING, true));
 
-    final static JakartaReader READER = new JakartaReader(Json.createParserFactory(Map.of()));
-    final static JakartaWriter WRITER = new JakartaWriter(FACTORY);
+    final static JsonParserFactory PARSER = Json.createParserFactory(Map.of());
 
     @ParameterizedTest
     @MethodSource({ "resources" })
     void testReadWrite(String name) throws IOException {
-        var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
+
+        Object tree = null;
+
+        try (var parser = JakartaParser.createParser(new ByteArrayInputStream(getResource(name).getBytes()), PARSER)) {
+            tree = Tree.read(parser);
+        }
 
         var bos = new ByteArrayOutputStream();
 
-        WRITER.write(tree, bos);
+        try (var emitter = JakartaEmitter.createEmitter(bos, GENERATOR)) {
+            Tree.write(tree, emitter);
+        }
 
         assertEquals(getResource(name), bos.toString());
     }

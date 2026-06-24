@@ -1,6 +1,8 @@
 package com.apicatalog.tree.io.jakcson;
 
+import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -10,9 +12,10 @@ import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 
-public final class Jackson2Parser implements TreeParser, TreeProcessor {
+public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeable {
 
     private final JsonParser parser;
     private final Deque<NodeContext> contexts;
@@ -35,6 +38,10 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
         contexts.push(NodeContext.ROOT);
     }
 
+    public static Jackson2Parser createParser(InputStream is, JsonFactory factory) throws IOException {
+        return new Jackson2Parser(factory.createParser(is));
+    }
+    
     @Override
     public Features features() {
         return Jackson2Adapter.FEATURES;
@@ -162,5 +169,10 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     @Override
     public String toString() {
         return Jackson2Parser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";
+    }
+
+    @Override
+    public void close() throws IOException {
+        parser.close();
     }
 }

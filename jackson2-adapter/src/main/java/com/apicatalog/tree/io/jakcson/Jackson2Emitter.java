@@ -1,6 +1,9 @@
 package com.apicatalog.tree.io.jakcson;
 
+import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -8,6 +11,7 @@ import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeEmitter;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
@@ -23,9 +27,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
  * operates on a forward-only stream writer.
  * </p>
  */
-public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
+public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flushable, Closeable {
 
-    private final JsonGenerator writer;
+    private final JsonGenerator generator;
 
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}.
@@ -34,7 +38,11 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      *               {@code null}
      */
     public Jackson2Emitter(JsonGenerator writer) {
-        this.writer = writer;
+        this.generator = writer;
+    }
+
+    public static Jackson2Emitter createEmitter(OutputStream os, JsonFactory factory) throws IOException {
+        return new Jackson2Emitter(factory.createGenerator(os));
     }
 
     @Override
@@ -55,7 +63,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeStartObject();
+        generator.writeStartObject();
     }
 
     /**
@@ -68,8 +76,8 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
     public void beginSequence(NodeContext context) throws IOException {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
-        }        
-            writer.writeStartArray();
+        }
+        generator.writeStartArray();
     }
 
     /**
@@ -81,12 +89,12 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void endMap(NodeContext context) throws IOException {
-            writer.writeEndObject();
+        generator.writeEndObject();
     }
-    
+
     @Override
     public void endSequence(NodeContext context) throws IOException {
-            writer.writeEndArray();
+        generator.writeEndArray();
     }
 
     /**
@@ -100,7 +108,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeNull();
+        generator.writeNull();
     }
 
     /**
@@ -114,7 +122,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeBoolean(value);
+        generator.writeBoolean(value);
     }
 
     /**
@@ -126,11 +134,11 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void stringValue(NodeContext context, String value) throws IOException {
-            if (context == NodeContext.ENTRY_KEY) {
-                writer.writeFieldName(value);
-                return;
-            }
-            writer.writeString(value);
+        if (context == NodeContext.ENTRY_KEY) {
+            generator.writeFieldName(value);
+            return;
+        }
+        generator.writeString(value);
     }
 
     /**
@@ -141,11 +149,11 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void numericValue(NodeContext context, long value) throws IOException {
-            if (context == NodeContext.ENTRY_KEY) {
-                writer.writeFieldId(value);
-                return;
-            }
-            writer.writeNumber(value);
+        if (context == NodeContext.ENTRY_KEY) {
+            generator.writeFieldId(value);
+            return;
+        }
+        generator.writeNumber(value);
     }
 
     /**
@@ -156,11 +164,11 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void numericValue(NodeContext context, BigInteger value) throws IOException {
-            if (context == NodeContext.ENTRY_KEY) {
-                writer.writeFieldId(value.longValueExact());
-                return;
-            }
-            writer.writeNumber(value);
+        if (context == NodeContext.ENTRY_KEY) {
+            generator.writeFieldId(value.longValueExact());
+            return;
+        }
+        generator.writeNumber(value);
     }
 
     /**
@@ -174,7 +182,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeNumber(value);
+        generator.writeNumber(value);
     }
 
     /**
@@ -185,11 +193,11 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void numericValue(NodeContext context, BigDecimal value) throws IOException {
-            if (context == NodeContext.ENTRY_KEY) {
-                writer.writeFieldId(value.longValueExact());
-                return;
-            }
-            writer.writeNumber(value);
+        if (context == NodeContext.ENTRY_KEY) {
+            generator.writeFieldId(value.longValueExact());
+            return;
+        }
+        generator.writeNumber(value);
     }
 
     /**
@@ -204,5 +212,15 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor {
     @Override
     public void binaryValue(NodeContext context, byte[] value) {
         throw new UnsupportedOperationException("JSON does not support a native binary type.");
+    }
+
+    @Override
+    public void close() throws IOException {
+        generator.close();
+    }
+
+    @Override
+    public void flush() throws IOException {
+        generator.flush();
     }
 }

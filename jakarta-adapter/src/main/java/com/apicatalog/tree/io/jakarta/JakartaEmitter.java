@@ -1,5 +1,9 @@
 package com.apicatalog.tree.io.jakarta;
 
+import java.io.Closeable;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.function.Function;
@@ -11,17 +15,17 @@ import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.java.NativeTraverser;
 
 import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonGeneratorFactory;
 
 /**
  * A specialized class that serializes any tree-like source to a JSON document
  * using the Jakarta JSON-P streaming API ({@link JsonGenerator}).
  * <p>
- * This class implements both {@link NativeTraverser} and
- * {@link TreeEmitter}, enabling it to function as a self-contained
- * serialization engine. It traverses a source structure (via its
- * {@code NodeVisitor} parent) and consumes its own traversal events (via its
- * {@code NodeGenerator} implementation) to write directly to the provided
- * {@code JsonGenerator}.
+ * This class implements both {@link NativeTraverser} and {@link TreeEmitter},
+ * enabling it to function as a self-contained serialization engine. It
+ * traverses a source structure (via its {@code NodeVisitor} parent) and
+ * consumes its own traversal events (via its {@code NodeGenerator}
+ * implementation) to write directly to the provided {@code JsonGenerator}.
  * </p>
  * <p>
  * This class is stateful and intended for a single serialization task, as it
@@ -30,7 +34,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaEmitter implements TreeEmitter, TreeProcessor {
+public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Closeable {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -47,7 +51,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
     }
 
 //    public static final JakartaEmitter createEmitter()
-    
+
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}
      * with custom handling for binary data.
@@ -62,7 +66,11 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         this.writer = writer;
         this.encoder = encoder;
     }
-    
+
+    public static JakartaEmitter createEmitter(OutputStream os, JsonGeneratorFactory factory) {
+        return new JakartaEmitter(factory.createGenerator(os));
+    }
+
     @Override
     public Features features() {
         return JakartaAdapter.FEATURES;
@@ -79,7 +87,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeNull();
+        writer.writeNull();
     }
 
     /**
@@ -93,7 +101,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.write(node);
+        writer.write(node);
     }
 
     /**
@@ -105,11 +113,11 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
      */
     @Override
     public void stringValue(NodeContext context, String node) {
-            if (context == NodeContext.ENTRY_KEY) {
-                writer.writeKey(node);
-                return;
-            }
-            writer.write(node);
+        if (context == NodeContext.ENTRY_KEY) {
+            writer.writeKey(node);
+            return;
+        }
+        writer.write(node);
     }
 
     /**
@@ -123,7 +131,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.write(node);
+        writer.write(node);
     }
 
     /**
@@ -137,7 +145,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.write(node);
+        writer.write(node);
     }
 
     /**
@@ -151,7 +159,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.write(node);
+        writer.write(node);
     }
 
     /**
@@ -165,7 +173,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.write(node);
+        writer.write(node);
     }
 
     /**
@@ -186,7 +194,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (encoder == null) {
             throw new UnsupportedOperationException("Binary values are not supported without a configured encoder.");
         }
-            writer.write(encoder.apply(node));
+        writer.write(encoder.apply(node));
     }
 
     /**
@@ -200,7 +208,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeStartObject();
+        writer.writeStartObject();
     }
 
     /**
@@ -211,11 +219,11 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
      * 
      */
     @Override
-    public void beginSequence(NodeContext context)  {
+    public void beginSequence(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeStartArray();
+        writer.writeStartArray();
     }
 
     /**
@@ -231,7 +239,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeEnd();
+        writer.writeEnd();
     }
 
     @Override
@@ -239,6 +247,16 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-            writer.writeEnd();
+        writer.writeEnd();
+    }
+
+    @Override
+    public void close() throws IOException {
+        writer.close();
+    }
+
+    @Override
+    public void flush() throws IOException {
+        writer.flush();
     }
 }
