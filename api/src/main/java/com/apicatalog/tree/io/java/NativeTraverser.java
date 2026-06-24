@@ -200,6 +200,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             yield Event.BEGIN_SEQUENCE;
         }
 
+        // object arrays, i.e. String
         case Object[] array -> {
             stack.push(Event.END_SEQUENCE);
             stack.push(currentNodeContext);
@@ -209,7 +210,13 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             currentNodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
         }
-
+        
+        case Enum<?> enumeration -> {
+            currentNode = enumeration.name();
+            currentNodeType = NodeType.STRING;
+            yield Event.SCALAR;
+        }
+        
         default -> {
             currentNodeType = switch (currentNode) {
             case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
