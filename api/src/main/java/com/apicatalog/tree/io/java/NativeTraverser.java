@@ -84,7 +84,6 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
         return true;
     }
 
-//    @Override
     public Event next() {
         if (stack.isEmpty()) {
             return null;
@@ -111,6 +110,11 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             if (!it.hasNext()) {
                 stack.pop(); // remove iterator
                 currentNode = stack.pop();
+                currentNodeType = switch (currentNode) {
+                case Collection<?> col -> NodeType.SEQUENCE;
+                case Map<?, ?> map -> NodeType.MAP;
+                default -> throw new IllegalStateException();
+                };
                 currentNodeContext = (NodeContext) stack.pop();
                 depth -= 1;
                 return (Event) stack.pop();

@@ -51,10 +51,14 @@ public final class Tree {
                 && Objects.equals(event1, event2)
                 // cursor
                 && Objects.equals(cursor1.nodeType(), cursor2.nodeType())
-                && scalarEquals.test(cursor1, cursor2)) {
+                && (cursor1.nodeType().isStructure() || scalarEquals.test(cursor1, cursor2))) {
 
+
+            
             event1 = cursor1.next();
             event2 = cursor2.next();
+            
+            System.out.println("> " + event1 + ", " + cursor1.nodeType());
         }
 
         return event1 == null && event2 == null;
@@ -228,7 +232,7 @@ public final class Tree {
 
     @FunctionalInterface
     public interface ScalarEquality {
-        boolean test(TreeCursor cursor1, TreeCursor cursor2);
+        boolean test(TreeCursor cursor1, TreeCursor cursor2) throws TreeIOException;
     }
 
     /**
