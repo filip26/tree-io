@@ -152,17 +152,22 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
 
         visited++;
 
-        switch (currentNode) {
-        case Collection<?> col:
+        return switch (currentNode) {
+        case null -> {
+            currentNodeType = NodeType.NULL;
+            yield Event.SCALAR;
+        }
+
+        case Collection<?> col -> {
             stack.push(Event.END_SEQUENCE);
             stack.push(currentNodeContext);
             stack.push(col);
             stack.push(col.iterator());
             depth += 1;
             currentNodeType = NodeType.SEQUENCE;
-            return Event.BEGIN_SEQUENCE;
-
-        case Map<?, ?> map:
+            yield Event.BEGIN_SEQUENCE;
+        }
+        case Map<?, ?> map -> {
             stack.push(Event.END_MAP);
             stack.push(currentNodeContext);
             stack.push(map);
@@ -176,26 +181,49 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
 
             depth += 1;
             currentNodeType = NodeType.MAP;
-            return Event.BEGIN_MAP;
+            yield Event.BEGIN_MAP;
+        }
 
-        case null:
-            currentNodeType = NodeType.NULL;
-            return Event.SCALAR;
+        case byte[] bytes -> {
+            currentNodeType = NodeType.BINARY;
+            yield Event.SCALAR;
+        }
 
-        default:
+        // primitive array, i.e. int[], double[], etc.
+        case Object primitives when primitives != null && primitives.getClass().isArray() && primitives.getClass().getComponentType().isPrimitive() -> {
+            stack.push(Event.END_SEQUENCE);
+            stack.push(currentNodeContext);
+            stack.push(primitives);
+            stack.push(primitiveArrayIterator(primitives));
+            depth += 1;
+            currentNodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+
+        case Object[] array -> {
+            stack.push(Event.END_SEQUENCE);
+            stack.push(currentNodeContext);
+            stack.push(array);
+            stack.push(arrayIterator(array));
+            depth += 1;
+            currentNodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+
+        default -> {
             currentNodeType = switch (currentNode) {
             case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
             case String string -> NodeType.STRING;
             case Number number -> NodeType.NUMBER;
-            case byte[] bytes -> NodeType.BINARY;
 
             default -> throw new IllegalStateException(
                     """
                     Unexpected scalar node value=%s"
                     """.formatted(currentNode));
             };
-            return Event.SCALAR;
+            yield Event.SCALAR;
         }
+        };
     }
 
     public void reset(Object node) {
@@ -294,5 +322,44 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     @Override
     public void comparator(Comparator<Entry<?, ?>> entryComparator) {
         this.entryComparator = entryComparator;
+    }
+
+    private static Iterator<Object> primitiveArrayIterator(Object primitiveArray) {
+        return new java.util.Iterator<Object>() {
+            private int index = 0;
+            private final int length = java.lang.reflect.Array.getLength(primitiveArray);
+
+            @Override
+            public boolean hasNext() {
+                return index < length;
+            }
+
+            @Override
+            public Object next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
+                return java.lang.reflect.Array.get(primitiveArray, index++);
+            }
+        };
+    }
+
+    private static Iterator<Object> arrayIterator(Object[] array) {
+        return new java.util.Iterator<Object>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < array.length;
+            }
+
+            @Override
+            public Object next() {
+                if (!hasNext()) {
+                    throw new java.util.NoSuchElementException();
+                }
+                return array[index++];
+            }
+        };
     }
 }
