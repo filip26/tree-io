@@ -2,6 +2,8 @@ package com.apicatalog.tree.io;
 
 import java.io.InputStream;
 
+import com.apicatalog.tree.io.Tree.EventConsumer;
+
 /**
  * Provides a uniform abstraction for de-serializing tree-like data structures.
  * This interface decouples the process of describing a tree from its final
@@ -11,9 +13,9 @@ import java.io.InputStream;
  * structures.
  * </p>
  */
-@FunctionalInterface
 public interface TreeReader<T> {
 
     T read(InputStream is) throws TreeIOException;
 
+//    <C> read(InputStream is, EventConsumer consumer)
 }

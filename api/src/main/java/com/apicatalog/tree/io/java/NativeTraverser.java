@@ -86,7 +86,6 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
 
 //    @Override
     public Event next() {
-
         if (stack.isEmpty()) {
             return null;
         }
@@ -138,7 +137,8 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
             // process property value
             currentNode = entry.getValue();
             // restore map iterator over entries
-            var it = (Iterator<?>) stack.pop();
+            stack.pop();
+            var it = (Iterator<?>) stack.peek();
             currentNodeContext = it.hasNext() ? NodeContext.ENTRY_VALUE : NodeContext.LAST_ENTRY_VALUE;
 
         } else {

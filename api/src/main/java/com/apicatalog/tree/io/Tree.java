@@ -7,11 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.java.NativeComposer;
 import com.apicatalog.tree.io.java.NativeTraverser;
 
@@ -35,7 +33,7 @@ public final class Tree {
         traverser.traverse(emitter::accept);
     }
 
-    public static void clone(TreeParser parser, TreeEmitter emitter) throws TreeIOException {
+    public static void copy(TreeParser parser, TreeEmitter emitter) throws TreeIOException {
         parser.parse(emitter::accept);
     }
 
@@ -44,7 +42,7 @@ public final class Tree {
         return composer.compose();
     }
 
-    public static boolean equivalent(TreeCursor cursor1, TreeCursor cursor2, BiPredicate<TreeCursor, TreeCursor> scalarEquals) throws TreeIOException {
+    public static boolean equals(TreeCursor cursor1, TreeCursor cursor2, ScalarEquality scalarEquals) throws TreeIOException {
 
         var event1 = cursor1.next();
         var event2 = cursor2.next();
@@ -59,7 +57,7 @@ public final class Tree {
             event2 = cursor2.next();
         }
 
-        return event2 == null;
+        return event1 == null && event2 == null;
 
     }
 
@@ -220,13 +218,18 @@ public final class Tree {
         END_SEQUENCE,
         SCALAR;
     }
-    
+
+    // --- ... ---
 
     @FunctionalInterface
     public interface EventConsumer {
         <T extends TreeCursor> boolean accept(Event event, T cursor) throws TreeIOException;
     }
-    
+
+    @FunctionalInterface
+    public interface ScalarEquality {
+        boolean test(TreeCursor cursor1, TreeCursor cursor2);
+    }
 
     /**
      * Defines the structural role of the token or value being emitted. Ordinarily
