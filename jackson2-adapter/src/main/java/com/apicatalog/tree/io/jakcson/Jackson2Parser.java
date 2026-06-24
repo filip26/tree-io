@@ -79,6 +79,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
         case FIELD_NAME -> {
             switchMapContext();
             nodeType = NodeType.STRING;
+            scalar = parser.getText();
             yield Event.SCALAR;
         }
         case VALUE_TRUE -> {
