@@ -5,7 +5,6 @@ import java.io.InputStream;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.TreeReader;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -17,7 +16,7 @@ public final class Jackson2Reader implements TreeReader<Object>, TreeProcessor {
     public Jackson2Reader(JsonFactory factory) {
         this.factory = factory;
     }
-    
+
     @Override
     public Features features() {
         // TODO Auto-generated method stub
@@ -25,13 +24,10 @@ public final class Jackson2Reader implements TreeReader<Object>, TreeProcessor {
     }
 
     @Override
-    public Object read(InputStream is) throws TreeIOException {
+    public Object read(InputStream is) throws IOException {
         try (var jsonParser = factory.createParser(is)) {
             var parser = new Jackson2Parser(jsonParser);
             return Tree.read(parser);
-            
-        } catch (IOException e) {
-            throw new TreeIOException(e);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -14,6 +15,6 @@ import java.io.OutputStream;
 @FunctionalInterface
 public interface TreeWriter<T> {
 
-    void write(T node, OutputStream os) throws TreeIOException;
+    void write(T node, OutputStream os) throws IOException;
 
 }

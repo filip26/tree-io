@@ -1,8 +1,10 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Map.Entry;
 
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.EventConsumer;
 import com.apicatalog.tree.io.Tree.NodeType;
 
@@ -22,17 +24,24 @@ public interface TreeTraverser<T> extends TreeCursor {
     /**
      * Initiates a traversal of the specified tree structure.
      *
-     * @param consumer the visitor logic invoked for each node, receiving the 
-     * current event type and the traverser instance
-     * @throws TreeIOException      if an I/O error occurs during traversal
-     * @throws NullPointerException if {@code tree} or {@code consumer} is null
+     * @param consumer the visitor logic invoked for each node, receiving the
+     *                 current event type and the traverser instance
+     * @throws IOException
      */
-    boolean traverse(EventConsumer consumer) throws TreeIOException;
+    boolean traverse(EventConsumer consumer) throws IOException;
+
+    /**
+     * Advances the cursor to the next token in the stream and returns its type.
+     *
+     * @return the next structural or scalar {@link Event} in the sequence, or null
+     *         if the end of the input has been reached.
+     */
+    Event next();
 
     void reset(T tree);
-    
+
     void comparator(Comparator<Entry<?, ?>> entryComparator);
-    
+
     /**
      * Returns the number of elements contained in the current structural node.
      * <p>
@@ -42,10 +51,9 @@ public interface TreeTraverser<T> extends TreeCursor {
      *
      * @return the number of elements in the current structure
      * @throws IllegalStateException if the current node is not a MAP or SEQUENCE
-     * @throws TreeIOException       if an I/O error occurs retrieving the size
      */
-    int structureSize() throws TreeIOException;
-    
-    //TODO skipMap, skipSequence, skipEntryValue
-    
+    int structureSize();
+
+    // TODO skipMap, skipSequence, skipEntryValue
+
 }

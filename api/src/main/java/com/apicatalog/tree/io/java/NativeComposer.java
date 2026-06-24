@@ -14,7 +14,6 @@ import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeComposer;
 import com.apicatalog.tree.io.TreeCursor;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 
 public class NativeComposer implements TreeComposer<Object>, TreeProcessor {
@@ -73,7 +72,7 @@ public class NativeComposer implements TreeComposer<Object>, TreeProcessor {
     }
 
     @Override
-    public boolean accept(Event event, TreeCursor cursor) throws TreeIOException {
+    public boolean accept(Event event, TreeCursor cursor) {
         switch (event) {
         case BEGIN_MAP:
             stack.push(new LinkedHashMap<>());
@@ -138,7 +137,7 @@ public class NativeComposer implements TreeComposer<Object>, TreeProcessor {
     }
 
     @Override
-    public Object compose() throws TreeIOException {
+    public Object compose() {
         if (stack.size() > 1) {
             throw new IllegalStateException();
         }

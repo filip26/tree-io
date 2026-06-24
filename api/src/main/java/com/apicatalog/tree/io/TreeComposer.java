@@ -4,9 +4,9 @@ import com.apicatalog.tree.io.Tree.Event;
 
 public interface TreeComposer<T> {
 
-    boolean accept(Event event, TreeCursor cursor) throws TreeIOException;
+    boolean accept(Event event, TreeCursor cursor);
 
-    T compose() throws TreeIOException;
+    T compose();
 
 }
 

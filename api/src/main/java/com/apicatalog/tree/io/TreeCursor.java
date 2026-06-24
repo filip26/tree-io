@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io;
 
-import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 
@@ -16,44 +15,28 @@ import com.apicatalog.tree.io.Tree.NodeType;
 public interface TreeCursor {
 
     /**
-     * Advances the cursor to the next token in the stream and returns its type.
-     *
-     * @return the next structural or scalar {@link Event} in the sequence, or null
-     *         if the end of the input (EOF) has been reached.
-     * @throws TreeIOException
-     */
-    Event next() throws TreeIOException;
-    
-    
-    /**
      * Retrieves the numeric value at the current cursor position.
      *
      * @return the numeric value as a Number
      * @throws IllegalStateException if the current node is not a NUMBER type
-     * @throws TreeIOException       if an I/O error occurs while retrieving the
-     *                               value
      */
-    Number numberValue() throws TreeIOException;
+    Number numberValue();
 
     /**
      * Retrieves the string value at the current cursor position.
      *
      * @return the string value
      * @throws IllegalStateException if the current node is not a STRING type
-     * @throws TreeIOException       if an I/O error occurs while retrieving the
-     *                               value
      */
-    String stringValue() throws TreeIOException;
+    String stringValue();
 
     /**
      * Retrieves the binary data at the current cursor position.
      *
      * @return a byte array containing the binary payload
      * @throws IllegalStateException if the current node is not a BINARY type
-     * @throws TreeIOException       if an I/O error occurs while retrieving the
-     *                               value
      */
-    byte[] binaryValue() throws TreeIOException;
+    byte[] binaryValue();
 
     /**
      * Returns the type of the current node.

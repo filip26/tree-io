@@ -1,18 +1,15 @@
 package com.apicatalog.tree.io.jakarta;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
 
-import jakarta.json.JsonException;
 import jakarta.json.stream.JsonParser;
 
 public final class JakartaParser implements TreeParser, TreeProcessor {
@@ -36,7 +33,7 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Event next() throws TreeIOException {
+    public Event next() {
 
         if (!parser.hasNext()) {
             nodeType = null;
@@ -46,79 +43,75 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
 
         this.context = contexts.peek();
 
-        try {
-            var lastEvent = parser.next();
-            return switch (lastEvent) {
-            case START_OBJECT -> {
-                contexts.push(NodeContext.ENTRY_KEY);
-                nodeType = NodeType.MAP;
-                yield Event.BEGIN_MAP;
-            }
-            case END_OBJECT -> {
-                contexts.pop();
-                this.context = contexts.peek();
-                switchMapContext();
-                nodeType = NodeType.MAP;
-                yield Event.END_MAP;
-            }
-            case START_ARRAY -> {
-                contexts.push(NodeContext.ELEMENT);
-                nodeType = NodeType.SEQUENCE;
-                yield Event.BEGIN_SEQUENCE;
-            }
-            case END_ARRAY -> {
-                contexts.pop();
-                this.context = contexts.peek();
-                switchMapContext();
-                nodeType = NodeType.SEQUENCE;
-                yield Event.END_SEQUENCE;
-            }
-            case VALUE_NULL -> {
-                switchMapContext();
-                nodeType = NodeType.NULL;
-                yield Event.SCALAR;
-            }
-            case VALUE_TRUE -> {
-                switchMapContext();
-                nodeType = NodeType.TRUE;
-                yield Event.SCALAR;
-            }
-            case VALUE_FALSE -> {
-                switchMapContext();
-                nodeType = NodeType.FALSE;
-                yield Event.SCALAR;
-            }
-            case VALUE_NUMBER -> {
-                switchMapContext();
-                nodeType = NodeType.NUMBER;
-                yield Event.SCALAR;
-            }
-            case KEY_NAME, VALUE_STRING -> {
-                switchMapContext();
-                nodeType = NodeType.STRING;
-                yield Event.SCALAR;
-            }
-            };
-
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
+        var lastEvent = parser.next();
+        return switch (lastEvent) {
+        case START_OBJECT -> {
+            contexts.push(NodeContext.ENTRY_KEY);
+            nodeType = NodeType.MAP;
+            yield Event.BEGIN_MAP;
         }
+        case END_OBJECT -> {
+            contexts.pop();
+            this.context = contexts.peek();
+            switchMapContext();
+            nodeType = NodeType.MAP;
+            yield Event.END_MAP;
+        }
+        case START_ARRAY -> {
+            contexts.push(NodeContext.ELEMENT);
+            nodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+        case END_ARRAY -> {
+            contexts.pop();
+            this.context = contexts.peek();
+            switchMapContext();
+            nodeType = NodeType.SEQUENCE;
+            yield Event.END_SEQUENCE;
+        }
+        case VALUE_NULL -> {
+            switchMapContext();
+            nodeType = NodeType.NULL;
+            yield Event.SCALAR;
+        }
+        case VALUE_TRUE -> {
+            switchMapContext();
+            nodeType = NodeType.TRUE;
+            yield Event.SCALAR;
+        }
+        case VALUE_FALSE -> {
+            switchMapContext();
+            nodeType = NodeType.FALSE;
+            yield Event.SCALAR;
+        }
+        case VALUE_NUMBER -> {
+            switchMapContext();
+            nodeType = NodeType.NUMBER;
+            yield Event.SCALAR;
+        }
+        case KEY_NAME, VALUE_STRING -> {
+            switchMapContext();
+            nodeType = NodeType.STRING;
+            yield Event.SCALAR;
+        }
+        };
+
     }
 
     @Override
-    public Number numberValue() throws TreeIOException {
+    public Number numberValue() {
         return parser.isIntegralNumber()
                 ? parser.getLong()
                 : parser.getBigDecimal();
     }
 
     @Override
-    public String stringValue() throws TreeIOException {
+    public String stringValue() {
         return parser.getString();
     }
 
     @Override
-    public byte[] binaryValue() throws TreeIOException {
+    public byte[] binaryValue() {
         throw new UnsupportedOperationException();
     }
 
@@ -141,7 +134,7 @@ public final class JakartaParser implements TreeParser, TreeProcessor {
             contexts.push(NodeContext.ENTRY_KEY);
         }
     }
-    
+
     @Override
     public String toString() {
         return JakartaParser.class.getSimpleName() + "[context=" + context + ", type=" + nodeType + "]";

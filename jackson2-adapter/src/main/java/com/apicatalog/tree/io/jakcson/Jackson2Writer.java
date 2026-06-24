@@ -5,7 +5,6 @@ import java.io.OutputStream;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.TreeWriter;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -25,13 +24,10 @@ public final class Jackson2Writer implements TreeWriter<Object>, TreeProcessor {
     }
 
     @Override
-    public void write(Object node, OutputStream os) throws TreeIOException {
+    public void write(Object node, OutputStream os) throws IOException {
         try (JsonGenerator generator = factory.createGenerator(os)) {
-            Jackson2Generator writer = new Jackson2Generator(generator);
-            Tree.write(node, writer);
-            
-        } catch (IOException e) {
-            throw new TreeIOException(e);
+            Jackson2Emitter writer = new Jackson2Emitter(generator);
+            Tree.write(node, writer);            
         }        
     }
 

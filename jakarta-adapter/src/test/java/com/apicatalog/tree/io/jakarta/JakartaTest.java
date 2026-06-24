@@ -20,8 +20,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.apicatalog.tree.io.TreeIOException;
-
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
@@ -39,7 +37,7 @@ class JakartaTest {
 
     @ParameterizedTest
     @MethodSource({ "resources" })
-    void testReadWrite(String name) throws TreeIOException, IOException {
+    void testReadWrite(String name) throws IOException {
         var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
 
         var bos = new ByteArrayOutputStream();
@@ -49,7 +47,7 @@ class JakartaTest {
         assertEquals(getResource(name), bos.toString());
     }
 
-    static final Stream<String> resources() throws TreeIOException {
+    static final Stream<String> resources() {
         return Stream.of(new File(JakartaTest.class.getResource("").getPath()).listFiles())
                 .filter(File::isFile)
                 .map(File::getName)

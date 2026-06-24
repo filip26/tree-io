@@ -1,5 +1,8 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
+
+import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.EventConsumer;
 
 /**
@@ -15,17 +18,13 @@ import com.apicatalog.tree.io.Tree.EventConsumer;
  */
 public interface TreeParser extends TreeCursor {
 
-//    
-//    /**
-//     * Advances the parser to the next token in the stream and returns its type.
-//     *
-//     * @return the next structural or scalar {@link Event} in the sequence, or null
-//     *         if the end of the input (EOF) has been reached.
-//     * @throws TreeIOException
-//     */
-//    Event next() throws TreeIOException;
-//    
-    default boolean parse(EventConsumer consumer) throws TreeIOException {
+
+    @FunctionalInterface
+    public interface EventConsumer {
+        <T extends TreeCursor> boolean accept(Event event, T cursor) throws IOException;
+    }
+    
+    default boolean parse(EventConsumer consumer) throws IOException {
         var event = next();
         while (event != null) {
             if (!consumer.accept(event, this)) {
@@ -35,4 +34,13 @@ public interface TreeParser extends TreeCursor {
         }
         return true;
     }
+    
+    /**
+     * Advances the cursor to the next token in the stream and returns its type.
+     *
+     * @return the next structural or scalar {@link Event} in the sequence, or null
+     *         if the end of the input (EOF) has been reached.
+     * @throws IOException
+     */
+    Event next() throws IOException;
 }

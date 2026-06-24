@@ -8,7 +8,6 @@ import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.fasterxml.jackson.core.JsonParser;
@@ -21,6 +20,8 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     private NodeType nodeType;
     private NodeContext context;
 
+    private Object scalar;
+
     public Jackson2Parser(final JsonParser parser) {
         this(parser, new ArrayDeque<NodeContext>());
     }
@@ -29,6 +30,8 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
         this.parser = parser;
         this.contexts = contexts;
         this.nodeType = null;
+        this.context = null;
+        this.scalar = null;
         contexts.push(NodeContext.ROOT);
     }
 
@@ -38,86 +41,60 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
     }
 
     @Override
-    public Event next() throws TreeIOException {
+    public Event next() throws IOException {
 
         this.context = contexts.peek();
+        this.scalar = null;
 
-        try {
-            return switch (parser.nextToken()) {
-            case START_OBJECT -> {
-                contexts.push(NodeContext.ENTRY_KEY);
-                nodeType = NodeType.MAP;
-                yield Event.BEGIN_MAP;
-            }
-            case END_OBJECT -> {
-                contexts.pop();
-                this.context = contexts.peek();
-                switchMapContext();
-                nodeType = NodeType.MAP;
-                yield Event.END_MAP;
-            }
-            case START_ARRAY -> {
-                contexts.push(NodeContext.ELEMENT);
-                nodeType = NodeType.SEQUENCE;
-                yield Event.BEGIN_SEQUENCE;
-            }
-            case END_ARRAY -> {
-                contexts.pop();
-                this.context = contexts.peek();
-                switchMapContext();
-                nodeType = NodeType.SEQUENCE;
-                yield Event.END_SEQUENCE;
-            }
-            case VALUE_NULL -> {
-                switchMapContext();
-                nodeType = NodeType.NULL;
-                yield Event.SCALAR;
-            }
-            case FIELD_NAME -> {
-                switchMapContext();
-                nodeType = NodeType.STRING;
-                yield Event.SCALAR;
-            }
-            case VALUE_TRUE -> {
-                switchMapContext();
-                nodeType = NodeType.TRUE;
-                yield Event.SCALAR;
-            }
-            case VALUE_FALSE -> {
-                switchMapContext();
-                nodeType = NodeType.FALSE;
-                yield Event.SCALAR;
-            }
-            case VALUE_NUMBER_FLOAT, VALUE_NUMBER_INT -> {
-                switchMapContext();
-                nodeType = NodeType.NUMBER;
-                yield Event.SCALAR;
-            }
-            case VALUE_STRING -> {
-                switchMapContext();
-                nodeType = NodeType.STRING;
-                yield Event.SCALAR;
-            }
-            case null -> {
-                nodeType = null;
-                context = contexts.peek();
-                yield null;
-            }
-            default -> throw new IllegalStateException(
-                    """
-                    Unsupported token=%s
-                    """.formatted(parser.currentToken()));
-
-            };
-        } catch (IOException e) {
-            throw new TreeIOException(e);
+        return switch (parser.nextToken()) {
+        case START_OBJECT -> {
+            contexts.push(NodeContext.ENTRY_KEY);
+            nodeType = NodeType.MAP;
+            yield Event.BEGIN_MAP;
         }
-    }
-
-    @Override
-    public Number numberValue() throws TreeIOException {
-        try {
-            return switch (parser.currentToken()) {
+        case END_OBJECT -> {
+            contexts.pop();
+            this.context = contexts.peek();
+            switchMapContext();
+            nodeType = NodeType.MAP;
+            yield Event.END_MAP;
+        }
+        case START_ARRAY -> {
+            contexts.push(NodeContext.ELEMENT);
+            nodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+        case END_ARRAY -> {
+            contexts.pop();
+            this.context = contexts.peek();
+            switchMapContext();
+            nodeType = NodeType.SEQUENCE;
+            yield Event.END_SEQUENCE;
+        }
+        case VALUE_NULL -> {
+            switchMapContext();
+            nodeType = NodeType.NULL;
+            yield Event.SCALAR;
+        }
+        case FIELD_NAME -> {
+            switchMapContext();
+            nodeType = NodeType.STRING;
+            yield Event.SCALAR;
+        }
+        case VALUE_TRUE -> {
+            switchMapContext();
+            nodeType = NodeType.TRUE;
+            yield Event.SCALAR;
+        }
+        case VALUE_FALSE -> {
+            switchMapContext();
+            nodeType = NodeType.FALSE;
+            yield Event.SCALAR;
+        }
+        case VALUE_NUMBER_FLOAT, VALUE_NUMBER_INT -> {
+            switchMapContext();
+            nodeType = NodeType.NUMBER;
+            scalar = switch (parser.currentToken()) {
             case VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
             case VALUE_NUMBER_INT -> parser.getLongValue();
             default -> throw new IllegalStateException(
@@ -125,23 +102,39 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor {
                     Expected number token, but have=%s
                     """.formatted(parser.currentToken()));
             };
-
-        } catch (IOException e) {
-            throw new TreeIOException(e);
+            yield Event.SCALAR;
         }
+        case VALUE_STRING -> {
+            switchMapContext();
+            nodeType = NodeType.STRING;
+            scalar = parser.getText();
+            yield Event.SCALAR;
+        }
+        case null -> {
+            nodeType = null;
+            context = contexts.peek();
+            yield null;
+        }
+        default -> throw new IllegalStateException(
+                """
+                Unsupported token=%s
+                """.formatted(parser.currentToken()));
+
+        };
     }
 
     @Override
-    public String stringValue() throws TreeIOException {
-        try {
-            return parser.getText();
-        } catch (IOException e) {
-            throw new TreeIOException(e);
-        }
+    public Number numberValue() {
+        return (Number) scalar;
     }
 
     @Override
-    public byte[] binaryValue() throws TreeIOException {
+    public String stringValue() {
+        return (String) scalar;
+    }
+
+    @Override
+    public byte[] binaryValue() {
         throw new UnsupportedOperationException();
     }
 

@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io.java;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
@@ -13,7 +14,6 @@ import com.apicatalog.tree.io.Tree.EventConsumer;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.TreeTraverser;
 
@@ -73,7 +73,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     }
 
     @Override
-    public boolean traverse(EventConsumer consumer) throws TreeIOException {
+    public boolean traverse(EventConsumer consumer) throws IOException {
         var event = next();
         while (event != null) {
             if (!consumer.accept(event, this)) {
@@ -266,17 +266,17 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     }
 
     @Override
-    public Number numberValue() throws TreeIOException {
+    public Number numberValue() {
         return (Number) currentNode;
     }
 
     @Override
-    public String stringValue() throws TreeIOException {
+    public String stringValue() {
         return (String) currentNode;
     }
 
     @Override
-    public byte[] binaryValue() throws TreeIOException {
+    public byte[] binaryValue() {
         return (byte[]) currentNode;
     }
 
@@ -286,7 +286,7 @@ public class NativeTraverser implements TreeTraverser<Object>, TreeProcessor {
     }
 
     @Override
-    public int structureSize() throws TreeIOException {
+    public int structureSize() {
         // TODO Auto-generated method stub
         return 0;
     }

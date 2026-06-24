@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -16,33 +17,33 @@ import com.apicatalog.tree.io.java.NativeTraverser;
 public final class Tree {
 
     @SuppressWarnings("unchecked")
-    public static <T> T read(TreeParser parser) throws TreeIOException {
+    public static <T> T read(TreeParser parser) throws IOException {
         return (T) read(parser, new NativeComposer());
     }
 
-    public static <T> T read(TreeParser parser, TreeComposer<T> composer) throws TreeIOException {
+    public static <T> T read(TreeParser parser, TreeComposer<T> composer) throws IOException {
         parser.parse(composer::accept);
         return composer.compose();
     }
 
-    public static <T> void write(T node, TreeEmitter emitter) throws TreeIOException {
+    public static <T> void write(T node, TreeEmitter emitter) throws IOException {
         write(new NativeTraverser(node), emitter);
     }
 
-    public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws TreeIOException {
+    public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws IOException {
         traverser.traverse(emitter::accept);
     }
 
-    public static void copy(TreeParser parser, TreeEmitter emitter) throws TreeIOException {
+    public static void copy(TreeParser parser, TreeEmitter emitter) throws IOException {
         parser.parse(emitter::accept);
     }
 
-    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) throws TreeIOException {
+    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) throws IOException {
         traverser.traverse(composer::accept);
         return composer.compose();
     }
 
-    public static boolean equals(TreeCursor cursor1, TreeCursor cursor2, ScalarEquality scalarEquals) throws TreeIOException {
+    public static boolean equals(TreeTraverser<?> cursor1, TreeTraverser<?> cursor2, ScalarEquality scalarEquals) {
 
         var event1 = cursor1.next();
         var event2 = cursor2.next();
@@ -53,16 +54,11 @@ public final class Tree {
                 && Objects.equals(cursor1.nodeType(), cursor2.nodeType())
                 && (cursor1.nodeType().isStructure() || scalarEquals.test(cursor1, cursor2))) {
 
-
-            
             event1 = cursor1.next();
             event2 = cursor2.next();
-            
-            System.out.println("> " + event1 + ", " + cursor1.nodeType());
         }
 
         return event1 == null && event2 == null;
-
     }
 
     // --- Convenience & Type Coercion Methods ---
@@ -227,12 +223,12 @@ public final class Tree {
 
     @FunctionalInterface
     public interface EventConsumer {
-        <T extends TreeCursor> boolean accept(Event event, T cursor) throws TreeIOException;
+        <T extends TreeCursor> boolean accept(Event event, T cursor) throws IOException;
     }
 
     @FunctionalInterface
     public interface ScalarEquality {
-        boolean test(TreeCursor cursor1, TreeCursor cursor2) throws TreeIOException;
+        boolean test(TreeCursor cursor1, TreeCursor cursor2);
     }
 
     /**

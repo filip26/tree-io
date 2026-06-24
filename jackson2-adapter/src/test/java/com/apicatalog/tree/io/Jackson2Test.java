@@ -33,7 +33,7 @@ class Jackson2Test {
     
     @ParameterizedTest
     @MethodSource({ "resources" })
-    void testReadWrite(String name) throws IOException, TreeIOException {
+    void testReadWrite(String name) throws IOException {
 
         var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
         

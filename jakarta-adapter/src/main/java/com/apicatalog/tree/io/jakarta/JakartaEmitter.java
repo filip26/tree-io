@@ -7,11 +7,9 @@ import java.util.function.Function;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeEmitter;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.java.NativeTraverser;
 
-import jakarta.json.JsonException;
 import jakarta.json.stream.JsonGenerator;
 
 /**
@@ -32,7 +30,7 @@ import jakarta.json.stream.JsonGenerator;
  * (e.g., for Base64) is supplied during construction.
  * </p>
  */
-public class JakartaGenerator implements TreeEmitter, TreeProcessor {
+public class JakartaEmitter implements TreeEmitter, TreeProcessor {
 
     protected final JsonGenerator writer;
     protected final Function<byte[], String> encoder;
@@ -44,10 +42,12 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * @param writer the Jakarta JSON generator to write to, must not be
      *               {@code null}
      */
-    public JakartaGenerator(JsonGenerator writer) {
+    public JakartaEmitter(JsonGenerator writer) {
         this(writer, null);
     }
 
+//    public static final JakartaEmitter createEmitter()
+    
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}
      * with custom handling for binary data.
@@ -58,7 +58,7 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      *                representation (e.g., Base64); if {@code null}, binary data is
      *                not supported
      */
-    public JakartaGenerator(JsonGenerator writer, Function<byte[], String> encoder) {
+    public JakartaEmitter(JsonGenerator writer, Function<byte[], String> encoder) {
         this.writer = writer;
         this.encoder = encoder;
     }
@@ -75,16 +75,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void nullValue(NodeContext context) throws TreeIOException {
+    public void nullValue(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.writeNull();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
     }
 
     /**
@@ -94,16 +89,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void booleanValue(NodeContext context, boolean node) throws TreeIOException {
+    public void booleanValue(NodeContext context, boolean node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
     }
 
     /**
@@ -114,17 +104,12 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void stringValue(NodeContext context, String node) throws TreeIOException {
-        try {
+    public void stringValue(NodeContext context, String node) {
             if (context == NodeContext.ENTRY_KEY) {
                 writer.writeKey(node);
                 return;
             }
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
     }
 
     /**
@@ -134,15 +119,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, long node) throws TreeIOException {
+    public void numericValue(NodeContext context, long node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     /**
@@ -152,16 +133,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, BigInteger node) throws TreeIOException {
+    public void numericValue(NodeContext context, BigInteger node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
     }
 
     /**
@@ -171,16 +147,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, double node) throws TreeIOException {
+    public void numericValue(NodeContext context, double node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
-
     }
 
     /**
@@ -190,15 +161,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, BigDecimal node) throws TreeIOException {
+    public void numericValue(NodeContext context, BigDecimal node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.write(node);
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     /**
@@ -212,18 +179,14 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      *                                       construction
      */
     @Override
-    public void binaryValue(NodeContext context, byte[] node) throws TreeIOException {
+    public void binaryValue(NodeContext context, byte[] node) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
         if (encoder == null) {
             throw new UnsupportedOperationException("Binary values are not supported without a configured encoder.");
         }
-        try {
             writer.write(encoder.apply(node));
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     /**
@@ -233,15 +196,11 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * </p>
      */
     @Override
-    public void beginMap(NodeContext context) throws TreeIOException {
+    public void beginMap(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.writeStartObject();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     /**
@@ -250,18 +209,13 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * Writes a JSON start-array token ({@code '['}).
      * </p>
      * 
-     * @throws TreeIOException
      */
     @Override
-    public void beginSequence(NodeContext context) throws TreeIOException {
+    public void beginSequence(NodeContext context)  {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.writeStartArray();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     /**
@@ -271,29 +225,20 @@ public class JakartaGenerator implements TreeEmitter, TreeProcessor {
      * current object or array context.
      * </p>
      * 
-     * @throws TreeIOException
      */
     @Override
-    public void endMap(NodeContext context) throws TreeIOException {
+    public void endMap(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.writeEnd();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 
     @Override
-    public void endSequence(NodeContext context) throws TreeIOException {
+    public void endSequence(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        try {
             writer.writeEnd();
-        } catch (JsonException e) {
-            throw new TreeIOException(e);
-        }
     }
 }

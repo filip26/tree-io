@@ -1,12 +1,12 @@
 package com.apicatalog.tree.io.jakarta;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Map;
 
 import com.apicatalog.tree.io.Tree;
 import com.apicatalog.tree.io.Tree.Features;
-import com.apicatalog.tree.io.TreeIOException;
 import com.apicatalog.tree.io.TreeProcessor;
 import com.apicatalog.tree.io.TreeReader;
 
@@ -31,13 +31,13 @@ public final class JakartaReader implements TreeReader<Object>, TreeProcessor {
     }
 
     @Override
-    public Object read(InputStream is) throws TreeIOException {
+    public Object read(InputStream is) throws IOException {
         try (var parser = factory.createParser(is)) {
             return Tree.read(new JakartaParser(parser));
         }
     }
 
-    public Object read(Reader reader) throws TreeIOException {
+    public Object read(Reader reader) throws IOException {
         try (var parser = factory.createParser(reader)) {
             return Tree.read(new JakartaParser(parser));
         }
