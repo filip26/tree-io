@@ -17,20 +17,55 @@ import com.apicatalog.tree.io.java.NativeTraverser;
 
 public final class Tree {
 
+    /**
+     * Parses input from the given parser into a tree structure composed of Map,
+     * List, String, Number, and other supported types.
+     *
+     * @param <T>    the type of the resulting tree structure
+     * @param parser the source parser used to read input
+     * @return the parsed tree structure
+     * @throws IOException if an I/O error occurs during parsing
+     */
     @SuppressWarnings("unchecked")
     public static <T> T read(TreeParser parser) throws IOException {
         return (T) read(parser, new NativeComposer());
     }
 
+    /**
+     * Parses input from the given parser into a tree structure constructed by the
+     * provided composer.
+     *
+     * @param <T>      the type of the resulting tree structure
+     * @param parser   the source parser used to read input
+     * @param composer the target composer used to assemble the tree
+     * @return the composed tree structure
+     * @throws IOException if an I/O error occurs during parsing
+     */
     public static <T> T read(TreeParser parser, TreeComposer<T> composer) throws IOException {
         parser.parse(composer::accept);
         return composer.compose();
     }
 
+    /**
+     * Serializes the provided tree node to the given emitter using a native
+     * traverser.
+     *
+     * @param <T>     the type of the tree node
+     * @param node    the tree structure to serialize
+     * @param emitter the target emitter
+     * @throws IOException if an I/O error occurs during emission
+     */
     public static <T> void write(T node, TreeEmitter emitter) throws IOException {
         write(new NativeTraverser(node), emitter);
     }
 
+    /**
+     * Streams events from the traverser to the given emitter.
+     *
+     * @param traverser the source traverser
+     * @param emitter   the target emitter
+     * @throws IOException if an I/O error occurs during the process
+     */
     public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws IOException {
         try {
             traverser.traverse(emitter::accept);
@@ -39,6 +74,13 @@ public final class Tree {
         }
     }
 
+    /**
+     * Performs a direct structural copy from the parser to the emitter.
+     *
+     * @param parser  the source parser
+     * @param emitter the target emitter
+     * @throws IOException if an I/O error occurs during the copy
+     */
     public static void copy(TreeParser parser, TreeEmitter emitter) throws IOException {
         try {
             parser.parse(emitter::accept);
@@ -47,11 +89,29 @@ public final class Tree {
         }
     }
 
+    /**
+     * Creates a structural clone of the traversed tree into the new format provided
+     * by the composer.
+     *
+     * @param <T>       the type of the resulting cloned tree
+     * @param traverser the source traverser
+     * @param composer  the target composer to build the clone
+     * @return the cloned tree structure
+     */
     public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) {
         traverser.traverse(composer::accept);
         return composer.compose();
     }
 
+    /**
+     * Determines structural and content-wise equality between two trees using
+     * pull-based, non-recursive, iteration.
+     *
+     * @param tree1        the first tree to compare
+     * @param tree2        the second tree to compare
+     * @param scalarEquals the strategy to compare scalar values
+     * @return true if both trees are identical in structure and content
+     */
     public static boolean identical(TreeTraverser<?> tree1, TreeTraverser<?> tree2, ScalarEquality scalarEquals) {
 
         while (tree1.hasNext() && tree2.hasNext()) {
