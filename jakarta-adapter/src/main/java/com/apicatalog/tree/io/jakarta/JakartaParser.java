@@ -97,7 +97,15 @@ public final class JakartaParser implements TreeParser, TreeProcessor, Closeable
             nodeType = NodeType.NUMBER;
             yield Event.SCALAR;
         }
-        case KEY_NAME, VALUE_STRING -> {
+        case KEY_NAME -> {
+            if (NodeContext.ENTRY_KEY != contexts.pop()) {
+                throw new IllegalStateException();
+            };
+            contexts.push(NodeContext.ENTRY_VALUE);
+            nodeType = NodeType.STRING;
+            yield Event.SCALAR;
+        }
+        case VALUE_STRING -> {
             switchMapContext();
             nodeType = NodeType.STRING;
             yield Event.SCALAR;

@@ -1,6 +1,5 @@
 package com.apicatalog.tree.io.java;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -12,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import com.apicatalog.tree.io.Tree.Event;
-import com.apicatalog.tree.io.Tree.EventConsumer;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
@@ -100,6 +98,12 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
         var item = stack.peek();
 
+        var next = stack.peek() instanceof Event event && Event.NEXT == event;
+
+        if (next) {
+            item = stack.pop();
+        }
+
         // map or collection iterator
         if (item instanceof Iterator<?> it) {
 
@@ -116,6 +120,12 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
                 return (Event) stack.pop();
             }
 
+            if (next) {
+                currentNode = null;
+                currentNodeType = null;
+                return Event.NEXT;
+            }
+
             item = it.next();
 
             if (item instanceof Map.Entry<?, ?> entry) {
@@ -129,8 +139,12 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
             } else {
                 // process collection element
-                currentNodeContext = it.hasNext() ? NodeContext.ELEMENT : NodeContext.LAST_ELEMENT;
+                currentNodeContext = NodeContext.ELEMENT;
                 currentNode = item;
+                
+                if (it.hasNext()) {
+                    stack.push(Event.NEXT);
+                }
             }
 
         } else if (item instanceof Map.Entry<?, ?> entry) {
@@ -139,7 +153,11 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             // restore map iterator over entries
             stack.pop();
             var it = (Iterator<?>) stack.peek();
-            currentNodeContext = it.hasNext() ? NodeContext.ENTRY_VALUE : NodeContext.LAST_ENTRY_VALUE;
+            currentNodeContext = NodeContext.ENTRY_VALUE;
+            
+            if (it.hasNext()) {
+                stack.push(Event.NEXT);
+            }
 
         } else {
             currentNode = item;

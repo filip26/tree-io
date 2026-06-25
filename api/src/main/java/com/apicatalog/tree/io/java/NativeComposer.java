@@ -16,7 +16,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeComposer;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public final class NativeComposer implements TreeComposer<Object>, TreeProcessor {
+public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
 
     private final Deque<Object> stack;
 
@@ -54,11 +54,11 @@ public final class NativeComposer implements TreeComposer<Object>, TreeProcessor
             return;
         }
         switch (context) {
-        case ELEMENT, LAST_ELEMENT:
+        case ELEMENT:
             ((Collection<?>) stack.peek()).add(null);
             return;
 
-        case ENTRY_VALUE, LAST_ENTRY_VALUE:
+        case ENTRY_VALUE:
             var key = stack.pop();
             ((Map<Object, ?>) stack.peek()).put(key, null);
             return;
@@ -71,15 +71,16 @@ public final class NativeComposer implements TreeComposer<Object>, TreeProcessor
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object compose() {
+    public T compose() {
         if (stack.size() > 1) {
             throw new IllegalStateException();
         }
         if (stack.isEmpty()) {
             return null;
         }
-        return stack.peek();
+        return (T) stack.peek();
     }
 
     @Override
@@ -140,15 +141,16 @@ public final class NativeComposer implements TreeComposer<Object>, TreeProcessor
         throw new IllegalStateException();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    private final void next(NodeContext context) {
+    public void next(NodeContext context) {
         switch (context) {
-        case ELEMENT, LAST_ELEMENT:
+        case ELEMENT:
             var element = stack.pop();
             ((Collection<Object>) stack.peek()).add(element);
             return;
 
-        case ENTRY_VALUE, LAST_ENTRY_VALUE:
+        case ENTRY_VALUE:
             var value = stack.pop();
             var key = stack.pop();
             ((Map<Object, Object>) stack.peek()).put(key, value);

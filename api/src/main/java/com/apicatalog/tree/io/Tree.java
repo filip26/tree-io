@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.java.NativeComposer;
 import com.apicatalog.tree.io.java.NativeTraverser;
-import com.apicatalog.tree.io.utils.PropertyMapBuilder;
+import com.apicatalog.tree.io.utils.PropertyTreeEmitter;
 
 public final class Tree {
 
@@ -132,8 +132,8 @@ public final class Tree {
         return !tree1.hasNext() && !tree2.hasNext();
     }
 
-    public static PropertyMapBuilder createMapBuilder(TreeEmitter emitter) {
-        return new PropertyMapBuilder(emitter);
+    public static PropertyTreeEmitter createMapBuilder(TreeEmitter emitter) {
+        return new PropertyTreeEmitter(emitter);
     }
 
     // --- Convenience & Type Coercion Methods ---
@@ -291,7 +291,8 @@ public final class Tree {
         END_MAP,
         BEGIN_SEQUENCE,
         END_SEQUENCE,
-        SCALAR;
+        SCALAR,
+        NEXT;
     }
 
     // --- ... ---
@@ -330,8 +331,6 @@ public final class Tree {
          */
         ELEMENT,
 
-        LAST_ELEMENT,
-
         /**
          * Indicates the node functions as a key within a map or object structure.
          */
@@ -342,8 +341,6 @@ public final class Tree {
          * object structure.
          */
         ENTRY_VALUE,
-
-        LAST_ENTRY_VALUE
     }
 
     public enum NodeType {

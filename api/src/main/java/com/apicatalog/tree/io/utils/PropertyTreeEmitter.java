@@ -2,22 +2,25 @@ package com.apicatalog.tree.io.utils;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.TreeEmitter;
 
-public final class PropertyMapBuilder {
+public final class PropertyTreeEmitter {
 
     private final TreeEmitter emitter;
     private final Deque<NodeContext> context;
     
-    public PropertyMapBuilder(TreeEmitter emitter) {
+    private Entry<String, Object> lastEntry;
+    private Object lastElement;
+    
+    public PropertyTreeEmitter(TreeEmitter emitter) {
         this.emitter = emitter;
         this.context = new ArrayDeque<>();
         this.context.push(NodeContext.ROOT);
     }
-
 
     public void beginMap() {
         emitter.beginMap(context.peek());
@@ -33,7 +36,12 @@ public final class PropertyMapBuilder {
     }
     
     public void entry(String key, String value) {
+//        if (lastEntry != null) {
+//            entry(lastEntry.)
+//        }
         
+        
+//        emitter.stringValue(null, value);
     }
 
     public void entry(String key, boolean value) {
