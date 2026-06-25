@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -27,9 +27,9 @@ public interface TreeTraverser<T> extends TreeCursor, Iterator<Event> {
      *
      * @param consumer the visitor logic invoked for each node, receiving the
      *                 current event type and the traverser instance
-     * @throws IOException
+     * @throws UncheckedIOException if an I/O error occurs during serialization.
      */
-    default boolean traverse(EventConsumer consumer) throws IOException {
+    default boolean traverse(EventConsumer consumer) {
         while (hasNext()) {
             if (!consumer.accept(next(), this)) {
                 return false;

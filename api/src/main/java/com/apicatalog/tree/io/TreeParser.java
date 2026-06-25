@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.EventConsumer;
@@ -18,15 +19,25 @@ import com.apicatalog.tree.io.Tree.EventConsumer;
  */
 public interface TreeParser extends TreeCursor {
 
+    /**
+     * 
+     * @param consumer
+     * @return
+     * @throws IOException if an I/O error occurs during parsing.
+     */
     default boolean parse(EventConsumer consumer) throws IOException {
-        var event = next();
-        while (event != null) {
-            if (!consumer.accept(event, this)) {
-                return false;
+        try {
+            var event = next();
+            while (event != null) {
+                if (!consumer.accept(event, this)) {
+                    return false;
+                }
+                event = next();
             }
-            event = next();
+            return true;
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
-        return true;
     }
 
     /**
@@ -34,7 +45,7 @@ public interface TreeParser extends TreeCursor {
      *
      * @return the next structural or scalar {@link Event} in the sequence, or null
      *         if the end of the input (EOF) has been reached.
-     * @throws IOException
+     * @throws IOException if an I/O error occurs during parsing.
      */
     Event next() throws IOException;
 }

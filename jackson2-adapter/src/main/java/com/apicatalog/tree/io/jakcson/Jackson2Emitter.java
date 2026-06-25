@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -55,15 +56,17 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * <p>
      * Writes a JSON start-object token (<code>{</code>).
      * </p>
-     * 
-     * @throws IOException
      */
     @Override
-    public void beginMap(NodeContext context) throws IOException {
+    public void beginMap(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        generator.writeStartObject();
+        try {
+            generator.writeStartObject();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -73,11 +76,16 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void beginSequence(NodeContext context) throws IOException {
+    public void beginSequence(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        generator.writeStartArray();
+        try {
+            generator.writeStartArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
     }
 
     /**
@@ -88,13 +96,23 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void endMap(NodeContext context) throws IOException {
-        generator.writeEndObject();
+    public void endMap(NodeContext context) {
+        try {
+            generator.writeEndObject();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
     }
 
     @Override
-    public void endSequence(NodeContext context) throws IOException {
-        generator.writeEndArray();
+    public void endSequence(NodeContext context) {
+        try {
+            generator.writeEndArray();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
     }
 
     /**
@@ -104,11 +122,15 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void nullValue(NodeContext context) throws IOException {
+    public void nullValue(NodeContext context) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        generator.writeNull();
+        try {
+            generator.writeNull();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -118,11 +140,15 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void booleanValue(NodeContext context, boolean value) throws IOException {
+    public void booleanValue(NodeContext context, boolean value) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        generator.writeBoolean(value);
+        try {
+            generator.writeBoolean(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -133,12 +159,16 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void stringValue(NodeContext context, String value) throws IOException {
-        if (context == NodeContext.ENTRY_KEY) {
-            generator.writeFieldName(value);
-            return;
+    public void stringValue(NodeContext context, String value) {
+        try {
+            if (context == NodeContext.ENTRY_KEY) {
+                generator.writeFieldName(value);
+                return;
+            }
+            generator.writeString(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        generator.writeString(value);
     }
 
     /**
@@ -148,12 +178,16 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, long value) throws IOException {
-        if (context == NodeContext.ENTRY_KEY) {
-            generator.writeFieldId(value);
-            return;
+    public void numericValue(NodeContext context, long value) {
+        try {
+            if (context == NodeContext.ENTRY_KEY) {
+                generator.writeFieldId(value);
+                return;
+            }
+            generator.writeNumber(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        generator.writeNumber(value);
     }
 
     /**
@@ -163,12 +197,17 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, BigInteger value) throws IOException {
-        if (context == NodeContext.ENTRY_KEY) {
-            generator.writeFieldId(value.longValueExact());
-            return;
+    public void numericValue(NodeContext context, BigInteger value) {
+        try {
+            if (context == NodeContext.ENTRY_KEY) {
+                generator.writeFieldId(value.longValueExact());
+                return;
+            }
+            generator.writeNumber(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        generator.writeNumber(value);
+
     }
 
     /**
@@ -178,11 +217,15 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, double value) throws IOException {
+    public void numericValue(NodeContext context, double value) {
         if (context == NodeContext.ENTRY_KEY) {
             throw new IllegalStateException();
         }
-        generator.writeNumber(value);
+        try {
+            generator.writeNumber(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -192,12 +235,16 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      * </p>
      */
     @Override
-    public void numericValue(NodeContext context, BigDecimal value) throws IOException {
-        if (context == NodeContext.ENTRY_KEY) {
-            generator.writeFieldId(value.longValueExact());
-            return;
+    public void numericValue(NodeContext context, BigDecimal value) {
+        try {
+            if (context == NodeContext.ENTRY_KEY) {
+                generator.writeFieldId(value.longValueExact());
+                return;
+            }
+            generator.writeNumber(value);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
-        generator.writeNumber(value);
     }
 
     /**

@@ -1,6 +1,6 @@
 package com.apicatalog.tree.io;
 
-import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -32,7 +32,14 @@ import com.apicatalog.tree.io.Tree.NodeContext;
  */
 public interface TreeEmitter {
 
-    default boolean accept(Event event, TreeCursor cursor) throws IOException {
+    /**
+     * 
+     * @param event
+     * @param cursor
+     * @return
+     * @throws UncheckedIOException if an I/O error occurs during serialization.
+     */
+    default boolean accept(Event event, TreeCursor cursor) {
         switch (event) {
         case BEGIN_MAP:
             beginMap(cursor.context());
@@ -78,11 +85,10 @@ public interface TreeEmitter {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void nullValue(NodeContext context) throws IOException;
+    void nullValue(NodeContext context);
 
     /**
      * Adds a boolean value to the tree.
@@ -90,11 +96,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the boolean value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void booleanValue(NodeContext context, boolean value) throws IOException;
+    void booleanValue(NodeContext context, boolean value);
 
     /**
      * Adds a string value to the tree.
@@ -102,11 +107,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null string value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void stringValue(NodeContext context, String value) throws IOException;
+    void stringValue(NodeContext context, String value);
 
     /**
      * Adds a generic numeric value by routing it to the appropriate typed method.
@@ -114,13 +118,12 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null numeric value to add.
-     * @throws IOException              if an I/O error occurs during serialization
-     *                                  or materialization.
+     * @throws UncheckedIOException     if an I/O error occurs during serialization.
      * @throws IllegalArgumentException if the underlying numeric type is not
      *                                  supported.
      * @throws IllegalStateException
      */
-    default void numberValue(NodeContext context, Number value) throws IOException {
+    default void numberValue(NodeContext context, Number value) {
         switch (value) {
         case Short s -> numericValue(context, (long) s);
         case Integer i -> numericValue(context, (long) i);
@@ -144,11 +147,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null BigInteger value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void numericValue(NodeContext context, BigInteger value) throws IOException;
+    void numericValue(NodeContext context, BigInteger value);
 
     /**
      * Adds a long integer value.
@@ -156,11 +158,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the long value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    default void numericValue(NodeContext context, long value) throws IOException {
+    default void numericValue(NodeContext context, long value) {
         numericValue(context, BigInteger.valueOf(value));
     }
 
@@ -170,11 +171,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the double value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    default void numericValue(NodeContext context, double value) throws IOException {
+    default void numericValue(NodeContext context, double value) {
         numericValue(context, BigDecimal.valueOf(value));
     }
 
@@ -184,11 +184,10 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null BigDecimal value to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void numericValue(NodeContext context, BigDecimal value) throws IOException;
+    void numericValue(NodeContext context, BigDecimal value);
 
     /**
      * Adds a binary data value to the specified context.
@@ -196,11 +195,9 @@ public interface TreeEmitter {
      * @param context the structural context originating from the source tree
      *                traversal.
      * @param value   the non-null byte array to add.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
-     * @throws IllegalStateException
+     * @throws UncheckedIOException if an I/O error occurs during serialization.
      */
-    void binaryValue(NodeContext context, byte[] value) throws IOException;
+    void binaryValue(NodeContext context, byte[] value);
 
     // --- structures --
 
@@ -211,11 +208,9 @@ public interface TreeEmitter {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
-     * @throws IllegalStateException
+     * @throws UncheckedIOException if an I/O error occurs during serialization.
      */
-    void beginMap(NodeContext context) throws IOException;
+    void beginMap(NodeContext context);
 
     /**
      * Ends the current map structure. This call must close the scope opened by the
@@ -223,11 +218,9 @@ public interface TreeEmitter {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
-     * @throws IllegalStateException
+     * @throws UncheckedIOException if an I/O error occurs during serialization.
      */
-    void endMap(NodeContext context) throws IOException;
+    void endMap(NodeContext context);
 
     /**
      * Begins a new list, array, or sequence structure within the given context.
@@ -236,11 +229,10 @@ public interface TreeEmitter {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void beginSequence(NodeContext context) throws IOException;
+    void beginSequence(NodeContext context);
 
     /**
      * Ends the current sequence structure. This call must close the scope opened by
@@ -248,9 +240,8 @@ public interface TreeEmitter {
      *
      * @param context the structural context originating from the source tree
      *                traversal.
-     * @throws IOException           if an I/O error occurs during serialization or
-     *                               materialization.
+     * @throws UncheckedIOException  if an I/O error occurs during serialization.
      * @throws IllegalStateException
      */
-    void endSequence(NodeContext context) throws IOException;
+    void endSequence(NodeContext context);
 }

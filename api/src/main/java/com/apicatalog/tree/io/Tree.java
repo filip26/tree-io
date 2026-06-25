@@ -1,6 +1,7 @@
 package com.apicatalog.tree.io;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -31,21 +32,24 @@ public final class Tree {
     }
 
     public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws IOException {
-        traverser.traverse(emitter::accept);
+        try {
+            traverser.traverse(emitter::accept);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
     }
 
     public static void copy(TreeParser parser, TreeEmitter emitter) throws IOException {
-        parser.parse(emitter::accept);
+        try {
+            parser.parse(emitter::accept);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
     }
 
     public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) {
-        try {
-            traverser.traverse(composer::accept);
-            return composer.compose();
-        } catch (IOException e) {
-            // should not happen, in-memory operations
-            throw new IllegalStateException(e);
-        }
+        traverser.traverse(composer::accept);
+        return composer.compose();
     }
 
     public static boolean identical(TreeTraverser<?> tree1, TreeTraverser<?> tree2, ScalarEquality scalarEquals) {
@@ -229,7 +233,15 @@ public final class Tree {
 
     @FunctionalInterface
     public interface EventConsumer {
-        <T extends TreeCursor> boolean accept(Event event, T cursor) throws IOException;
+        /**
+         * 
+         * @param <T>
+         * @param event
+         * @param cursor
+         * @return
+         * @throws UncheckedIOException if an I/O error occurs during serialization.
+         */
+        <T extends TreeCursor> boolean accept(Event event, T cursor);
     }
 
     @FunctionalInterface

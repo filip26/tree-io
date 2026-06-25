@@ -1,5 +1,7 @@
 package com.apicatalog.tree.io.java;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,12 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeComposer;
-import com.apicatalog.tree.io.TreeCursor;
 import com.apicatalog.tree.io.TreeProcessor;
 
 public final class NativeComposer implements TreeComposer<Object>, TreeProcessor {
@@ -72,71 +72,6 @@ public final class NativeComposer implements TreeComposer<Object>, TreeProcessor
     }
 
     @Override
-    public boolean accept(Event event, TreeCursor cursor) {
-        switch (event) {
-        case BEGIN_MAP:
-            stack.push(new LinkedHashMap<>());
-            return true;
-
-        case END_MAP:
-            if (stack.peek() instanceof Map) {
-                next(cursor.context());
-                return true;
-            }
-            throw new IllegalStateException();
-
-        case BEGIN_SEQUENCE:
-            stack.push(new ArrayList<>());
-            return true;
-
-        case END_SEQUENCE:
-            if (stack.peek() instanceof Collection) {
-                next(cursor.context());
-                return true;
-            }
-            throw new IllegalStateException();
-
-        case SCALAR:
-            switch (cursor.nodeType()) {
-            case NULL:
-                nullValue(cursor.context());
-                return true;
-
-            case TRUE:
-                stack.push(true);
-                next(cursor.context());
-                return true;
-
-            case FALSE:
-                stack.push(false);
-                next(cursor.context());
-                return true;
-
-            case BINARY:
-                stack.push(cursor.binaryValue());
-                next(cursor.context());
-                return true;
-
-            case NUMBER:
-                stack.push(cursor.numberValue());
-                next(cursor.context());
-                return true;
-
-            case STRING:
-                stack.push(cursor.stringValue());
-                next(cursor.context());
-                return true;
-
-            default:
-                throw new IllegalStateException();
-            }
-
-        case null:
-            throw new IllegalArgumentException();
-        }
-    }
-
-    @Override
     public Object compose() {
         if (stack.size() > 1) {
             throw new IllegalStateException();
@@ -145,6 +80,64 @@ public final class NativeComposer implements TreeComposer<Object>, TreeProcessor
             return null;
         }
         return stack.peek();
+    }
+
+    @Override
+    public void booleanValue(NodeContext context, boolean value) {
+        stack.push(value);
+        next(context);
+    }
+
+    @Override
+    public void stringValue(NodeContext context, String value) {
+        stack.push(value);
+        next(context);
+    }
+
+    @Override
+    public void numericValue(NodeContext context, BigInteger value) {
+        stack.push(value);
+        next(context);
+    }
+
+    @Override
+    public void numericValue(NodeContext context, BigDecimal value) {
+        stack.push(value);
+        next(context);
+    }
+
+    @Override
+    public void binaryValue(NodeContext context, byte[] value) {
+        stack.push(value);
+        next(context);
+    }
+
+    @Override
+    public void beginMap(NodeContext context) {
+        stack.push(new LinkedHashMap<>());
+    }
+
+    @Override
+    public void endMap(NodeContext context) {
+        if (stack.peek() instanceof Map) {
+            next(context);
+            return;
+        }
+        throw new IllegalStateException();
+    }
+
+    @Override
+    public void beginSequence(NodeContext context) {
+        stack.push(new ArrayList<>());
+    }
+
+    @Override
+    public void endSequence(NodeContext context) {
+        if (stack.peek() instanceof Collection) {
+            next(context);
+            return;
+        }
+        throw new IllegalStateException();
     }
 
     @SuppressWarnings("unchecked")
