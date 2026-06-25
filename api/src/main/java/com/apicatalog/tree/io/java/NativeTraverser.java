@@ -98,10 +98,11 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
         var item = stack.peek();
 
-        var next = stack.peek() instanceof Event event && Event.NEXT == event;
-
-        if (next) {
-            item = stack.pop();
+        if (item instanceof Event event && Event.NEXT == event) {
+            stack.pop();
+            currentNode = null;
+            currentNodeType = null;
+            return event;
         }
 
         // map or collection iterator
@@ -120,13 +121,11 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
                 return (Event) stack.pop();
             }
 
-            if (next) {
-                currentNode = null;
-                currentNodeType = null;
-                return Event.NEXT;
-            }
-
             item = it.next();
+
+            if (it.hasNext()) {
+                stack.push(Event.NEXT);
+            }
 
             if (item instanceof Map.Entry<?, ?> entry) {
                 // process map entry
@@ -141,7 +140,7 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
                 // process collection element
                 currentNodeContext = NodeContext.ELEMENT;
                 currentNode = item;
-                
+
                 if (it.hasNext()) {
                     stack.push(Event.NEXT);
                 }
@@ -154,7 +153,7 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             stack.pop();
             var it = (Iterator<?>) stack.peek();
             currentNodeContext = NodeContext.ENTRY_VALUE;
-            
+
             if (it.hasNext()) {
                 stack.push(Event.NEXT);
             }
