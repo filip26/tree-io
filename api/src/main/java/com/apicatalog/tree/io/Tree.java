@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.java.NativeComposer;
 import com.apicatalog.tree.io.java.NativeTraverser;
+import com.apicatalog.tree.io.utils.PropertyMapBuilder;
 
 public final class Tree {
 
@@ -129,6 +130,10 @@ public final class Tree {
         }
 
         return !tree1.hasNext() && !tree2.hasNext();
+    }
+
+    public static PropertyMapBuilder createMapBuilder(TreeEmitter emitter) {
+        return new PropertyMapBuilder(emitter);
     }
 
     // --- Convenience & Type Coercion Methods ---
