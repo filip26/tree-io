@@ -3,7 +3,6 @@ package com.apicatalog.tree.io;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.Function;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.NodeContext;
@@ -254,53 +253,4 @@ public interface TreeEmitter {
      * @throws IllegalStateException
      */
     void endSequence(NodeContext context) throws IOException;
-
-    default void nullEntry(String key) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        nullValue(NodeContext.ENTRY_VALUE);
-    }
-
-    default void entry(String key, boolean value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        booleanValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, long value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        numericValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, int value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        numericValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, double value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        numericValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, BigDecimal value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        numericValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, BigInteger value) throws IOException {
-        stringValue(NodeContext.ENTRY_KEY, key);
-        numericValue(NodeContext.ENTRY_VALUE, value);
-    }
-
-    default void entry(String key, String value) throws IOException {
-        if (value != null) {
-            stringValue(NodeContext.ENTRY_KEY, key);
-            stringValue(NodeContext.ENTRY_VALUE, value);
-        }
-    }
-
-    default <T> void entry(String key, T object, Function<T, String> map) throws IOException {
-        if (object != null) {
-            stringValue(NodeContext.ENTRY_KEY, key);
-            stringValue(NodeContext.ENTRY_VALUE, map.apply(object));
-        }
-    }
 }
