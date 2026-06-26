@@ -18,21 +18,23 @@ public final class PropertyTreeEmitter {
         this.contexts.push(NodeContext.ROOT);
     }
 
-    public void beginMap() {
+    public PropertyTreeEmitter beginMap() {
         emitter.beginMap(contexts.peek());
         contexts.push(NodeContext.FIRST_ENTRY_KEY);
+        return this;
     }
 
-    public void beginMap(String key) {
+    public PropertyTreeEmitter beginMap(String key) {
         if (NodeContext.ENTRY_KEY != contexts.peek() && NodeContext.FIRST_ENTRY_KEY != contexts.peek()) {
             throw new IllegalStateException();
         }
         emitter.stringValue(contexts.pop(), key);
         contexts.push(NodeContext.ENTRY_VALUE);
         beginMap();
+        return this;
     }
 
-    public void endMap() {
+    public PropertyTreeEmitter endMap() {
         if (NodeContext.ENTRY_KEY != contexts.peek() && NodeContext.FIRST_ENTRY_KEY != contexts.peek()) {
             throw new IllegalStateException();
         }
@@ -45,55 +47,62 @@ public final class PropertyTreeEmitter {
             contexts.pop();
             contexts.push(NodeContext.ELEMENT);
         }
+        return this;
     }
 
-    public <T> void entry(String key, T object, Function<T, String> map) {
+    public <T> PropertyTreeEmitter entry(String key, T object, Function<T, String> map) {
         if (object == null) {
-            return;
+            return this;
         }
         var value = map.apply(object);
         if (value == null) {
-            return;
+            return this;
         }
         entry(key, value);
+        return this;
     }
 
-    public void entry(String key, String value) {
+    public PropertyTreeEmitter entry(String key, String value) {
         if (value == null) {
-            return;
+            return this;
         }
         emitter.stringValue(contexts.pop(), key);
         emitter.stringValue(NodeContext.ENTRY_VALUE, value);
         contexts.push(NodeContext.ENTRY_KEY);
+        return this;
     }
 
-    public void entry(String key, boolean value) {
+    public PropertyTreeEmitter entry(String key, boolean value) {
         emitter.stringValue(contexts.pop(), key);
         emitter.booleanValue(NodeContext.ENTRY_VALUE, value);
         contexts.push(NodeContext.ENTRY_KEY);
+        return this;
     }
 
-    public void entry(String key, long value) {
+    public PropertyTreeEmitter entry(String key, long value) {
         emitter.stringValue(contexts.pop(), key);
         emitter.numericValue(NodeContext.ENTRY_VALUE, value);
         contexts.push(NodeContext.ENTRY_KEY);
+        return this;
     }
 
-    public void beginSequence() {
+    public PropertyTreeEmitter beginSequence() {
         emitter.beginSequence(contexts.peek());
         contexts.push(NodeContext.FIRST_ELEMENT);
+        return this;
     }
 
-    public void beginSequence(String key) {
+    public PropertyTreeEmitter beginSequence(String key) {
         if (NodeContext.ENTRY_KEY != contexts.peek() && NodeContext.FIRST_ENTRY_KEY != contexts.peek()) {
             throw new IllegalStateException();
         }
         emitter.stringValue(contexts.pop(), key);
         contexts.push(NodeContext.ENTRY_VALUE);
         beginSequence();
+        return this;
     }
 
-    public void endSequence() {
+    public PropertyTreeEmitter endSequence() {
         if (NodeContext.ELEMENT != contexts.peek() && NodeContext.FIRST_ELEMENT != contexts.peek()) {
             throw new IllegalStateException();
         }
@@ -106,29 +115,33 @@ public final class PropertyTreeEmitter {
             contexts.pop();
             contexts.push(NodeContext.ELEMENT);
         }
+        return this;
     }
 
-    public void element(String element) {
+    public PropertyTreeEmitter element(String element) {
         emitter.stringValue(contexts.peek(), element);
         if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
             contexts.pop();
             contexts.push(NodeContext.ELEMENT);
         }
+        return this;
     }
 
-    public void element(long element) {
+    public PropertyTreeEmitter element(long element) {
         emitter.numericValue(contexts.peek(), element);
         if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
             contexts.pop();
             contexts.push(NodeContext.ELEMENT);
         }
+        return this;
     }
 
-    public void element(boolean element) {
+    public PropertyTreeEmitter element(boolean element) {
         emitter.booleanValue(contexts.peek(), element);
         if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
             contexts.pop();
             contexts.push(NodeContext.ELEMENT);
         }
+        return this;
     }
 }
