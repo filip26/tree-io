@@ -74,7 +74,7 @@ public final class PropertyTreeEmitter {
     }
 
     public void beginSequence() {
-        emitter.beginMap(contexts.peek());
+        emitter.beginSequence(contexts.peek());
         contexts.push(NodeContext.FIRST_ELEMENT);
     }
 
