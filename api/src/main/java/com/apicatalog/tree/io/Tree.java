@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import com.apicatalog.tree.io.java.NativeComposer;
 import com.apicatalog.tree.io.java.NativeTraverser;
-import com.apicatalog.tree.io.utils.PropertyTreeEmitter;
+import com.apicatalog.tree.io.util.PropertyTreeEmitter;
 
 public final class Tree {
 
@@ -27,9 +27,8 @@ public final class Tree {
      * @return the parsed tree structure
      * @throws IOException if an I/O error occurs during parsing
      */
-    @SuppressWarnings("unchecked")
     public static <T> T read(TreeParser parser) throws IOException {
-        return (T) read(parser, new NativeComposer());
+        return (T) read(parser, new NativeComposer<T>());
     }
 
     /**
@@ -132,7 +131,7 @@ public final class Tree {
         return !tree1.hasNext() && !tree2.hasNext();
     }
 
-    public static PropertyTreeEmitter createMapBuilder(TreeEmitter emitter) {
+    public static PropertyTreeEmitter createPropertyTree(TreeEmitter emitter) {
         return new PropertyTreeEmitter(emitter);
     }
 
