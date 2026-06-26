@@ -115,7 +115,12 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
                 currentNodeType = switch (currentNode) {
                 case Collection<?> col -> NodeType.SEQUENCE;
                 case Map<?, ?> map -> NodeType.MAP;
-                default -> throw new IllegalStateException();
+                default -> {
+                    if (currentNode != null && currentNode.getClass().isArray()) {
+                        yield NodeType.SEQUENCE;
+                    }
+                    throw new IllegalStateException();
+                }
                 };
                 currentNodeContext = (NodeContext) stack.pop();
                 depth -= 1;
@@ -181,7 +186,7 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             } else {
                 stack.push(map.entrySet().iterator());
             }
-            stack.push(NodeContext.FIRST_ELEMENT);
+            stack.push(NodeContext.FIRST_ENTRY_KEY);
 
             depth += 1;
             currentNodeType = NodeType.MAP;

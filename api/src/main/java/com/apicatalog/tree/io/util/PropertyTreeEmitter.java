@@ -24,11 +24,11 @@ public final class PropertyTreeEmitter {
     }
 
     public void beginMap(String key) {
-        emitter.stringValue(contexts.peek(), key);
-        if (NodeContext.ENTRY_KEY == contexts.peek() || NodeContext.FIRST_ENTRY_KEY == contexts.peek()) {
-            contexts.pop();
-            contexts.push(NodeContext.ENTRY_VALUE);
+        if (NodeContext.ENTRY_KEY != contexts.peek() && NodeContext.FIRST_ENTRY_KEY != contexts.peek()) {
+            throw new IllegalStateException();
         }
+        emitter.stringValue(contexts.pop(), key);
+        contexts.push(NodeContext.ENTRY_VALUE);
         beginMap();
     }
 
@@ -38,8 +38,14 @@ public final class PropertyTreeEmitter {
         }
         contexts.pop();
         emitter.endMap(contexts.peek());
+        if (NodeContext.ENTRY_VALUE == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_KEY);
+        } else if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
     }
-    
 
     public <T> void entry(String key, T object, Function<T, String> map) {
         if (object == null) {
@@ -79,11 +85,11 @@ public final class PropertyTreeEmitter {
     }
 
     public void beginSequence(String key) {
-        emitter.stringValue(contexts.peek(), key);
-        if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
-            contexts.pop();
-            contexts.push(NodeContext.ELEMENT);
+        if (NodeContext.ENTRY_KEY != contexts.peek() && NodeContext.FIRST_ENTRY_KEY != contexts.peek()) {
+            throw new IllegalStateException();
         }
+        emitter.stringValue(contexts.pop(), key);
+        contexts.push(NodeContext.ENTRY_VALUE);
         beginSequence();
     }
 
@@ -93,17 +99,36 @@ public final class PropertyTreeEmitter {
         }
         contexts.pop();
         emitter.endMap(contexts.peek());
+        if (NodeContext.ENTRY_VALUE == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ENTRY_KEY);
+        } else if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
     }
 
     public void element(String element) {
         emitter.stringValue(contexts.peek(), element);
+        if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
     }
 
     public void element(long element) {
         emitter.numericValue(contexts.peek(), element);
+        if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
     }
 
     public void element(boolean element) {
         emitter.booleanValue(contexts.peek(), element);
+        if (NodeContext.FIRST_ELEMENT == contexts.peek()) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
     }
 }
