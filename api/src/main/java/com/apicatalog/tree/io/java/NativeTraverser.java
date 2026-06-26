@@ -1,5 +1,6 @@
 package com.apicatalog.tree.io.java;
 
+import java.lang.reflect.Array;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
@@ -7,23 +8,21 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
+import java.util.NoSuchElementException;
 
 import com.apicatalog.tree.io.Tree.Event;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.fnc.TreeTraverser;
-import com.apicatalog.tree.io.TreeIOException;
-import com.apicatalog.tree.io.TreeParser;
 import com.apicatalog.tree.io.TreeProcessor;
+import com.apicatalog.tree.io.TreeTraverser;
 
 /**
  * Provides a stateful, non-recursive, depth-first iterator for arbitrary
  * tree-like structures. This class decouples the traversal algorithm from the
  * tree.
  */
-public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcessor {
+public final class NativeTraverser implements TreeTraverser<Object>, TreeProcessor, Iterator<Event> {
 
     /** A sentinel value indicating that traversal depth is not limited. */
     public static final int UNLIMITED_DEPTH = -1;
@@ -33,63 +32,55 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
      */
     public static final int UNLIMITED_NODES = -1;
 
-    protected final Deque<Object> stack;
+    private final Deque<Object> stack;
 
-    protected Comparator<Entry<?, ?>> entryComparator;
+    private Comparator<Entry<?, ?>> entryComparator;
 
-    protected int maxVisited;
-    protected int maxDepth;
+    private int maxVisited;
+    private int maxDepth;
 
-    protected int depth;
-    protected int visited;
+    private int depth;
+    private int visited;
 
-    protected Object currentNode;
+    private Object currentNode;
 
-    protected NodeType currentNodeType;
-    protected NodeContext currentNodeContext;
+    private NodeType currentNodeType;
+    private NodeContext currentNodeContext;
 
-    public JavaTreeTraverser() {
-        this(new ArrayDeque<>(), null);
+    public NativeTraverser(Object node) {
+        this(node, new ArrayDeque<>(), null);
     }
 
-    public JavaTreeTraverser(Comparator<Entry<?, ?>> entryComparator) {
-        this(new ArrayDeque<>(), entryComparator);
+    public NativeTraverser(Object node, Comparator<Entry<?, ?>> entryComparator) {
+        this(node, new ArrayDeque<>(), entryComparator);
     }
 
-    protected JavaTreeTraverser(final Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
+    private NativeTraverser(Object node, Deque<Object> stack, Comparator<Entry<?, ?>> entryComparator) {
         this.stack = stack;
         this.entryComparator = entryComparator;
         this.maxVisited = UNLIMITED_NODES;
         this.maxDepth = UNLIMITED_DEPTH;
         this.visited = 0;
         this.depth = 0;
-        this.currentNode = null;
-        this.currentNodeContext = null;
+        this.stack.push(node);
+        this.currentNode = node;
+        this.currentNodeContext = NodeContext.ROOT;
     }
-    
+
     @Override
     public Features features() {
-        return JavaTreeGenerator.FEATURES;
+        return NativeComposer.FEATURES;
     }
 
     @Override
-    public void traverse(Object node, final Consumer<TreeTraverser> consumer) {
-
-        node(node);
-
-        var event = next();
-
-        while (event != null) {
-            consumer.accept(this);
-            event = next();
-        }
+    public boolean hasNext() {
+        return !stack.isEmpty();
     }
 
     @Override
     public Event next() {
-
         if (stack.isEmpty()) {
-            return null;
+            throw new NoSuchElementException();
         }
 
         if (maxVisited > 0 && maxVisited < visited) {
@@ -107,12 +98,30 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
 
         var item = stack.peek();
 
+        var first = item instanceof NodeContext ctx
+                && (NodeContext.FIRST_ENTRY_KEY == ctx || NodeContext.FIRST_ELEMENT == ctx);
+
+        if (first) {
+            stack.pop();
+            item = stack.peek();
+        }
+
         // map or collection iterator
         if (item instanceof Iterator<?> it) {
 
             if (!it.hasNext()) {
                 stack.pop(); // remove iterator
                 currentNode = stack.pop();
+                currentNodeType = switch (currentNode) {
+                case Collection<?> col -> NodeType.SEQUENCE;
+                case Map<?, ?> map -> NodeType.MAP;
+                default -> {
+                    if (currentNode != null && currentNode.getClass().isArray()) {
+                        yield NodeType.SEQUENCE;
+                    }
+                    throw new IllegalStateException();
+                }
+                };
                 currentNodeContext = (NodeContext) stack.pop();
                 depth -= 1;
                 return (Event) stack.pop();
@@ -122,7 +131,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
 
             if (item instanceof Map.Entry<?, ?> entry) {
                 // process map entry
-                currentNodeContext = NodeContext.ENTRY_KEY;
+                currentNodeContext = first ? NodeContext.FIRST_ENTRY_KEY : NodeContext.ENTRY_KEY;
 
                 stack.push(entry);
 
@@ -131,15 +140,16 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
 
             } else {
                 // process collection element
-                currentNodeContext = NodeContext.ELEMENT;
+                currentNodeContext = first ? NodeContext.FIRST_ELEMENT : NodeContext.ELEMENT;
                 currentNode = item;
             }
 
         } else if (item instanceof Map.Entry<?, ?> entry) {
             // process property value
-            currentNodeContext = NodeContext.ENTRY_VALUE;
             currentNode = entry.getValue();
+            // restore map iterator over entries
             stack.pop();
+            currentNodeContext = NodeContext.ENTRY_VALUE;
 
         } else {
             currentNode = item;
@@ -148,17 +158,24 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
 
         visited++;
 
-        switch (currentNode) {
-        case Collection<?> col:
+        return switch (currentNode) {
+        case null -> {
+            currentNodeType = NodeType.NULL;
+            yield Event.SCALAR;
+        }
+
+        case Collection<?> col -> {
             stack.push(Event.END_SEQUENCE);
             stack.push(currentNodeContext);
             stack.push(col);
             stack.push(col.iterator());
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
             depth += 1;
             currentNodeType = NodeType.SEQUENCE;
-            return Event.BEGIN_SEQUENCE;
-
-        case Map<?, ?> map:
+            yield Event.BEGIN_SEQUENCE;
+        }
+        case Map<?, ?> map -> {
             stack.push(Event.END_MAP);
             stack.push(currentNodeContext);
             stack.push(map);
@@ -169,39 +186,73 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
             } else {
                 stack.push(map.entrySet().iterator());
             }
+            stack.push(NodeContext.FIRST_ENTRY_KEY);
 
             depth += 1;
             currentNodeType = NodeType.MAP;
-            return Event.BEGIN_MAP;
+            yield Event.BEGIN_MAP;
+        }
 
-        case null:
-            currentNodeType = NodeType.NULL;
-            return Event.SCALAR;
-            
-        default:
+        case byte[] bytes -> {
+            currentNodeType = NodeType.BINARY;
+            yield Event.SCALAR;
+        }
+
+        // primitive array, i.e. int[], double[], etc.
+        case Object primitives when primitives != null && primitives.getClass().isArray() && primitives.getClass().getComponentType().isPrimitive() -> {
+            stack.push(Event.END_SEQUENCE);
+            stack.push(currentNodeContext);
+            stack.push(primitives);
+            stack.push(primitiveArrayIterator(primitives));
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
+            depth += 1;
+            currentNodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+
+        // object arrays, i.e. String
+        case Object[] array -> {
+            stack.push(Event.END_SEQUENCE);
+            stack.push(currentNodeContext);
+            stack.push(array);
+            stack.push(arrayIterator(array));
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
+            depth += 1;
+            currentNodeType = NodeType.SEQUENCE;
+            yield Event.BEGIN_SEQUENCE;
+        }
+
+        case Enum<?> enumeration -> {
+            currentNode = enumeration.name();
+            currentNodeType = NodeType.STRING;
+            yield Event.SCALAR;
+        }
+
+        default -> {
             currentNodeType = switch (currentNode) {
             case Boolean bool -> bool ? NodeType.TRUE : NodeType.FALSE;
             case String string -> NodeType.STRING;
             case Number number -> NodeType.NUMBER;
-            case byte[] bytes -> NodeType.BINARY;
 
             default -> throw new IllegalStateException(
                     """
                     Unexpected scalar node value=%s"
                     """.formatted(currentNode));
             };
-            return Event.SCALAR;
+            yield Event.SCALAR;
         }
+        };
     }
 
-    public JavaTreeTraverser node(Object node) {
+    public void reset(Object node) {
         this.stack.clear();
         this.stack.push(node);
         this.depth = 0;
         this.visited = 0;
         this.currentNode = node;
         this.currentNodeContext = NodeContext.ROOT;
-        return this;
     }
 
     /** Gets the total number of nodes visited so far. */
@@ -216,7 +267,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
      * @param maxDepth the maximum depth, or {@link #UNLIMITED_DEPTH} for no limit.
      * @return
      */
-    public JavaTreeTraverser maxDepth(int maxDepth) {
+    public NativeTraverser maxDepth(int maxDepth) {
         this.maxDepth = maxDepth;
         return this;
     }
@@ -238,7 +289,7 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
      *                        {@link #UNLIMITED_NODES} for no limit.
      * @return
      */
-    public JavaTreeTraverser maxVisited(int maxVisitedNodes) {
+    public NativeTraverser maxVisited(int maxVisitedNodes) {
         this.maxVisited = maxVisitedNodes;
         return this;
     }
@@ -263,22 +314,72 @@ public class JavaTreeTraverser implements TreeTraverser, TreeParser, TreeProcess
     }
 
     @Override
-    public Number numberValue() throws TreeIOException {
-        return (Number)currentNode;
+    public Number numberValue() {
+        return (Number) currentNode;
     }
 
     @Override
-    public String stringValue() throws TreeIOException {
-        return (String)currentNode;
+    public String stringValue() {
+        return (String) currentNode;
     }
 
     @Override
-    public byte[] binaryValue() throws TreeIOException {
-        return (byte[])currentNode;
+    public byte[] binaryValue() {
+        return (byte[]) currentNode;
     }
 
     @Override
     public NodeType nodeType() {
         return currentNodeType;
+    }
+
+    @Override
+    public int structureSize() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public void comparator(Comparator<Entry<?, ?>> entryComparator) {
+        this.entryComparator = entryComparator;
+    }
+
+    private static Iterator<Object> primitiveArrayIterator(Object primitiveArray) {
+        return new Iterator<Object>() {
+            private int index = 0;
+            private final int length = Array.getLength(primitiveArray);
+
+            @Override
+            public boolean hasNext() {
+                return index < length;
+            }
+
+            @Override
+            public Object next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return Array.get(primitiveArray, index++);
+            }
+        };
+    }
+
+    private static Iterator<Object> arrayIterator(Object[] array) {
+        return new Iterator<Object>() {
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < array.length;
+            }
+
+            @Override
+            public Object next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return array[index++];
+            }
+        };
     }
 }

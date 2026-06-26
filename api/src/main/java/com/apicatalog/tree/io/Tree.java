@@ -1,5 +1,7 @@
 package com.apicatalog.tree.io;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -10,81 +12,127 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.apicatalog.tree.io.java.JavaTreeGenerator;
-import com.apicatalog.tree.io.java.JavaTreeTraverser;
+import com.apicatalog.tree.io.java.NativeComposer;
+import com.apicatalog.tree.io.java.NativeTraverser;
+import com.apicatalog.tree.io.util.PropertyTreeEmitter;
 
 public final class Tree {
 
-    public static Object read(TreeParser parser) throws TreeIOException {
-        var generator = new JavaTreeGenerator();
-        translate(parser, generator);
-        return generator.get();
-    }
-
-    public static void write(Object node, TreeGenerator generator) throws TreeIOException {
-        var traversal = new JavaTreeTraverser();
-        traversal.node(node);
-        translate(traversal, generator);
+    /**
+     * Parses input from the given parser into a tree structure composed of Map,
+     * List, String, Number, and other supported types.
+     *
+     * @param <T>    the type of the resulting tree structure
+     * @param parser the source parser used to read input
+     * @return the parsed tree structure
+     * @throws IOException if an I/O error occurs during parsing
+     */
+    public static <T> T read(TreeParser parser) throws IOException {
+        return (T) read(parser, new NativeComposer<T>());
     }
 
     /**
-     * A high-level utility method that fully traverses the tree and drives the
-     * provided {@link TreeGenerator}. This is the primary method for tree
-     * transformation, serialization, or deep cloning. It iterates through every
-     * node using {@link TreeParser#next()} and emits a corresponding event to the generator.
+     * Parses input from the given parser into a tree structure constructed by the
+     * provided composer.
      *
-     * @param parser
-     * @param generator the generator that will receive construction events.
-     * @throws TreeIOException       if the generator encounters an I/O error.
-     * @throws IllegalStateException if the source tree is malformed (e.g., unclosed
-     *                               structures).
+     * @param <T>      the type of the resulting tree structure
+     * @param parser   the source parser used to read input
+     * @param composer the target composer used to assemble the tree
+     * @return the composed tree structure
+     * @throws IOException if an I/O error occurs during parsing
      */
-    public static void translate(TreeParser parser, TreeGenerator generator) throws TreeIOException {
-        while (true) {
-            switch (parser.next()) {
-            case BEGIN_MAP:
-                generator.beginMap(parser.context());
-                continue;
+    public static <T> T read(TreeParser parser, TreeComposer<T> composer) throws IOException {
+        parser.parse(composer::accept);
+        return composer.compose();
+    }
 
-            case END_MAP:
-                generator.endMap(parser.context());
-                continue;
+    /**
+     * Serializes the provided tree node to the given emitter using a native
+     * traverser.
+     *
+     * @param <T>     the type of the tree node
+     * @param node    the tree structure to serialize
+     * @param emitter the target emitter
+     * @throws IOException if an I/O error occurs during emission
+     */
+    public static <T> void write(T node, TreeEmitter emitter) throws IOException {
+        write(new NativeTraverser(node), emitter);
+    }
 
-            case BEGIN_SEQUENCE:
-                generator.beginSequence(parser.context());
-                continue;
+    /**
+     * Streams events from the traverser to the given emitter.
+     *
+     * @param traverser the source traverser
+     * @param emitter   the target emitter
+     * @throws IOException if an I/O error occurs during the process
+     */
+    public static void write(TreeTraverser<?> traverser, TreeEmitter emitter) throws IOException {
+        try {
+            traverser.traverse(emitter::accept);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
+    }
 
-            case END_SEQUENCE:
-                generator.endSequence(parser.context());
-                continue;
+    /**
+     * Performs a direct structural copy from the parser to the emitter.
+     *
+     * @param parser  the source parser
+     * @param emitter the target emitter
+     * @throws IOException if an I/O error occurs during the copy
+     */
+    public static void copy(TreeParser parser, TreeEmitter emitter) throws IOException {
+        try {
+            parser.parse(emitter::accept);
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
+        }
+    }
 
-            case SCALAR:
-                switch (parser.nodeType()) {
-                case NULL -> generator.nullValue(parser.context());
-                case TRUE -> generator.booleanValue(parser.context(), true);
-                case FALSE -> generator.booleanValue(parser.context(), false);
-                case STRING -> generator.stringValue(parser.context(), parser.stringValue());
-                case NUMBER -> generator.numberValue(parser.context(), parser.numberValue());
-                case BINARY -> generator.binaryValue(parser.context(), parser.binaryValue());
+    /**
+     * Creates a structural clone of the traversed tree into the new format provided
+     * by the composer.
+     *
+     * @param <T>       the type of the resulting cloned tree
+     * @param traverser the source traverser
+     * @param composer  the target composer to build the clone
+     * @return the cloned tree structure
+     */
+    public static <T> T clone(TreeTraverser<?> traverser, TreeComposer<T> composer) {
+        traverser.traverse(composer::accept);
+        return composer.compose();
+    }
 
-                default -> throw new IllegalArgumentException(
-                        """
-                        Unexpected node type=%s"
-                        """.formatted(parser.nodeType()));
-                }
-                continue;
+    /**
+     * Determines structural and content-wise equality between two trees using
+     * pull-based, non-recursive, iteration.
+     *
+     * @param tree1        the first tree to compare
+     * @param tree2        the second tree to compare
+     * @param scalarEquals the strategy to compare scalar values
+     * @return true if both trees are identical in structure and content
+     */
+    public static boolean identical(TreeTraverser<?> tree1, TreeTraverser<?> tree2, ScalarEquality scalarEquals) {
 
-            case null:
-//                if (traversal.dept depth > 0) {
-//                    throw new IllegalStateException("The traversed tree is malformed. A map or a collection was not properly closed.");
-//                }
-                return;
+        while (tree1.hasNext() && tree2.hasNext()) {
+
+            var event1 = tree1.next();
+            var event2 = tree2.next();
+
+            if (!Objects.equals(event1, event2)
+                    // cursor
+                    || !Objects.equals(tree1.nodeType(), tree2.nodeType())
+                    || (tree1.nodeType().isScalar() && !scalarEquals.test(tree1, tree2))) {
+
+                return false;
             }
         }
 
-//        if (stack.peek() != NodeContext.ROOT) {
-//            throw new IllegalStateException();
-//        }
+        return !tree1.hasNext() && !tree2.hasNext();
+    }
+
+    public static PropertyTreeEmitter createPropertyTree(TreeEmitter emitter) {
+        return new PropertyTreeEmitter(emitter);
     }
 
     // --- Convenience & Type Coercion Methods ---
@@ -242,7 +290,27 @@ public final class Tree {
         END_MAP,
         BEGIN_SEQUENCE,
         END_SEQUENCE,
-        SCALAR;
+        SCALAR,
+    }
+
+    // --- ... ---
+
+    @FunctionalInterface
+    public interface EventConsumer {
+        /**
+         * 
+         * @param <T>
+         * @param event
+         * @param cursor
+         * @return
+         * @throws UncheckedIOException if an I/O error occurs during serialization.
+         */
+        <T extends TreeCursor> boolean accept(Event event, T cursor);
+    }
+
+    @FunctionalInterface
+    public interface ScalarEquality {
+        boolean test(TreeCursor cursor1, TreeCursor cursor2);
     }
 
     /**
@@ -257,9 +325,21 @@ public final class Tree {
         ROOT,
 
         /**
+         * Indicates the node is the very first element within an ordered sequence or
+         * array.
+         */
+        FIRST_ELEMENT,
+
+        /**
          * Indicates the node is an element within an ordered sequence or array.
          */
         ELEMENT,
+
+        /**
+         * Indicates the node functions as the very first key within a map or object
+         * structure.
+         */
+        FIRST_ENTRY_KEY,
 
         /**
          * Indicates the node functions as a key within a map or object structure.
@@ -270,7 +350,7 @@ public final class Tree {
          * Indicates the node functions as a value associated with a key within a map or
          * object structure.
          */
-        ENTRY_VALUE
+        ENTRY_VALUE,
     }
 
     public enum NodeType {

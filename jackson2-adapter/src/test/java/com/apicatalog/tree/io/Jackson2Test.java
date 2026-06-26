@@ -19,8 +19,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.apicatalog.tree.io.jakcson.Jackson2Reader;
-import com.apicatalog.tree.io.jakcson.Jackson2Writer;
+import com.apicatalog.tree.io.jakcson.Jackson2Emitter;
+import com.apicatalog.tree.io.jakcson.Jackson2Parser;
 import com.fasterxml.jackson.core.JsonFactory;
 
 @TestMethodOrder(OrderAnnotation.class)
@@ -28,17 +28,22 @@ class Jackson2Test {
 
     final static JsonFactory FACTORY = JsonFactory.builder().build();
 
-    final static Jackson2Reader READER = new Jackson2Reader(FACTORY);
-    final static Jackson2Writer WRITER = new Jackson2Writer(FACTORY);
-    
     @ParameterizedTest
     @MethodSource({ "resources" })
-    void testReadWrite(String name) throws IOException, TreeIOException {
+    void testReadWrite(String name) throws IOException {
 
-        var tree = READER.read(new ByteArrayInputStream(getResource(name).getBytes()));
-        
+        Object tree = null;
+
+        try (var parser = Jackson2Parser.createParser(new ByteArrayInputStream(getResource(name).getBytes()),
+                FACTORY)) {
+            tree = Tree.read(parser);
+        }
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        WRITER.write(tree, bos);
+
+        try (var emitter = Jackson2Emitter.createEmitter(bos, FACTORY)) {
+            Tree.write(tree, emitter);
+        }
 
         assertEquals(getResource(name), bos.toString());
     }

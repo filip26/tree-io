@@ -13,13 +13,12 @@ import java.util.Set;
 import com.apicatalog.tree.io.Tree.Features;
 import com.apicatalog.tree.io.Tree.NodeContext;
 import com.apicatalog.tree.io.Tree.NodeType;
-import com.apicatalog.tree.io.TreeGenerator;
-import com.apicatalog.tree.io.TreeIOException;
+import com.apicatalog.tree.io.TreeComposer;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
+public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
 
-    Deque<Object> stack;
+    private final Deque<Object> stack;
 
     static final Features FEATURES = new Features(
             // keys
@@ -39,7 +38,7 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
                     NodeType.TRUE,
                     NodeType.NULL));
 
-    public JavaTreeGenerator() {
+    public NativeComposer() {
         this.stack = new ArrayDeque<>();
     }
 
@@ -49,14 +48,13 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public void nullValue(NodeContext context) {
         // root
         if (stack.isEmpty()) {
             return;
         }
         switch (context) {
-        case ELEMENT:
+        case FIRST_ELEMENT, ELEMENT:
             ((Collection<?>) stack.peek()).add(null);
             return;
 
@@ -68,37 +66,49 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         case ROOT:
             return;
 
-        case ENTRY_KEY:
+        case FIRST_ENTRY_KEY, ENTRY_KEY:
             throw new IllegalStateException();
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void booleanValue(NodeContext context, boolean value) throws TreeIOException {
+    public T compose() {
+        if (stack.size() > 1) {
+            throw new IllegalStateException();
+        }
+        if (stack.isEmpty()) {
+            return null;
+        }
+        return (T) stack.peek();
+    }
+
+    @Override
+    public void booleanValue(NodeContext context, boolean value) {
         stack.push(value);
         next(context);
     }
 
     @Override
-    public void stringValue(NodeContext context, String value) throws TreeIOException {
+    public void stringValue(NodeContext context, String value) {
         stack.push(value);
         next(context);
     }
 
     @Override
-    public void numericValue(NodeContext context, BigInteger value) throws TreeIOException {
+    public void numericValue(NodeContext context, BigInteger value) {
         stack.push(value);
         next(context);
     }
 
     @Override
-    public void numericValue(NodeContext context, BigDecimal value) throws TreeIOException {
+    public void numericValue(NodeContext context, BigDecimal value) {
         stack.push(value);
         next(context);
     }
 
     @Override
-    public void binaryValue(NodeContext context, byte[] value) throws TreeIOException {
+    public void binaryValue(NodeContext context, byte[] value) {
         stack.push(value);
         next(context);
     }
@@ -118,12 +128,12 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
     }
 
     @Override
-    public void beginSequence(NodeContext context) throws TreeIOException {
+    public void beginSequence(NodeContext context) {
         stack.push(new ArrayList<>());
     }
 
     @Override
-    public void endSequence(NodeContext context) throws TreeIOException {
+    public void endSequence(NodeContext context) {
         if (stack.peek() instanceof Collection) {
             next(context);
             return;
@@ -131,20 +141,10 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
         throw new IllegalStateException();
     }
 
-    public Object get() {
-        if (stack.size() > 1) {
-            throw new IllegalStateException();
-        }
-        if (stack.isEmpty()) {
-            return null;
-        }
-        return stack.peek();
-    }
-
     @SuppressWarnings("unchecked")
-    private final void next(NodeContext context) {
+    private void next(NodeContext context) {
         switch (context) {
-        case ELEMENT:
+        case FIRST_ELEMENT, ELEMENT:
             var element = stack.pop();
             ((Collection<Object>) stack.peek()).add(element);
             return;
@@ -155,12 +155,11 @@ public class JavaTreeGenerator implements TreeGenerator, TreeProcessor {
             ((Map<Object, Object>) stack.peek()).put(key, value);
             return;
 
-        case ENTRY_KEY:
+        case FIRST_ENTRY_KEY, ENTRY_KEY:
             return;
 
         case ROOT:
             return;
         }
     }
-
 }
