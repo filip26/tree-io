@@ -50,57 +50,62 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeabl
     @Override
     public Event next() throws IOException {
 
-        this.context = contexts.peek();
-        this.scalar = null;
+        context = contexts.peek();
+
+        if (NodeContext.FIRST_ELEMENT == context) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
 
         return switch (parser.nextToken()) {
         case START_OBJECT -> {
-            contexts.push(NodeContext.ENTRY_KEY);
+            contexts.push(NodeContext.FIRST_ENTRY_KEY);
             nodeType = NodeType.MAP;
             yield Event.BEGIN_MAP;
         }
         case END_OBJECT -> {
             contexts.pop();
             this.context = contexts.peek();
-            switchMapContext();
             nodeType = NodeType.MAP;
             yield Event.END_MAP;
         }
         case START_ARRAY -> {
-            contexts.push(NodeContext.ELEMENT);
+            contexts.push(NodeContext.FIRST_ELEMENT);
             nodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
         }
         case END_ARRAY -> {
             contexts.pop();
             this.context = contexts.peek();
-            switchMapContext();
             nodeType = NodeType.SEQUENCE;
             yield Event.END_SEQUENCE;
         }
         case VALUE_NULL -> {
-            switchMapContext();
             nodeType = NodeType.NULL;
             yield Event.SCALAR;
         }
         case FIELD_NAME -> {
-            switchMapContext();
+            if (NodeContext.FIRST_ENTRY_KEY == contexts.peek()) {
+                contexts.pop();
+                contexts.push(NodeContext.ENTRY_VALUE);
+            } else if (NodeContext.ENTRY_VALUE == context) {
+                context = NodeContext.ENTRY_KEY;
+            } else {
+                throw new IllegalStateException();
+            }
             nodeType = NodeType.STRING;
             scalar = parser.getText();
             yield Event.SCALAR;
         }
         case VALUE_TRUE -> {
-            switchMapContext();
             nodeType = NodeType.TRUE;
             yield Event.SCALAR;
         }
         case VALUE_FALSE -> {
-            switchMapContext();
             nodeType = NodeType.FALSE;
             yield Event.SCALAR;
         }
         case VALUE_NUMBER_FLOAT, VALUE_NUMBER_INT -> {
-            switchMapContext();
             nodeType = NodeType.NUMBER;
             scalar = switch (parser.currentToken()) {
             case VALUE_NUMBER_FLOAT -> parser.getDecimalValue();
@@ -113,7 +118,6 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeabl
             yield Event.SCALAR;
         }
         case VALUE_STRING -> {
-            switchMapContext();
             nodeType = NodeType.STRING;
             scalar = parser.getText();
             yield Event.SCALAR;
@@ -154,16 +158,6 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeabl
     @Override
     public NodeContext context() {
         return context;
-    }
-
-    private void switchMapContext() {
-        if (contexts.peek() == NodeContext.ENTRY_KEY) {
-            contexts.pop();
-            contexts.push(NodeContext.ENTRY_VALUE);
-        } else if (contexts.peek() == NodeContext.ENTRY_VALUE) {
-            contexts.pop();
-            contexts.push(NodeContext.ENTRY_KEY);
-        }
     }
 
     @Override

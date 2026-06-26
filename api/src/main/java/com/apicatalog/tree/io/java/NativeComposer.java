@@ -54,7 +54,7 @@ public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
             return;
         }
         switch (context) {
-        case ELEMENT:
+        case FIRST_ELEMENT, ELEMENT:
             ((Collection<?>) stack.peek()).add(null);
             return;
 
@@ -66,7 +66,7 @@ public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
         case ROOT:
             return;
 
-        case ENTRY_KEY:
+        case FIRST_ENTRY_KEY, ENTRY_KEY:
             throw new IllegalStateException();
         }
     }
@@ -141,11 +141,10 @@ public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
         throw new IllegalStateException();
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public void next(NodeContext context) {
+    private void next(NodeContext context) {
         switch (context) {
-        case ELEMENT:
+        case FIRST_ELEMENT, ELEMENT:
             var element = stack.pop();
             ((Collection<Object>) stack.peek()).add(element);
             return;
@@ -156,7 +155,7 @@ public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
             ((Map<Object, Object>) stack.peek()).put(key, value);
             return;
 
-        case ENTRY_KEY:
+        case FIRST_ENTRY_KEY, ENTRY_KEY:
             return;
 
         case ROOT:

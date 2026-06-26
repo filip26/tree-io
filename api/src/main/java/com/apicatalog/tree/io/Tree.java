@@ -292,7 +292,6 @@ public final class Tree {
         BEGIN_SEQUENCE,
         END_SEQUENCE,
         SCALAR,
-        NEXT;
     }
 
     // --- ... ---
@@ -327,9 +326,21 @@ public final class Tree {
         ROOT,
 
         /**
+         * Indicates the node is the very first element within an ordered sequence or
+         * array.
+         */
+        FIRST_ELEMENT,
+
+        /**
          * Indicates the node is an element within an ordered sequence or array.
          */
         ELEMENT,
+
+        /**
+         * Indicates the node functions as the very first key within a map or object
+         * structure.
+         */
+        FIRST_ENTRY_KEY,
 
         /**
          * Indicates the node functions as a key within a map or object structure.

@@ -59,7 +59,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      */
     @Override
     public void beginMap(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -77,7 +77,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      */
     @Override
     public void beginSequence(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -123,7 +123,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      */
     @Override
     public void nullValue(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -141,7 +141,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      */
     @Override
     public void booleanValue(NodeContext context, boolean value) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -161,7 +161,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
     @Override
     public void stringValue(NodeContext context, String value) {
         try {
-            if (context == NodeContext.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
                 generator.writeFieldName(value);
                 return;
             }
@@ -180,7 +180,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
     @Override
     public void numericValue(NodeContext context, long value) {
         try {
-            if (context == NodeContext.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
                 generator.writeFieldId(value);
                 return;
             }
@@ -199,7 +199,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
     @Override
     public void numericValue(NodeContext context, BigInteger value) {
         try {
-            if (context == NodeContext.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
                 generator.writeFieldId(value.longValueExact());
                 return;
             }
@@ -218,7 +218,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
      */
     @Override
     public void numericValue(NodeContext context, double value) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         try {
@@ -237,7 +237,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
     @Override
     public void numericValue(NodeContext context, BigDecimal value) {
         try {
-            if (context == NodeContext.ENTRY_KEY) {
+            if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
                 generator.writeFieldId(value.longValueExact());
                 return;
             }

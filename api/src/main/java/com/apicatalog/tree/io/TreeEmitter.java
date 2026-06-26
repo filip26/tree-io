@@ -73,10 +73,6 @@ public interface TreeEmitter {
             }
             return true;
 
-        case NEXT:
-            next(cursor.context());
-            return true;
-
         case null:
             throw new IllegalArgumentException();
         }
@@ -248,8 +244,4 @@ public interface TreeEmitter {
      * @throws IllegalStateException
      */
     void endSequence(NodeContext context);
-
-    default void next(NodeContext context) {
-        // not needed by the implementation as it's already stateful
-    }
 }

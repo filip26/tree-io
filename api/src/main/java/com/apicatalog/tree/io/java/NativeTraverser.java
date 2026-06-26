@@ -98,11 +98,12 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
         var item = stack.peek();
 
-        if (item instanceof Event event && Event.NEXT == event) {
+        var first = item instanceof NodeContext ctx
+                && (NodeContext.FIRST_ENTRY_KEY == ctx || NodeContext.FIRST_ELEMENT == ctx);
+
+        if (first) {
             stack.pop();
-            currentNode = null;
-            currentNodeType = null;
-            return event;
+            item = stack.peek();
         }
 
         // map or collection iterator
@@ -123,13 +124,9 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
             item = it.next();
 
-            if (it.hasNext()) {
-                stack.push(Event.NEXT);
-            }
-
             if (item instanceof Map.Entry<?, ?> entry) {
                 // process map entry
-                currentNodeContext = NodeContext.ENTRY_KEY;
+                currentNodeContext = first ? NodeContext.FIRST_ENTRY_KEY : NodeContext.ENTRY_KEY;
 
                 stack.push(entry);
 
@@ -138,12 +135,8 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
 
             } else {
                 // process collection element
-                currentNodeContext = NodeContext.ELEMENT;
+                currentNodeContext = first ? NodeContext.FIRST_ELEMENT : NodeContext.ELEMENT;
                 currentNode = item;
-
-                if (it.hasNext()) {
-                    stack.push(Event.NEXT);
-                }
             }
 
         } else if (item instanceof Map.Entry<?, ?> entry) {
@@ -151,12 +144,7 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             currentNode = entry.getValue();
             // restore map iterator over entries
             stack.pop();
-            var it = (Iterator<?>) stack.peek();
             currentNodeContext = NodeContext.ENTRY_VALUE;
-
-            if (it.hasNext()) {
-                stack.push(Event.NEXT);
-            }
 
         } else {
             currentNode = item;
@@ -176,6 +164,8 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             stack.push(currentNodeContext);
             stack.push(col);
             stack.push(col.iterator());
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
             depth += 1;
             currentNodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
@@ -191,6 +181,7 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             } else {
                 stack.push(map.entrySet().iterator());
             }
+            stack.push(NodeContext.FIRST_ELEMENT);
 
             depth += 1;
             currentNodeType = NodeType.MAP;
@@ -208,6 +199,8 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             stack.push(currentNodeContext);
             stack.push(primitives);
             stack.push(primitiveArrayIterator(primitives));
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
             depth += 1;
             currentNodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
@@ -219,6 +212,8 @@ public final class NativeTraverser implements TreeTraverser<Object>, TreeProcess
             stack.push(currentNodeContext);
             stack.push(array);
             stack.push(arrayIterator(array));
+            stack.push(NodeContext.FIRST_ELEMENT);
+            ;
             depth += 1;
             currentNodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;

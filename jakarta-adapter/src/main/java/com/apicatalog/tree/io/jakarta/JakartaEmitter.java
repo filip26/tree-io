@@ -84,7 +84,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void nullValue(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeNull();
@@ -98,7 +98,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void booleanValue(NodeContext context, boolean node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.write(node);
@@ -113,7 +113,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void stringValue(NodeContext context, String node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             writer.writeKey(node);
             return;
         }
@@ -128,7 +128,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void numericValue(NodeContext context, long node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.write(node);
@@ -142,7 +142,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void numericValue(NodeContext context, BigInteger node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.write(node);
@@ -156,7 +156,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void numericValue(NodeContext context, double node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.write(node);
@@ -170,7 +170,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void numericValue(NodeContext context, BigDecimal node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.write(node);
@@ -188,7 +188,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void binaryValue(NodeContext context, byte[] node) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         if (encoder == null) {
@@ -205,7 +205,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void beginMap(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartObject();
@@ -220,7 +220,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void beginSequence(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeStartArray();
@@ -236,7 +236,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
      */
     @Override
     public void endMap(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeEnd();
@@ -244,7 +244,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
 
     @Override
     public void endSequence(NodeContext context) {
-        if (context == NodeContext.ENTRY_KEY) {
+        if (context == NodeContext.ENTRY_KEY || context == NodeContext.FIRST_ENTRY_KEY) {
             throw new IllegalStateException();
         }
         writer.writeEnd();

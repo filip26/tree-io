@@ -49,64 +49,65 @@ public final class JakartaParser implements TreeParser, TreeProcessor, Closeable
             return null;
         }
 
-        this.context = contexts.peek();
+        context = contexts.peek();
 
-        var lastEvent = parser.next();
-        return switch (lastEvent) {
+        if (NodeContext.FIRST_ELEMENT == context) {
+            contexts.pop();
+            contexts.push(NodeContext.ELEMENT);
+        }
+        
+        return switch (parser.next()) {
         case START_OBJECT -> {
-            contexts.push(NodeContext.ENTRY_KEY);
+            contexts.push(NodeContext.FIRST_ENTRY_KEY);
             nodeType = NodeType.MAP;
             yield Event.BEGIN_MAP;
         }
         case END_OBJECT -> {
             contexts.pop();
             this.context = contexts.peek();
-            switchMapContext();
             nodeType = NodeType.MAP;
             yield Event.END_MAP;
         }
         case START_ARRAY -> {
-            contexts.push(NodeContext.ELEMENT);
+            contexts.push(NodeContext.FIRST_ELEMENT);
             nodeType = NodeType.SEQUENCE;
             yield Event.BEGIN_SEQUENCE;
         }
         case END_ARRAY -> {
             contexts.pop();
             this.context = contexts.peek();
-            switchMapContext();
             nodeType = NodeType.SEQUENCE;
             yield Event.END_SEQUENCE;
         }
         case VALUE_NULL -> {
-            switchMapContext();
             nodeType = NodeType.NULL;
             yield Event.SCALAR;
         }
         case VALUE_TRUE -> {
-            switchMapContext();
             nodeType = NodeType.TRUE;
             yield Event.SCALAR;
         }
         case VALUE_FALSE -> {
-            switchMapContext();
             nodeType = NodeType.FALSE;
             yield Event.SCALAR;
         }
         case VALUE_NUMBER -> {
-            switchMapContext();
             nodeType = NodeType.NUMBER;
             yield Event.SCALAR;
         }
         case KEY_NAME -> {
-            if (NodeContext.ENTRY_KEY != contexts.pop()) {
+            if (NodeContext.FIRST_ENTRY_KEY == contexts.peek()) {
+                contexts.pop();
+                contexts.push(NodeContext.ENTRY_VALUE);
+            } else if (NodeContext.ENTRY_VALUE == context) {
+                context = NodeContext.ENTRY_KEY;
+            } else {
                 throw new IllegalStateException();
-            };
-            contexts.push(NodeContext.ENTRY_VALUE);
+            }
             nodeType = NodeType.STRING;
             yield Event.SCALAR;
         }
         case VALUE_STRING -> {
-            switchMapContext();
             nodeType = NodeType.STRING;
             yield Event.SCALAR;
         }
@@ -139,16 +140,6 @@ public final class JakartaParser implements TreeParser, TreeProcessor, Closeable
     @Override
     public NodeContext context() {
         return context;
-    }
-
-    private void switchMapContext() {
-        if (contexts.peek() == NodeContext.ENTRY_KEY) {
-            contexts.pop();
-            contexts.push(NodeContext.ENTRY_VALUE);
-        } else if (contexts.peek() == NodeContext.ENTRY_VALUE) {
-            contexts.pop();
-            contexts.push(NodeContext.ENTRY_KEY);
-        }
     }
 
     @Override
