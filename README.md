@@ -8,8 +8,8 @@
 
 - 🌳 Uniform Tree Processing - handle any hierarchical and heterogeneous data structure consistently across formats and libraries  
 - 🌐 Library-agnostic API for tree data processing
-  - TreeParser - Data ingestion from heterogeneous formats into event streams
-  - TreeTraverser - Extraction of standardized event streams from heterogeneous in-memory instances
+  - TreeParser - Data ingestion from heterogeneous formats into structural event streams
+  - TreeTraverser - Extraction of structural event streams from heterogeneous in-memory instances
   - TreeEmitter - Stateless, stack-free generation of tree-like structures
   - TreeComposer - Materialization of structural event streams into in-memory instances
 - 🗂️ Multi-format support
