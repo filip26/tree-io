@@ -43,13 +43,13 @@ class JakartaTest {
 
         Object tree = null;
 
-        try (var parser = JakartaParser.createParser(new ByteArrayInputStream(getResource(name).getBytes()), PARSER)) {
+        try (var parser = JakartaParser.newParser(new ByteArrayInputStream(getResource(name).getBytes()), PARSER)) {
             tree = Tree.read(parser);
         }
 
         var bos = new ByteArrayOutputStream();
 
-        try (var emitter = JakartaEmitter.createEmitter(bos, GENERATOR)) {
+        try (var emitter = JakartaEmitter.newEmitter(bos, GENERATOR)) {
             Tree.write(tree, emitter);
         }
 

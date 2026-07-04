@@ -131,7 +131,7 @@ public final class Tree {
         return !tree1.hasNext() && !tree2.hasNext();
     }
 
-    public static PropertyTreeEmitter createPropertyTree(TreeEmitter emitter) {
+    public static PropertyTreeEmitter newPropertyTree(TreeEmitter emitter) {
         return new PropertyTreeEmitter(emitter);
     }
 

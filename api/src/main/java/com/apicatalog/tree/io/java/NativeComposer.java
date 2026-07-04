@@ -16,7 +16,7 @@ import com.apicatalog.tree.io.Tree.NodeType;
 import com.apicatalog.tree.io.TreeComposer;
 import com.apicatalog.tree.io.TreeProcessor;
 
-public final class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
+public class NativeComposer<T> implements TreeComposer<T>, TreeProcessor {
 
     private final Deque<Object> stack;
 

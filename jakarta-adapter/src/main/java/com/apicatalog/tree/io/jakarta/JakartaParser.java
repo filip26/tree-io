@@ -31,7 +31,7 @@ public final class JakartaParser implements TreeParser, TreeProcessor, Closeable
         contexts.push(NodeContext.ROOT);
     }
 
-    public static JakartaParser createParser(InputStream is, JsonParserFactory factory) {
+    public static JakartaParser newParser(InputStream is, JsonParserFactory factory) {
         return new JakartaParser(factory.createParser(is));
     }
 

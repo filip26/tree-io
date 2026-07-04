@@ -42,7 +42,7 @@ public final class Jackson2Emitter implements TreeEmitter, TreeProcessor, Flusha
         this.generator = writer;
     }
 
-    public static Jackson2Emitter createEmitter(OutputStream os, JsonFactory factory) throws IOException {
+    public static Jackson2Emitter newEmitter(OutputStream os, JsonFactory factory) throws IOException {
         return new Jackson2Emitter(factory.createGenerator(os));
     }
 

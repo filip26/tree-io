@@ -38,7 +38,7 @@ public final class Jackson2Parser implements TreeParser, TreeProcessor, Closeabl
         contexts.push(NodeContext.ROOT);
     }
 
-    public static Jackson2Parser createParser(InputStream is, JsonFactory factory) throws IOException {
+    public static Jackson2Parser newParser(InputStream is, JsonFactory factory) throws IOException {
         return new Jackson2Parser(factory.createParser(is));
     }
 
