@@ -107,7 +107,7 @@ public final class PropertyTreeEmitter {
             throw new IllegalStateException();
         }
         contexts.pop();
-        emitter.endMap(contexts.peek());
+        emitter.endSequence(contexts.peek());
         if (NodeContext.ENTRY_VALUE == contexts.peek()) {
             contexts.pop();
             contexts.push(NodeContext.ENTRY_KEY);
