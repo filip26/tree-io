@@ -50,8 +50,6 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
         this(writer, null);
     }
 
-//    public static final JakartaEmitter createEmitter()
-
     /**
      * Constructs a new writer that will output to the given {@link JsonGenerator}
      * with custom handling for binary data.
@@ -67,7 +65,7 @@ public class JakartaEmitter implements TreeEmitter, TreeProcessor, Flushable, Cl
         this.encoder = encoder;
     }
 
-    public static JakartaEmitter createEmitter(OutputStream os, JsonGeneratorFactory factory) {
+    public static JakartaEmitter newEmitter(OutputStream os, JsonGeneratorFactory factory) {
         return new JakartaEmitter(factory.createGenerator(os));
     }
 

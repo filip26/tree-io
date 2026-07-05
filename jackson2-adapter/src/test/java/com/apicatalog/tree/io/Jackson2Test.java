@@ -34,14 +34,14 @@ class Jackson2Test {
 
         Object tree = null;
 
-        try (var parser = Jackson2Parser.createParser(new ByteArrayInputStream(getResource(name).getBytes()),
+        try (var parser = Jackson2Parser.newParser(new ByteArrayInputStream(getResource(name).getBytes()),
                 FACTORY)) {
             tree = Tree.read(parser);
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-        try (var emitter = Jackson2Emitter.createEmitter(bos, FACTORY)) {
+        try (var emitter = Jackson2Emitter.newEmitter(bos, FACTORY)) {
             Tree.write(tree, emitter);
         }
 
